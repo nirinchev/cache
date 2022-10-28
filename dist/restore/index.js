@@ -392,7 +392,20 @@ function copyFile(srcFile, destFile, force) {
 /***/ }),
 /* 2 */,
 /* 3 */,
-/* 4 */,
+/* 4 */
+/***/ (function(__unusedmodule, exports) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+var _default = '00000000-0000-0000-0000-000000000000';
+exports.default = _default;
+
+/***/ }),
 /* 5 */,
 /* 6 */,
 /* 7 */,
@@ -1113,7 +1126,13 @@ function resolvePaths(patterns) {
                     .replace(new RegExp(`\\${path.sep}`, 'g'), '/');
                 core.debug(`Matched: ${relativeFile}`);
                 // Paths are made relative so the tar entries are all relative to the root of the workspace.
-                paths.push(`${relativeFile}`);
+                if (relativeFile === '') {
+                    // path.relative returns empty string if workspace and file are equal
+                    paths.push('.');
+                }
+                else {
+                    paths.push(`${relativeFile}`);
+                }
             }
         }
         catch (e_1_1) { e_1 = { error: e_1_1 }; }
@@ -1199,6 +1218,11 @@ function assertDefined(name, value) {
     return value;
 }
 exports.assertDefined = assertDefined;
+function isGhes() {
+    const ghUrl = new URL(process.env['GITHUB_SERVER_URL'] || 'https://github.com');
+    return ghUrl.hostname.toUpperCase() !== 'GITHUB.COM';
+}
+exports.isGhes = isGhes;
 //# sourceMappingURL=cacheUtils.js.map
 
 /***/ }),
@@ -1298,7 +1322,7 @@ eval("require")("encoding");
  */
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.PropagationAPI = void 0;
-var global_utils_1 = __webpack_require__(525);
+var global_utils_1 = __webpack_require__(94);
 var NoopTextMapPropagator_1 = __webpack_require__(918);
 var TextMapPropagator_1 = __webpack_require__(881);
 var context_helpers_1 = __webpack_require__(483);
@@ -1388,7 +1412,91 @@ var _default = '00000000-0000-0000-0000-000000000000';
 exports.default = _default;
 
 /***/ }),
-/* 25 */,
+/* 25 */
+/***/ (function(__unusedmodule, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+Object.defineProperty(exports, "v1", {
+  enumerable: true,
+  get: function () {
+    return _v.default;
+  }
+});
+Object.defineProperty(exports, "v3", {
+  enumerable: true,
+  get: function () {
+    return _v2.default;
+  }
+});
+Object.defineProperty(exports, "v4", {
+  enumerable: true,
+  get: function () {
+    return _v3.default;
+  }
+});
+Object.defineProperty(exports, "v5", {
+  enumerable: true,
+  get: function () {
+    return _v4.default;
+  }
+});
+Object.defineProperty(exports, "NIL", {
+  enumerable: true,
+  get: function () {
+    return _nil.default;
+  }
+});
+Object.defineProperty(exports, "version", {
+  enumerable: true,
+  get: function () {
+    return _version.default;
+  }
+});
+Object.defineProperty(exports, "validate", {
+  enumerable: true,
+  get: function () {
+    return _validate.default;
+  }
+});
+Object.defineProperty(exports, "stringify", {
+  enumerable: true,
+  get: function () {
+    return _stringify.default;
+  }
+});
+Object.defineProperty(exports, "parse", {
+  enumerable: true,
+  get: function () {
+    return _parse.default;
+  }
+});
+
+var _v = _interopRequireDefault(__webpack_require__(810));
+
+var _v2 = _interopRequireDefault(__webpack_require__(572));
+
+var _v3 = _interopRequireDefault(__webpack_require__(293));
+
+var _v4 = _interopRequireDefault(__webpack_require__(638));
+
+var _nil = _interopRequireDefault(__webpack_require__(4));
+
+var _version = _interopRequireDefault(__webpack_require__(135));
+
+var _validate = _interopRequireDefault(__webpack_require__(634));
+
+var _stringify = _interopRequireDefault(__webpack_require__(960));
+
+var _parse = _interopRequireDefault(__webpack_require__(204));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+/***/ }),
 /* 26 */,
 /* 27 */,
 /* 28 */,
@@ -1473,17 +1581,7 @@ exports.parseURL = __webpack_require__(936).parseURL;
 
 
 /***/ }),
-/* 71 */
-/***/ (function() {
-
-"use strict";
-
-if (typeof Symbol === undefined || !Symbol.asyncIterator) {
-    Symbol.asyncIterator = Symbol.for("Symbol.asyncIterator");
-}
-//# sourceMappingURL=index.js.map
-
-/***/ }),
+/* 71 */,
 /* 72 */,
 /* 73 */,
 /* 74 */,
@@ -2717,7 +2815,77 @@ function regExpEscape (s) {
 
 
 /***/ }),
-/* 94 */,
+/* 94 */
+/***/ (function(__unusedmodule, exports, __webpack_require__) {
+
+"use strict";
+
+/*
+ * Copyright The OpenTelemetry Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.unregisterGlobal = exports.getGlobal = exports.registerGlobal = void 0;
+var platform_1 = __webpack_require__(910);
+var version_1 = __webpack_require__(830);
+var semver_1 = __webpack_require__(987);
+var major = version_1.VERSION.split('.')[0];
+var GLOBAL_OPENTELEMETRY_API_KEY = Symbol.for("opentelemetry.js.api." + major);
+var _global = platform_1._globalThis;
+function registerGlobal(type, instance, diag, allowOverride) {
+    var _a;
+    if (allowOverride === void 0) { allowOverride = false; }
+    var api = (_global[GLOBAL_OPENTELEMETRY_API_KEY] = (_a = _global[GLOBAL_OPENTELEMETRY_API_KEY]) !== null && _a !== void 0 ? _a : {
+        version: version_1.VERSION,
+    });
+    if (!allowOverride && api[type]) {
+        // already registered an API of this type
+        var err = new Error("@opentelemetry/api: Attempted duplicate registration of API: " + type);
+        diag.error(err.stack || err.message);
+        return false;
+    }
+    if (api.version !== version_1.VERSION) {
+        // All registered APIs must be of the same version exactly
+        var err = new Error('@opentelemetry/api: All API registration versions must match');
+        diag.error(err.stack || err.message);
+        return false;
+    }
+    api[type] = instance;
+    diag.debug("@opentelemetry/api: Registered a global for " + type + " v" + version_1.VERSION + ".");
+    return true;
+}
+exports.registerGlobal = registerGlobal;
+function getGlobal(type) {
+    var _a, _b;
+    var globalVersion = (_a = _global[GLOBAL_OPENTELEMETRY_API_KEY]) === null || _a === void 0 ? void 0 : _a.version;
+    if (!globalVersion || !semver_1.isCompatible(globalVersion)) {
+        return;
+    }
+    return (_b = _global[GLOBAL_OPENTELEMETRY_API_KEY]) === null || _b === void 0 ? void 0 : _b[type];
+}
+exports.getGlobal = getGlobal;
+function unregisterGlobal(type, diag) {
+    diag.debug("@opentelemetry/api: Unregistering a global for " + type + " v" + version_1.VERSION + ".");
+    var api = _global[GLOBAL_OPENTELEMETRY_API_KEY];
+    if (api) {
+        delete api[type];
+    }
+}
+exports.unregisterGlobal = unregisterGlobal;
+//# sourceMappingURL=global-utils.js.map
+
+/***/ }),
 /* 95 */
 /***/ (function(__unusedmodule, exports) {
 
@@ -2743,7 +2911,19 @@ Object.defineProperty(exports, "__esModule", { value: true });
 
 /***/ }),
 /* 96 */,
-/* 97 */,
+/* 97 */
+/***/ (function() {
+
+"use strict";
+
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+if (typeof Symbol === undefined || !Symbol.asyncIterator) {
+    Symbol.asyncIterator = Symbol.for("Symbol.asyncIterator");
+}
+//# sourceMappingURL=index.js.map
+
+/***/ }),
 /* 98 */,
 /* 99 */,
 /* 100 */,
@@ -2774,13 +2954,14 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.issueCommand = void 0;
+exports.prepareKeyValueMessage = exports.issueFileCommand = void 0;
 // We use any as a valid input type
 /* eslint-disable @typescript-eslint/no-explicit-any */
 const fs = __importStar(__webpack_require__(747));
 const os = __importStar(__webpack_require__(87));
+const uuid_1 = __webpack_require__(25);
 const utils_1 = __webpack_require__(82);
-function issueCommand(command, message) {
+function issueFileCommand(command, message) {
     const filePath = process.env[`GITHUB_${command}`];
     if (!filePath) {
         throw new Error(`Unable to find environment variable for file command ${command}`);
@@ -2792,7 +2973,22 @@ function issueCommand(command, message) {
         encoding: 'utf8'
     });
 }
-exports.issueCommand = issueCommand;
+exports.issueFileCommand = issueFileCommand;
+function prepareKeyValueMessage(key, value) {
+    const delimiter = `ghadelimiter_${uuid_1.v4()}`;
+    const convertedValue = utils_1.toCommandValue(value);
+    // These should realistically never happen, but just in case someone finds a
+    // way to exploit uuid generation let's not allow keys or values that contain
+    // the delimiter.
+    if (key.includes(delimiter)) {
+        throw new Error(`Unexpected input: name should not contain the delimiter "${delimiter}"`);
+    }
+    if (convertedValue.includes(delimiter)) {
+        throw new Error(`Unexpected input: value should not contain the delimiter "${delimiter}"`);
+    }
+    return `${key}<<${delimiter}${os.EOL}${convertedValue}${os.EOL}${delimiter}`;
+}
+exports.prepareKeyValueMessage = prepareKeyValueMessage;
 //# sourceMappingURL=file-command.js.map
 
 /***/ }),
@@ -3178,8 +3374,8 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const core = __importStar(__webpack_require__(470));
-const http_client_1 = __webpack_require__(539);
-const auth_1 = __webpack_require__(226);
+const http_client_1 = __webpack_require__(425);
+const auth_1 = __webpack_require__(554);
 const crypto = __importStar(__webpack_require__(417));
 const fs = __importStar(__webpack_require__(747));
 const url_1 = __webpack_require__(835);
@@ -3190,10 +3386,7 @@ const options_1 = __webpack_require__(538);
 const requestUtils_1 = __webpack_require__(899);
 const versionSalt = '1.0';
 function getCacheApiUrl(resource) {
-    // Ideally we just use ACTIONS_CACHE_URL
-    const baseUrl = (process.env['ACTIONS_CACHE_URL'] ||
-        process.env['ACTIONS_RUNTIME_URL'] ||
-        '').replace('pipelines', 'artifactcache');
+    const baseUrl = process.env['ACTIONS_CACHE_URL'] || '';
     if (!baseUrl) {
         throw new Error('Cache Service Url not found, unable to restore cache.');
     }
@@ -3271,18 +3464,18 @@ function downloadCache(archiveLocation, archivePath, options) {
 exports.downloadCache = downloadCache;
 // Reserve Cache
 function reserveCache(key, paths, options) {
-    var _a, _b;
     return __awaiter(this, void 0, void 0, function* () {
         const httpClient = createHttpClient();
         const version = getCacheVersion(paths, options === null || options === void 0 ? void 0 : options.compressionMethod);
         const reserveCacheRequest = {
             key,
-            version
+            version,
+            cacheSize: options === null || options === void 0 ? void 0 : options.cacheSize
         };
         const response = yield requestUtils_1.retryTypedResponse('reserveCache', () => __awaiter(this, void 0, void 0, function* () {
             return httpClient.postJson(getCacheApiUrl('caches'), reserveCacheRequest);
         }));
-        return (_b = (_a = response === null || response === void 0 ? void 0 : response.result) === null || _a === void 0 ? void 0 : _a.cacheId) !== null && _b !== void 0 ? _b : -1;
+        return response;
     });
 }
 exports.reserveCache = reserveCache;
@@ -3405,7 +3598,7 @@ exports.DiagAPI = void 0;
 var ComponentLogger_1 = __webpack_require__(362);
 var logLevelLogger_1 = __webpack_require__(673);
 var types_1 = __webpack_require__(545);
-var global_utils_1 = __webpack_require__(525);
+var global_utils_1 = __webpack_require__(94);
 var API_NAME = 'diag';
 /**
  * Singleton object which represents the entry point to the OpenTelemetry internal
@@ -3419,14 +3612,15 @@ var DiagAPI = /** @class */ (function () {
     function DiagAPI() {
         function _logProxy(funcName) {
             return function () {
+                var args = [];
+                for (var _i = 0; _i < arguments.length; _i++) {
+                    args[_i] = arguments[_i];
+                }
                 var logger = global_utils_1.getGlobal('diag');
                 // shortcut if logger not set
                 if (!logger)
                     return;
-                return logger[funcName].apply(logger, 
-                // work around Function.prototype.apply types
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                arguments);
+                return logger[funcName].apply(logger, args);
             };
         }
         // Using self local variable for minification purposes as 'this' cannot be minified
@@ -3560,8 +3754,117 @@ exports.ROOT_CONTEXT = new BaseContext();
 /***/ }),
 /* 133 */,
 /* 134 */,
-/* 135 */,
-/* 136 */,
+/* 135 */
+/***/ (function(__unusedmodule, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var _validate = _interopRequireDefault(__webpack_require__(634));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function version(uuid) {
+  if (!(0, _validate.default)(uuid)) {
+    throw TypeError('Invalid UUID');
+  }
+
+  return parseInt(uuid.substr(14, 1), 16);
+}
+
+var _default = version;
+exports.default = _default;
+
+/***/ }),
+/* 136 */
+/***/ (function(__unusedmodule, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = _default;
+exports.URL = exports.DNS = void 0;
+
+var _stringify = _interopRequireDefault(__webpack_require__(960));
+
+var _parse = _interopRequireDefault(__webpack_require__(204));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function stringToBytes(str) {
+  str = unescape(encodeURIComponent(str)); // UTF8 escape
+
+  const bytes = [];
+
+  for (let i = 0; i < str.length; ++i) {
+    bytes.push(str.charCodeAt(i));
+  }
+
+  return bytes;
+}
+
+const DNS = '6ba7b810-9dad-11d1-80b4-00c04fd430c8';
+exports.DNS = DNS;
+const URL = '6ba7b811-9dad-11d1-80b4-00c04fd430c8';
+exports.URL = URL;
+
+function _default(name, version, hashfunc) {
+  function generateUUID(value, namespace, buf, offset) {
+    if (typeof value === 'string') {
+      value = stringToBytes(value);
+    }
+
+    if (typeof namespace === 'string') {
+      namespace = (0, _parse.default)(namespace);
+    }
+
+    if (namespace.length !== 16) {
+      throw TypeError('Namespace must be array-like (16 iterable integer values, 0-255)');
+    } // Compute hash of namespace and value, Per 4.3
+    // Future: Use spread syntax when supported on all platforms, e.g. `bytes =
+    // hashfunc([...namespace, ... value])`
+
+
+    let bytes = new Uint8Array(16 + value.length);
+    bytes.set(namespace);
+    bytes.set(value, namespace.length);
+    bytes = hashfunc(bytes);
+    bytes[6] = bytes[6] & 0x0f | version;
+    bytes[8] = bytes[8] & 0x3f | 0x80;
+
+    if (buf) {
+      offset = offset || 0;
+
+      for (let i = 0; i < 16; ++i) {
+        buf[offset + i] = bytes[i];
+      }
+
+      return buf;
+    }
+
+    return (0, _stringify.default)(bytes);
+  } // Function#name is not settable on some platforms (#270)
+
+
+  try {
+    generateUUID.name = name; // eslint-disable-next-line no-empty
+  } catch (err) {} // For CommonJS default export support
+
+
+  generateUUID.DNS = DNS;
+  generateUUID.URL = URL;
+  return generateUUID;
+}
+
+/***/ }),
 /* 137 */,
 /* 138 */,
 /* 139 */
@@ -3853,34 +4156,7 @@ exports.debug = debug; // for test
 /* 142 */,
 /* 143 */,
 /* 144 */,
-/* 145 */
-/***/ (function(__unusedmodule, exports) {
-
-"use strict";
-
-/*
- * Copyright The OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      https://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-Object.defineProperty(exports, "__esModule", { value: true });
-exports._globalThis = void 0;
-/** only globals that common to node and browsers are allowed */
-// eslint-disable-next-line node/no-unsupported-features/es-builtins
-exports._globalThis = typeof globalThis === 'object' ? globalThis : global;
-//# sourceMappingURL=globalThis.js.map
-
-/***/ }),
+/* 145 */,
 /* 146 */,
 /* 147 */
 /***/ (function(__unusedmodule, exports) {
@@ -4573,7 +4849,73 @@ exports.default = _default;
 /* 174 */,
 /* 175 */,
 /* 176 */,
-/* 177 */,
+/* 177 */
+/***/ (function(__unusedmodule, exports) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.checkBypass = exports.getProxyUrl = void 0;
+function getProxyUrl(reqUrl) {
+    const usingSsl = reqUrl.protocol === 'https:';
+    if (checkBypass(reqUrl)) {
+        return undefined;
+    }
+    const proxyVar = (() => {
+        if (usingSsl) {
+            return process.env['https_proxy'] || process.env['HTTPS_PROXY'];
+        }
+        else {
+            return process.env['http_proxy'] || process.env['HTTP_PROXY'];
+        }
+    })();
+    if (proxyVar) {
+        return new URL(proxyVar);
+    }
+    else {
+        return undefined;
+    }
+}
+exports.getProxyUrl = getProxyUrl;
+function checkBypass(reqUrl) {
+    if (!reqUrl.hostname) {
+        return false;
+    }
+    const noProxy = process.env['no_proxy'] || process.env['NO_PROXY'] || '';
+    if (!noProxy) {
+        return false;
+    }
+    // Determine the request port
+    let reqPort;
+    if (reqUrl.port) {
+        reqPort = Number(reqUrl.port);
+    }
+    else if (reqUrl.protocol === 'http:') {
+        reqPort = 80;
+    }
+    else if (reqUrl.protocol === 'https:') {
+        reqPort = 443;
+    }
+    // Format the request hostname and hostname with port
+    const upperReqHosts = [reqUrl.hostname.toUpperCase()];
+    if (typeof reqPort === 'number') {
+        upperReqHosts.push(`${upperReqHosts[0]}:${reqPort}`);
+    }
+    // Compare request host against noproxy
+    for (const upperNoProxyItem of noProxy
+        .split(',')
+        .map(x => x.trim().toUpperCase())
+        .filter(x => x)) {
+        if (upperReqHosts.some(x => x === upperNoProxyItem)) {
+            return true;
+        }
+    }
+    return false;
+}
+exports.checkBypass = checkBypass;
+//# sourceMappingURL=proxy.js.map
+
+/***/ }),
 /* 178 */,
 /* 179 */,
 /* 180 */,
@@ -4682,7 +5024,57 @@ exports.default = _default;
 /* 201 */,
 /* 202 */,
 /* 203 */,
-/* 204 */,
+/* 204 */
+/***/ (function(__unusedmodule, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var _validate = _interopRequireDefault(__webpack_require__(634));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function parse(uuid) {
+  if (!(0, _validate.default)(uuid)) {
+    throw TypeError('Invalid UUID');
+  }
+
+  let v;
+  const arr = new Uint8Array(16); // Parse ########-....-....-....-............
+
+  arr[0] = (v = parseInt(uuid.slice(0, 8), 16)) >>> 24;
+  arr[1] = v >>> 16 & 0xff;
+  arr[2] = v >>> 8 & 0xff;
+  arr[3] = v & 0xff; // Parse ........-####-....-....-............
+
+  arr[4] = (v = parseInt(uuid.slice(9, 13), 16)) >>> 8;
+  arr[5] = v & 0xff; // Parse ........-....-####-....-............
+
+  arr[6] = (v = parseInt(uuid.slice(14, 18), 16)) >>> 8;
+  arr[7] = v & 0xff; // Parse ........-....-....-####-............
+
+  arr[8] = (v = parseInt(uuid.slice(19, 23), 16)) >>> 8;
+  arr[9] = v & 0xff; // Parse ........-....-....-....-############
+  // (Use "/" to avoid 32-bit truncation when bit-shifting high-order bytes)
+
+  arr[10] = (v = parseInt(uuid.slice(24, 36), 16)) / 0x10000000000 & 0xff;
+  arr[11] = v / 0x100000000 & 0xff;
+  arr[12] = v >>> 24 & 0xff;
+  arr[13] = v >>> 16 & 0xff;
+  arr[14] = v >>> 8 & 0xff;
+  arr[15] = v & 0xff;
+  return arr;
+}
+
+var _default = parse;
+exports.default = _default;
+
+/***/ }),
 /* 205 */,
 /* 206 */,
 /* 207 */
@@ -4777,71 +5169,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 /* 223 */,
 /* 224 */,
 /* 225 */,
-/* 226 */
-/***/ (function(__unusedmodule, exports) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-class BasicCredentialHandler {
-    constructor(username, password) {
-        this.username = username;
-        this.password = password;
-    }
-    prepareRequest(options) {
-        options.headers['Authorization'] =
-            'Basic ' +
-                Buffer.from(this.username + ':' + this.password).toString('base64');
-    }
-    // This handler cannot handle 401
-    canHandleAuthentication(response) {
-        return false;
-    }
-    handleAuthentication(httpClient, requestInfo, objs) {
-        return null;
-    }
-}
-exports.BasicCredentialHandler = BasicCredentialHandler;
-class BearerCredentialHandler {
-    constructor(token) {
-        this.token = token;
-    }
-    // currently implements pre-authorization
-    // TODO: support preAuth = false where it hooks on 401
-    prepareRequest(options) {
-        options.headers['Authorization'] = 'Bearer ' + this.token;
-    }
-    // This handler cannot handle 401
-    canHandleAuthentication(response) {
-        return false;
-    }
-    handleAuthentication(httpClient, requestInfo, objs) {
-        return null;
-    }
-}
-exports.BearerCredentialHandler = BearerCredentialHandler;
-class PersonalAccessTokenCredentialHandler {
-    constructor(token) {
-        this.token = token;
-    }
-    // currently implements pre-authorization
-    // TODO: support preAuth = false where it hooks on 401
-    prepareRequest(options) {
-        options.headers['Authorization'] =
-            'Basic ' + Buffer.from('PAT:' + this.token).toString('base64');
-    }
-    // This handler cannot handle 401
-    canHandleAuthentication(response) {
-        return false;
-    }
-    handleAuthentication(httpClient, requestInfo, objs) {
-        return null;
-    }
-}
-exports.PersonalAccessTokenCredentialHandler = PersonalAccessTokenCredentialHandler;
-
-
-/***/ }),
+/* 226 */,
 /* 227 */,
 /* 228 */,
 /* 229 */
@@ -5111,17 +5439,22 @@ var DiagConsoleLogger = /** @class */ (function () {
     function DiagConsoleLogger() {
         function _consoleFunc(funcName) {
             return function () {
-                var orgArguments = arguments;
+                var args = [];
+                for (var _i = 0; _i < arguments.length; _i++) {
+                    args[_i] = arguments[_i];
+                }
                 if (console) {
                     // Some environments only expose the console when the F12 developer console is open
+                    // eslint-disable-next-line no-console
                     var theFunc = console[funcName];
                     if (typeof theFunc !== 'function') {
                         // Not all environments support all functions
+                        // eslint-disable-next-line no-console
                         theFunc = console.log;
                     }
                     // One last final check
                     if (typeof theFunc === 'function') {
-                        return theFunc.apply(console, orgArguments);
+                        return theFunc.apply(console, args);
                     }
                 }
             };
@@ -5296,15 +5629,16 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const core = __importStar(__webpack_require__(470));
-const http_client_1 = __webpack_require__(539);
+const http_client_1 = __webpack_require__(425);
 const storage_blob_1 = __webpack_require__(373);
-const buffer = __importStar(__webpack_require__(293));
+const buffer = __importStar(__webpack_require__(407));
 const fs = __importStar(__webpack_require__(747));
 const stream = __importStar(__webpack_require__(794));
 const util = __importStar(__webpack_require__(669));
 const utils = __importStar(__webpack_require__(15));
 const constants_1 = __webpack_require__(931);
 const requestUtils_1 = __webpack_require__(899);
+const abort_controller_1 = __webpack_require__(106);
 /**
  * Pipes the body of a HTTP response to a stream
  *
@@ -5482,20 +5816,30 @@ function downloadCacheStorageSDK(archiveLocation, archivePath, options) {
             //
             // If the file exceeds the buffer maximum length (~1 GB on 32-bit systems and ~2 GB
             // on 64-bit systems), split the download into multiple segments
-            const maxSegmentSize = buffer.constants.MAX_LENGTH;
+            // ~2 GB = 2147483647, beyond this, we start getting out of range error. So, capping it accordingly.
+            const maxSegmentSize = Math.min(2147483647, buffer.constants.MAX_LENGTH);
             const downloadProgress = new DownloadProgress(contentLength);
             const fd = fs.openSync(archivePath, 'w');
             try {
                 downloadProgress.startDisplayTimer();
+                const controller = new abort_controller_1.AbortController();
+                const abortSignal = controller.signal;
                 while (!downloadProgress.isDone()) {
                     const segmentStart = downloadProgress.segmentOffset + downloadProgress.segmentSize;
                     const segmentSize = Math.min(maxSegmentSize, contentLength - segmentStart);
                     downloadProgress.nextSegment(segmentSize);
-                    const result = yield client.downloadToBuffer(segmentStart, segmentSize, {
+                    const result = yield promiseWithTimeout(options.segmentTimeoutInMs || 3600000, client.downloadToBuffer(segmentStart, segmentSize, {
+                        abortSignal,
                         concurrency: options.downloadConcurrency,
                         onProgress: downloadProgress.onProgress()
-                    });
-                    fs.writeFileSync(fd, result);
+                    }));
+                    if (result === 'timeout') {
+                        controller.abort();
+                        throw new Error('Aborting cache download as the download time exceeded the timeout.');
+                    }
+                    else if (Buffer.isBuffer(result)) {
+                        fs.writeFileSync(fd, result);
+                    }
                 }
             }
             finally {
@@ -5506,6 +5850,16 @@ function downloadCacheStorageSDK(archiveLocation, archivePath, options) {
     });
 }
 exports.downloadCacheStorageSDK = downloadCacheStorageSDK;
+const promiseWithTimeout = (timeoutMs, promise) => __awaiter(void 0, void 0, void 0, function* () {
+    let timeoutHandle;
+    const timeoutPromise = new Promise(resolve => {
+        timeoutHandle = setTimeout(() => resolve('timeout'), timeoutMs);
+    });
+    return Promise.race([promise, timeoutPromise]).then(result => {
+        clearTimeout(timeoutHandle);
+        return result;
+    });
+});
 //# sourceMappingURL=downloadUtils.js.map
 
 /***/ }),
@@ -8437,9 +8791,46 @@ exports.create = create;
 /* 291 */,
 /* 292 */,
 /* 293 */
-/***/ (function(module) {
+/***/ (function(__unusedmodule, exports, __webpack_require__) {
 
-module.exports = require("buffer");
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var _rng = _interopRequireDefault(__webpack_require__(506));
+
+var _stringify = _interopRequireDefault(__webpack_require__(960));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function v4(options, buf, offset) {
+  options = options || {};
+
+  const rnds = options.random || (options.rng || _rng.default)(); // Per 4.4, set bits for version and `clock_seq_hi_and_reserved`
+
+
+  rnds[6] = rnds[6] & 0x0f | 0x40;
+  rnds[8] = rnds[8] & 0x3f | 0x80; // Copy bytes to buffer, if provided
+
+  if (buf) {
+    offset = offset || 0;
+
+    for (let i = 0; i < 16; ++i) {
+      buf[offset + i] = rnds[i];
+    }
+
+    return buf;
+  }
+
+  return (0, _stringify.default)(rnds);
+}
+
+var _default = v4;
+exports.default = _default;
 
 /***/ }),
 /* 294 */,
@@ -8947,7 +9338,7 @@ function expand(str, isTop) {
 
   XMLDocumentCB = __webpack_require__(768);
 
-  XMLStringWriter = __webpack_require__(347);
+  XMLStringWriter = __webpack_require__(750);
 
   XMLStreamWriter = __webpack_require__(458);
 
@@ -9042,7 +9433,35 @@ var MatchKind;
 
 /***/ }),
 /* 328 */,
-/* 329 */,
+/* 329 */
+/***/ (function(__unusedmodule, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var _crypto = _interopRequireDefault(__webpack_require__(417));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function sha1(bytes) {
+  if (Array.isArray(bytes)) {
+    bytes = Buffer.from(bytes);
+  } else if (typeof bytes === 'string') {
+    bytes = Buffer.from(bytes, 'utf8');
+  }
+
+  return _crypto.default.createHash('sha1').update(bytes).digest();
+}
+
+var _default = sha1;
+exports.default = _default;
+
+/***/ }),
 /* 330 */,
 /* 331 */,
 /* 332 */
@@ -9395,47 +9814,7 @@ var SamplingDecision;
 /* 344 */,
 /* 345 */,
 /* 346 */,
-/* 347 */
-/***/ (function(module, __unusedexports, __webpack_require__) {
-
-// Generated by CoffeeScript 1.12.7
-(function() {
-  var XMLStringWriter, XMLWriterBase,
-    extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
-    hasProp = {}.hasOwnProperty;
-
-  XMLWriterBase = __webpack_require__(423);
-
-  module.exports = XMLStringWriter = (function(superClass) {
-    extend(XMLStringWriter, superClass);
-
-    function XMLStringWriter(options) {
-      XMLStringWriter.__super__.constructor.call(this, options);
-    }
-
-    XMLStringWriter.prototype.document = function(doc, options) {
-      var child, i, len, r, ref;
-      options = this.filterOptions(options);
-      r = '';
-      ref = doc.children;
-      for (i = 0, len = ref.length; i < len; i++) {
-        child = ref[i];
-        r += this.writeChildNode(child, options, 0);
-      }
-      if (options.pretty && r.slice(-options.newline.length) === options.newline) {
-        r = r.slice(0, -options.newline.length);
-      }
-      return r;
-    };
-
-    return XMLStringWriter;
-
-  })(XMLWriterBase);
-
-}).call(this);
-
-
-/***/ }),
+/* 347 */,
 /* 348 */
 /***/ (function(__unusedmodule, exports) {
 
@@ -9583,7 +9962,7 @@ module.exports = require("assert");
  */
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.DiagComponentLogger = void 0;
-var global_utils_1 = __webpack_require__(525);
+var global_utils_1 = __webpack_require__(94);
 /**
  * Component Logger which is meant to be used as part of any component which
  * will add automatically additional namespace in front of the log message.
@@ -9678,6 +10057,29 @@ var coreLro = __webpack_require__(889);
 var events = __webpack_require__(614);
 var fs = __webpack_require__(747);
 var util = __webpack_require__(669);
+
+function _interopNamespace(e) {
+    if (e && e.__esModule) return e;
+    var n = Object.create(null);
+    if (e) {
+        Object.keys(e).forEach(function (k) {
+            if (k !== 'default') {
+                var d = Object.getOwnPropertyDescriptor(e, k);
+                Object.defineProperty(n, k, d.get ? d : {
+                    enumerable: true,
+                    get: function () { return e[k]; }
+                });
+            }
+        });
+    }
+    n["default"] = e;
+    return Object.freeze(n);
+}
+
+var coreHttp__namespace = /*#__PURE__*/_interopNamespace(coreHttp);
+var os__namespace = /*#__PURE__*/_interopNamespace(os);
+var fs__namespace = /*#__PURE__*/_interopNamespace(fs);
+var util__namespace = /*#__PURE__*/_interopNamespace(util);
 
 /*
  * Copyright (c) Microsoft Corporation.
@@ -10633,10 +11035,10 @@ const BlobItemInternal = {
         modelProperties: {
             name: {
                 serializedName: "Name",
-                required: true,
                 xmlName: "Name",
                 type: {
-                    name: "String"
+                    name: "Composite",
+                    className: "BlobName"
                 }
             },
             deleted: {
@@ -10706,6 +11108,30 @@ const BlobItemInternal = {
                 xmlName: "HasVersionsOnly",
                 type: {
                     name: "Boolean"
+                }
+            }
+        }
+    }
+};
+const BlobName = {
+    serializedName: "BlobName",
+    type: {
+        name: "Composite",
+        className: "BlobName",
+        modelProperties: {
+            encoded: {
+                serializedName: "Encoded",
+                xmlName: "Encoded",
+                xmlIsAttribute: true,
+                type: {
+                    name: "Boolean"
+                }
+            },
+            content: {
+                serializedName: "content",
+                xmlName: "content",
+                type: {
+                    name: "String"
                 }
             }
         }
@@ -11154,10 +11580,10 @@ const BlobPrefix = {
         modelProperties: {
             name: {
                 serializedName: "Name",
-                required: true,
                 xmlName: "Name",
                 type: {
-                    name: "String"
+                    name: "Composite",
+                    className: "BlobName"
                 }
             }
         }
@@ -12769,6 +13195,59 @@ const ContainerSubmitBatchExceptionHeaders = {
     type: {
         name: "Composite",
         className: "ContainerSubmitBatchExceptionHeaders",
+        modelProperties: {
+            errorCode: {
+                serializedName: "x-ms-error-code",
+                xmlName: "x-ms-error-code",
+                type: {
+                    name: "String"
+                }
+            }
+        }
+    }
+};
+const ContainerFilterBlobsHeaders = {
+    serializedName: "Container_filterBlobsHeaders",
+    type: {
+        name: "Composite",
+        className: "ContainerFilterBlobsHeaders",
+        modelProperties: {
+            clientRequestId: {
+                serializedName: "x-ms-client-request-id",
+                xmlName: "x-ms-client-request-id",
+                type: {
+                    name: "String"
+                }
+            },
+            requestId: {
+                serializedName: "x-ms-request-id",
+                xmlName: "x-ms-request-id",
+                type: {
+                    name: "String"
+                }
+            },
+            version: {
+                serializedName: "x-ms-version",
+                xmlName: "x-ms-version",
+                type: {
+                    name: "String"
+                }
+            },
+            date: {
+                serializedName: "date",
+                xmlName: "date",
+                type: {
+                    name: "DateTimeRfc1123"
+                }
+            }
+        }
+    }
+};
+const ContainerFilterBlobsExceptionHeaders = {
+    serializedName: "Container_filterBlobsExceptionHeaders",
+    type: {
+        name: "Composite",
+        className: "ContainerFilterBlobsExceptionHeaders",
         modelProperties: {
             errorCode: {
                 serializedName: "x-ms-error-code",
@@ -15288,6 +15767,13 @@ const BlobCopyFromURLHeaders = {
                     name: "ByteArray"
                 }
             },
+            encryptionScope: {
+                serializedName: "x-ms-encryption-scope",
+                xmlName: "x-ms-encryption-scope",
+                type: {
+                    name: "String"
+                }
+            },
             errorCode: {
                 serializedName: "x-ms-error-code",
                 xmlName: "x-ms-error-code",
@@ -17805,6 +18291,7 @@ var Mappers = /*#__PURE__*/Object.freeze({
     ListBlobsFlatSegmentResponse: ListBlobsFlatSegmentResponse,
     BlobFlatListSegment: BlobFlatListSegment,
     BlobItemInternal: BlobItemInternal,
+    BlobName: BlobName,
     BlobPropertiesInternal: BlobPropertiesInternal,
     ListBlobsHierarchySegmentResponse: ListBlobsHierarchySegmentResponse,
     BlobHierarchyListSegment: BlobHierarchyListSegment,
@@ -17856,6 +18343,8 @@ var Mappers = /*#__PURE__*/Object.freeze({
     ContainerRenameExceptionHeaders: ContainerRenameExceptionHeaders,
     ContainerSubmitBatchHeaders: ContainerSubmitBatchHeaders,
     ContainerSubmitBatchExceptionHeaders: ContainerSubmitBatchExceptionHeaders,
+    ContainerFilterBlobsHeaders: ContainerFilterBlobsHeaders,
+    ContainerFilterBlobsExceptionHeaders: ContainerFilterBlobsExceptionHeaders,
     ContainerAcquireLeaseHeaders: ContainerAcquireLeaseHeaders,
     ContainerAcquireLeaseExceptionHeaders: ContainerAcquireLeaseExceptionHeaders,
     ContainerReleaseLeaseHeaders: ContainerReleaseLeaseHeaders,
@@ -18043,7 +18532,7 @@ const timeoutInSeconds = {
 const version = {
     parameterPath: "version",
     mapper: {
-        defaultValue: "2020-10-02",
+        defaultValue: "2021-04-10",
         isConstant: true,
         serializedName: "x-ms-version",
         type: {
@@ -18138,7 +18627,7 @@ const include = {
             element: {
                 type: {
                     name: "Enum",
-                    allowedValues: ["metadata", "deleted"]
+                    allowedValues: ["metadata", "deleted", "system"]
                 }
             }
         }
@@ -18660,11 +19149,10 @@ const encryptionKeySha256 = {
     }
 };
 const encryptionAlgorithm = {
-    parameterPath: ["options", "encryptionAlgorithm"],
+    parameterPath: ["options", "cpkInfo", "encryptionAlgorithm"],
     mapper: {
-        defaultValue: "AES256",
-        isConstant: true,
         serializedName: "x-ms-encryption-algorithm",
+        xmlName: "x-ms-encryption-algorithm",
         type: {
             name: "String"
         }
@@ -19581,7 +20069,7 @@ class Service {
     setProperties(blobServiceProperties, options) {
         const operationArguments = {
             blobServiceProperties,
-            options: coreHttp.operationOptionsToRequestOptionsBase(options || {})
+            options: coreHttp__namespace.operationOptionsToRequestOptionsBase(options || {})
         };
         return this.client.sendOperationRequest(operationArguments, setPropertiesOperationSpec);
     }
@@ -19592,9 +20080,9 @@ class Service {
      */
     getProperties(options) {
         const operationArguments = {
-            options: coreHttp.operationOptionsToRequestOptionsBase(options || {})
+            options: coreHttp__namespace.operationOptionsToRequestOptionsBase(options || {})
         };
-        return this.client.sendOperationRequest(operationArguments, getPropertiesOperationSpec);
+        return this.client.sendOperationRequest(operationArguments, getPropertiesOperationSpec$2);
     }
     /**
      * Retrieves statistics related to replication for the Blob service. It is only available on the
@@ -19604,7 +20092,7 @@ class Service {
      */
     getStatistics(options) {
         const operationArguments = {
-            options: coreHttp.operationOptionsToRequestOptionsBase(options || {})
+            options: coreHttp__namespace.operationOptionsToRequestOptionsBase(options || {})
         };
         return this.client.sendOperationRequest(operationArguments, getStatisticsOperationSpec);
     }
@@ -19614,7 +20102,7 @@ class Service {
      */
     listContainersSegment(options) {
         const operationArguments = {
-            options: coreHttp.operationOptionsToRequestOptionsBase(options || {})
+            options: coreHttp__namespace.operationOptionsToRequestOptionsBase(options || {})
         };
         return this.client.sendOperationRequest(operationArguments, listContainersSegmentOperationSpec);
     }
@@ -19627,7 +20115,7 @@ class Service {
     getUserDelegationKey(keyInfo, options) {
         const operationArguments = {
             keyInfo,
-            options: coreHttp.operationOptionsToRequestOptionsBase(options || {})
+            options: coreHttp__namespace.operationOptionsToRequestOptionsBase(options || {})
         };
         return this.client.sendOperationRequest(operationArguments, getUserDelegationKeyOperationSpec);
     }
@@ -19637,9 +20125,9 @@ class Service {
      */
     getAccountInfo(options) {
         const operationArguments = {
-            options: coreHttp.operationOptionsToRequestOptionsBase(options || {})
+            options: coreHttp__namespace.operationOptionsToRequestOptionsBase(options || {})
         };
-        return this.client.sendOperationRequest(operationArguments, getAccountInfoOperationSpec);
+        return this.client.sendOperationRequest(operationArguments, getAccountInfoOperationSpec$2);
     }
     /**
      * The Batch operation allows multiple API calls to be embedded into a single HTTP request.
@@ -19654,9 +20142,9 @@ class Service {
             contentLength,
             multipartContentType,
             body,
-            options: coreHttp.operationOptionsToRequestOptionsBase(options || {})
+            options: coreHttp__namespace.operationOptionsToRequestOptionsBase(options || {})
         };
-        return this.client.sendOperationRequest(operationArguments, submitBatchOperationSpec);
+        return this.client.sendOperationRequest(operationArguments, submitBatchOperationSpec$1);
     }
     /**
      * The Filter Blobs operation enables callers to list blobs across all containers whose tags match a
@@ -19666,13 +20154,13 @@ class Service {
      */
     filterBlobs(options) {
         const operationArguments = {
-            options: coreHttp.operationOptionsToRequestOptionsBase(options || {})
+            options: coreHttp__namespace.operationOptionsToRequestOptionsBase(options || {})
         };
-        return this.client.sendOperationRequest(operationArguments, filterBlobsOperationSpec);
+        return this.client.sendOperationRequest(operationArguments, filterBlobsOperationSpec$1);
     }
 }
 // Operation Specifications
-const xmlSerializer = new coreHttp.Serializer(Mappers, /* isXml */ true);
+const xmlSerializer$5 = new coreHttp__namespace.Serializer(Mappers, /* isXml */ true);
 const setPropertiesOperationSpec = {
     path: "/",
     httpMethod: "PUT",
@@ -19701,9 +20189,9 @@ const setPropertiesOperationSpec = {
     isXML: true,
     contentType: "application/xml; charset=utf-8",
     mediaType: "xml",
-    serializer: xmlSerializer
+    serializer: xmlSerializer$5
 };
-const getPropertiesOperationSpec = {
+const getPropertiesOperationSpec$2 = {
     path: "/",
     httpMethod: "GET",
     responses: {
@@ -19728,7 +20216,7 @@ const getPropertiesOperationSpec = {
         accept1
     ],
     isXML: true,
-    serializer: xmlSerializer
+    serializer: xmlSerializer$5
 };
 const getStatisticsOperationSpec = {
     path: "/",
@@ -19755,7 +20243,7 @@ const getStatisticsOperationSpec = {
         accept1
     ],
     isXML: true,
-    serializer: xmlSerializer
+    serializer: xmlSerializer$5
 };
 const listContainersSegmentOperationSpec = {
     path: "/",
@@ -19785,7 +20273,7 @@ const listContainersSegmentOperationSpec = {
         accept1
     ],
     isXML: true,
-    serializer: xmlSerializer
+    serializer: xmlSerializer$5
 };
 const getUserDelegationKeyOperationSpec = {
     path: "/",
@@ -19816,9 +20304,9 @@ const getUserDelegationKeyOperationSpec = {
     isXML: true,
     contentType: "application/xml; charset=utf-8",
     mediaType: "xml",
-    serializer: xmlSerializer
+    serializer: xmlSerializer$5
 };
-const getAccountInfoOperationSpec = {
+const getAccountInfoOperationSpec$2 = {
     path: "/",
     httpMethod: "GET",
     responses: {
@@ -19834,9 +20322,9 @@ const getAccountInfoOperationSpec = {
     urlParameters: [url],
     headerParameters: [version, accept1],
     isXML: true,
-    serializer: xmlSerializer
+    serializer: xmlSerializer$5
 };
-const submitBatchOperationSpec = {
+const submitBatchOperationSpec$1 = {
     path: "/",
     httpMethod: "POST",
     responses: {
@@ -19866,9 +20354,9 @@ const submitBatchOperationSpec = {
     isXML: true,
     contentType: "application/xml; charset=utf-8",
     mediaType: "xml",
-    serializer: xmlSerializer
+    serializer: xmlSerializer$5
 };
-const filterBlobsOperationSpec = {
+const filterBlobsOperationSpec$1 = {
     path: "/",
     httpMethod: "GET",
     responses: {
@@ -19895,7 +20383,7 @@ const filterBlobsOperationSpec = {
         accept1
     ],
     isXML: true,
-    serializer: xmlSerializer
+    serializer: xmlSerializer$5
 };
 
 /*
@@ -19921,9 +20409,9 @@ class Container {
      */
     create(options) {
         const operationArguments = {
-            options: coreHttp.operationOptionsToRequestOptionsBase(options || {})
+            options: coreHttp__namespace.operationOptionsToRequestOptionsBase(options || {})
         };
-        return this.client.sendOperationRequest(operationArguments, createOperationSpec);
+        return this.client.sendOperationRequest(operationArguments, createOperationSpec$2);
     }
     /**
      * returns all user-defined metadata and system properties for the specified container. The data
@@ -19932,7 +20420,7 @@ class Container {
      */
     getProperties(options) {
         const operationArguments = {
-            options: coreHttp.operationOptionsToRequestOptionsBase(options || {})
+            options: coreHttp__namespace.operationOptionsToRequestOptionsBase(options || {})
         };
         return this.client.sendOperationRequest(operationArguments, getPropertiesOperationSpec$1);
     }
@@ -19943,9 +20431,9 @@ class Container {
      */
     delete(options) {
         const operationArguments = {
-            options: coreHttp.operationOptionsToRequestOptionsBase(options || {})
+            options: coreHttp__namespace.operationOptionsToRequestOptionsBase(options || {})
         };
-        return this.client.sendOperationRequest(operationArguments, deleteOperationSpec);
+        return this.client.sendOperationRequest(operationArguments, deleteOperationSpec$1);
     }
     /**
      * operation sets one or more user-defined name-value pairs for the specified container.
@@ -19953,9 +20441,9 @@ class Container {
      */
     setMetadata(options) {
         const operationArguments = {
-            options: coreHttp.operationOptionsToRequestOptionsBase(options || {})
+            options: coreHttp__namespace.operationOptionsToRequestOptionsBase(options || {})
         };
-        return this.client.sendOperationRequest(operationArguments, setMetadataOperationSpec);
+        return this.client.sendOperationRequest(operationArguments, setMetadataOperationSpec$1);
     }
     /**
      * gets the permissions for the specified container. The permissions indicate whether container data
@@ -19964,7 +20452,7 @@ class Container {
      */
     getAccessPolicy(options) {
         const operationArguments = {
-            options: coreHttp.operationOptionsToRequestOptionsBase(options || {})
+            options: coreHttp__namespace.operationOptionsToRequestOptionsBase(options || {})
         };
         return this.client.sendOperationRequest(operationArguments, getAccessPolicyOperationSpec);
     }
@@ -19975,7 +20463,7 @@ class Container {
      */
     setAccessPolicy(options) {
         const operationArguments = {
-            options: coreHttp.operationOptionsToRequestOptionsBase(options || {})
+            options: coreHttp__namespace.operationOptionsToRequestOptionsBase(options || {})
         };
         return this.client.sendOperationRequest(operationArguments, setAccessPolicyOperationSpec);
     }
@@ -19985,7 +20473,7 @@ class Container {
      */
     restore(options) {
         const operationArguments = {
-            options: coreHttp.operationOptionsToRequestOptionsBase(options || {})
+            options: coreHttp__namespace.operationOptionsToRequestOptionsBase(options || {})
         };
         return this.client.sendOperationRequest(operationArguments, restoreOperationSpec);
     }
@@ -19997,7 +20485,7 @@ class Container {
     rename(sourceContainerName, options) {
         const operationArguments = {
             sourceContainerName,
-            options: coreHttp.operationOptionsToRequestOptionsBase(options || {})
+            options: coreHttp__namespace.operationOptionsToRequestOptionsBase(options || {})
         };
         return this.client.sendOperationRequest(operationArguments, renameOperationSpec);
     }
@@ -20014,9 +20502,20 @@ class Container {
             contentLength,
             multipartContentType,
             body,
-            options: coreHttp.operationOptionsToRequestOptionsBase(options || {})
+            options: coreHttp__namespace.operationOptionsToRequestOptionsBase(options || {})
         };
-        return this.client.sendOperationRequest(operationArguments, submitBatchOperationSpec$1);
+        return this.client.sendOperationRequest(operationArguments, submitBatchOperationSpec);
+    }
+    /**
+     * The Filter Blobs operation enables callers to list blobs in a container whose tags match a given
+     * search expression.  Filter blobs searches within the given container.
+     * @param options The options parameters.
+     */
+    filterBlobs(options) {
+        const operationArguments = {
+            options: coreHttp__namespace.operationOptionsToRequestOptionsBase(options || {})
+        };
+        return this.client.sendOperationRequest(operationArguments, filterBlobsOperationSpec);
     }
     /**
      * [Update] establishes and manages a lock on a container for delete operations. The lock duration can
@@ -20025,9 +20524,9 @@ class Container {
      */
     acquireLease(options) {
         const operationArguments = {
-            options: coreHttp.operationOptionsToRequestOptionsBase(options || {})
+            options: coreHttp__namespace.operationOptionsToRequestOptionsBase(options || {})
         };
-        return this.client.sendOperationRequest(operationArguments, acquireLeaseOperationSpec);
+        return this.client.sendOperationRequest(operationArguments, acquireLeaseOperationSpec$1);
     }
     /**
      * [Update] establishes and manages a lock on a container for delete operations. The lock duration can
@@ -20038,9 +20537,9 @@ class Container {
     releaseLease(leaseId, options) {
         const operationArguments = {
             leaseId,
-            options: coreHttp.operationOptionsToRequestOptionsBase(options || {})
+            options: coreHttp__namespace.operationOptionsToRequestOptionsBase(options || {})
         };
-        return this.client.sendOperationRequest(operationArguments, releaseLeaseOperationSpec);
+        return this.client.sendOperationRequest(operationArguments, releaseLeaseOperationSpec$1);
     }
     /**
      * [Update] establishes and manages a lock on a container for delete operations. The lock duration can
@@ -20051,9 +20550,9 @@ class Container {
     renewLease(leaseId, options) {
         const operationArguments = {
             leaseId,
-            options: coreHttp.operationOptionsToRequestOptionsBase(options || {})
+            options: coreHttp__namespace.operationOptionsToRequestOptionsBase(options || {})
         };
-        return this.client.sendOperationRequest(operationArguments, renewLeaseOperationSpec);
+        return this.client.sendOperationRequest(operationArguments, renewLeaseOperationSpec$1);
     }
     /**
      * [Update] establishes and manages a lock on a container for delete operations. The lock duration can
@@ -20062,9 +20561,9 @@ class Container {
      */
     breakLease(options) {
         const operationArguments = {
-            options: coreHttp.operationOptionsToRequestOptionsBase(options || {})
+            options: coreHttp__namespace.operationOptionsToRequestOptionsBase(options || {})
         };
-        return this.client.sendOperationRequest(operationArguments, breakLeaseOperationSpec);
+        return this.client.sendOperationRequest(operationArguments, breakLeaseOperationSpec$1);
     }
     /**
      * [Update] establishes and manages a lock on a container for delete operations. The lock duration can
@@ -20079,9 +20578,9 @@ class Container {
         const operationArguments = {
             leaseId,
             proposedLeaseId,
-            options: coreHttp.operationOptionsToRequestOptionsBase(options || {})
+            options: coreHttp__namespace.operationOptionsToRequestOptionsBase(options || {})
         };
-        return this.client.sendOperationRequest(operationArguments, changeLeaseOperationSpec);
+        return this.client.sendOperationRequest(operationArguments, changeLeaseOperationSpec$1);
     }
     /**
      * [Update] The List Blobs operation returns a list of the blobs under the specified container
@@ -20089,7 +20588,7 @@ class Container {
      */
     listBlobFlatSegment(options) {
         const operationArguments = {
-            options: coreHttp.operationOptionsToRequestOptionsBase(options || {})
+            options: coreHttp__namespace.operationOptionsToRequestOptionsBase(options || {})
         };
         return this.client.sendOperationRequest(operationArguments, listBlobFlatSegmentOperationSpec);
     }
@@ -20104,7 +20603,7 @@ class Container {
     listBlobHierarchySegment(delimiter, options) {
         const operationArguments = {
             delimiter,
-            options: coreHttp.operationOptionsToRequestOptionsBase(options || {})
+            options: coreHttp__namespace.operationOptionsToRequestOptionsBase(options || {})
         };
         return this.client.sendOperationRequest(operationArguments, listBlobHierarchySegmentOperationSpec);
     }
@@ -20114,14 +20613,14 @@ class Container {
      */
     getAccountInfo(options) {
         const operationArguments = {
-            options: coreHttp.operationOptionsToRequestOptionsBase(options || {})
+            options: coreHttp__namespace.operationOptionsToRequestOptionsBase(options || {})
         };
         return this.client.sendOperationRequest(operationArguments, getAccountInfoOperationSpec$1);
     }
 }
 // Operation Specifications
-const xmlSerializer$1 = new coreHttp.Serializer(Mappers, /* isXml */ true);
-const createOperationSpec = {
+const xmlSerializer$4 = new coreHttp__namespace.Serializer(Mappers, /* isXml */ true);
+const createOperationSpec$2 = {
     path: "/{containerName}",
     httpMethod: "PUT",
     responses: {
@@ -20145,7 +20644,7 @@ const createOperationSpec = {
         preventEncryptionScopeOverride
     ],
     isXML: true,
-    serializer: xmlSerializer$1
+    serializer: xmlSerializer$4
 };
 const getPropertiesOperationSpec$1 = {
     path: "/{containerName}",
@@ -20168,9 +20667,9 @@ const getPropertiesOperationSpec$1 = {
         leaseId
     ],
     isXML: true,
-    serializer: xmlSerializer$1
+    serializer: xmlSerializer$4
 };
-const deleteOperationSpec = {
+const deleteOperationSpec$1 = {
     path: "/{containerName}",
     httpMethod: "DELETE",
     responses: {
@@ -20193,9 +20692,9 @@ const deleteOperationSpec = {
         ifUnmodifiedSince
     ],
     isXML: true,
-    serializer: xmlSerializer$1
+    serializer: xmlSerializer$4
 };
-const setMetadataOperationSpec = {
+const setMetadataOperationSpec$1 = {
     path: "/{containerName}",
     httpMethod: "PUT",
     responses: {
@@ -20222,7 +20721,7 @@ const setMetadataOperationSpec = {
         ifModifiedSince
     ],
     isXML: true,
-    serializer: xmlSerializer$1
+    serializer: xmlSerializer$4
 };
 const getAccessPolicyOperationSpec = {
     path: "/{containerName}",
@@ -20261,7 +20760,7 @@ const getAccessPolicyOperationSpec = {
         leaseId
     ],
     isXML: true,
-    serializer: xmlSerializer$1
+    serializer: xmlSerializer$4
 };
 const setAccessPolicyOperationSpec = {
     path: "/{containerName}",
@@ -20295,7 +20794,7 @@ const setAccessPolicyOperationSpec = {
     isXML: true,
     contentType: "application/xml; charset=utf-8",
     mediaType: "xml",
-    serializer: xmlSerializer$1
+    serializer: xmlSerializer$4
 };
 const restoreOperationSpec = {
     path: "/{containerName}",
@@ -20323,7 +20822,7 @@ const restoreOperationSpec = {
         deletedContainerVersion
     ],
     isXML: true,
-    serializer: xmlSerializer$1
+    serializer: xmlSerializer$4
 };
 const renameOperationSpec = {
     path: "/{containerName}",
@@ -20351,9 +20850,9 @@ const renameOperationSpec = {
         sourceLeaseId
     ],
     isXML: true,
-    serializer: xmlSerializer$1
+    serializer: xmlSerializer$4
 };
-const submitBatchOperationSpec$1 = {
+const submitBatchOperationSpec = {
     path: "/{containerName}",
     httpMethod: "POST",
     responses: {
@@ -20387,9 +20886,39 @@ const submitBatchOperationSpec$1 = {
     isXML: true,
     contentType: "application/xml; charset=utf-8",
     mediaType: "xml",
-    serializer: xmlSerializer$1
+    serializer: xmlSerializer$4
 };
-const acquireLeaseOperationSpec = {
+const filterBlobsOperationSpec = {
+    path: "/{containerName}",
+    httpMethod: "GET",
+    responses: {
+        200: {
+            bodyMapper: FilterBlobSegment,
+            headersMapper: ContainerFilterBlobsHeaders
+        },
+        default: {
+            bodyMapper: StorageError,
+            headersMapper: ContainerFilterBlobsExceptionHeaders
+        }
+    },
+    queryParameters: [
+        timeoutInSeconds,
+        marker,
+        maxPageSize,
+        comp5,
+        where,
+        restype2
+    ],
+    urlParameters: [url],
+    headerParameters: [
+        version,
+        requestId,
+        accept1
+    ],
+    isXML: true,
+    serializer: xmlSerializer$4
+};
+const acquireLeaseOperationSpec$1 = {
     path: "/{containerName}",
     httpMethod: "PUT",
     responses: {
@@ -20418,9 +20947,9 @@ const acquireLeaseOperationSpec = {
         proposedLeaseId
     ],
     isXML: true,
-    serializer: xmlSerializer$1
+    serializer: xmlSerializer$4
 };
-const releaseLeaseOperationSpec = {
+const releaseLeaseOperationSpec$1 = {
     path: "/{containerName}",
     httpMethod: "PUT",
     responses: {
@@ -20448,9 +20977,9 @@ const releaseLeaseOperationSpec = {
         leaseId1
     ],
     isXML: true,
-    serializer: xmlSerializer$1
+    serializer: xmlSerializer$4
 };
-const renewLeaseOperationSpec = {
+const renewLeaseOperationSpec$1 = {
     path: "/{containerName}",
     httpMethod: "PUT",
     responses: {
@@ -20478,9 +21007,9 @@ const renewLeaseOperationSpec = {
         action2
     ],
     isXML: true,
-    serializer: xmlSerializer$1
+    serializer: xmlSerializer$4
 };
-const breakLeaseOperationSpec = {
+const breakLeaseOperationSpec$1 = {
     path: "/{containerName}",
     httpMethod: "PUT",
     responses: {
@@ -20508,9 +21037,9 @@ const breakLeaseOperationSpec = {
         breakPeriod
     ],
     isXML: true,
-    serializer: xmlSerializer$1
+    serializer: xmlSerializer$4
 };
-const changeLeaseOperationSpec = {
+const changeLeaseOperationSpec$1 = {
     path: "/{containerName}",
     httpMethod: "PUT",
     responses: {
@@ -20539,7 +21068,7 @@ const changeLeaseOperationSpec = {
         proposedLeaseId1
     ],
     isXML: true,
-    serializer: xmlSerializer$1
+    serializer: xmlSerializer$4
 };
 const listBlobFlatSegmentOperationSpec = {
     path: "/{containerName}",
@@ -20570,7 +21099,7 @@ const listBlobFlatSegmentOperationSpec = {
         accept1
     ],
     isXML: true,
-    serializer: xmlSerializer$1
+    serializer: xmlSerializer$4
 };
 const listBlobHierarchySegmentOperationSpec = {
     path: "/{containerName}",
@@ -20602,7 +21131,7 @@ const listBlobHierarchySegmentOperationSpec = {
         accept1
     ],
     isXML: true,
-    serializer: xmlSerializer$1
+    serializer: xmlSerializer$4
 };
 const getAccountInfoOperationSpec$1 = {
     path: "/{containerName}",
@@ -20620,7 +21149,7 @@ const getAccountInfoOperationSpec$1 = {
     urlParameters: [url],
     headerParameters: [version, accept1],
     isXML: true,
-    serializer: xmlSerializer$1
+    serializer: xmlSerializer$4
 };
 
 /*
@@ -20646,7 +21175,7 @@ class Blob$1 {
      */
     download(options) {
         const operationArguments = {
-            options: coreHttp.operationOptionsToRequestOptionsBase(options || {})
+            options: coreHttp__namespace.operationOptionsToRequestOptionsBase(options || {})
         };
         return this.client.sendOperationRequest(operationArguments, downloadOperationSpec);
     }
@@ -20657,9 +21186,9 @@ class Blob$1 {
      */
     getProperties(options) {
         const operationArguments = {
-            options: coreHttp.operationOptionsToRequestOptionsBase(options || {})
+            options: coreHttp__namespace.operationOptionsToRequestOptionsBase(options || {})
         };
-        return this.client.sendOperationRequest(operationArguments, getPropertiesOperationSpec$2);
+        return this.client.sendOperationRequest(operationArguments, getPropertiesOperationSpec);
     }
     /**
      * If the storage account's soft delete feature is disabled then, when a blob is deleted, it is
@@ -20678,9 +21207,9 @@ class Blob$1 {
      */
     delete(options) {
         const operationArguments = {
-            options: coreHttp.operationOptionsToRequestOptionsBase(options || {})
+            options: coreHttp__namespace.operationOptionsToRequestOptionsBase(options || {})
         };
-        return this.client.sendOperationRequest(operationArguments, deleteOperationSpec$1);
+        return this.client.sendOperationRequest(operationArguments, deleteOperationSpec);
     }
     /**
      * Undelete a blob that was previously soft deleted
@@ -20688,7 +21217,7 @@ class Blob$1 {
      */
     undelete(options) {
         const operationArguments = {
-            options: coreHttp.operationOptionsToRequestOptionsBase(options || {})
+            options: coreHttp__namespace.operationOptionsToRequestOptionsBase(options || {})
         };
         return this.client.sendOperationRequest(operationArguments, undeleteOperationSpec);
     }
@@ -20700,7 +21229,7 @@ class Blob$1 {
     setExpiry(expiryOptions, options) {
         const operationArguments = {
             expiryOptions,
-            options: coreHttp.operationOptionsToRequestOptionsBase(options || {})
+            options: coreHttp__namespace.operationOptionsToRequestOptionsBase(options || {})
         };
         return this.client.sendOperationRequest(operationArguments, setExpiryOperationSpec);
     }
@@ -20710,7 +21239,7 @@ class Blob$1 {
      */
     setHttpHeaders(options) {
         const operationArguments = {
-            options: coreHttp.operationOptionsToRequestOptionsBase(options || {})
+            options: coreHttp__namespace.operationOptionsToRequestOptionsBase(options || {})
         };
         return this.client.sendOperationRequest(operationArguments, setHttpHeadersOperationSpec);
     }
@@ -20720,7 +21249,7 @@ class Blob$1 {
      */
     setImmutabilityPolicy(options) {
         const operationArguments = {
-            options: coreHttp.operationOptionsToRequestOptionsBase(options || {})
+            options: coreHttp__namespace.operationOptionsToRequestOptionsBase(options || {})
         };
         return this.client.sendOperationRequest(operationArguments, setImmutabilityPolicyOperationSpec);
     }
@@ -20730,7 +21259,7 @@ class Blob$1 {
      */
     deleteImmutabilityPolicy(options) {
         const operationArguments = {
-            options: coreHttp.operationOptionsToRequestOptionsBase(options || {})
+            options: coreHttp__namespace.operationOptionsToRequestOptionsBase(options || {})
         };
         return this.client.sendOperationRequest(operationArguments, deleteImmutabilityPolicyOperationSpec);
     }
@@ -20742,7 +21271,7 @@ class Blob$1 {
     setLegalHold(legalHold, options) {
         const operationArguments = {
             legalHold,
-            options: coreHttp.operationOptionsToRequestOptionsBase(options || {})
+            options: coreHttp__namespace.operationOptionsToRequestOptionsBase(options || {})
         };
         return this.client.sendOperationRequest(operationArguments, setLegalHoldOperationSpec);
     }
@@ -20753,9 +21282,9 @@ class Blob$1 {
      */
     setMetadata(options) {
         const operationArguments = {
-            options: coreHttp.operationOptionsToRequestOptionsBase(options || {})
+            options: coreHttp__namespace.operationOptionsToRequestOptionsBase(options || {})
         };
-        return this.client.sendOperationRequest(operationArguments, setMetadataOperationSpec$1);
+        return this.client.sendOperationRequest(operationArguments, setMetadataOperationSpec);
     }
     /**
      * [Update] The Lease Blob operation establishes and manages a lock on a blob for write and delete
@@ -20764,9 +21293,9 @@ class Blob$1 {
      */
     acquireLease(options) {
         const operationArguments = {
-            options: coreHttp.operationOptionsToRequestOptionsBase(options || {})
+            options: coreHttp__namespace.operationOptionsToRequestOptionsBase(options || {})
         };
-        return this.client.sendOperationRequest(operationArguments, acquireLeaseOperationSpec$1);
+        return this.client.sendOperationRequest(operationArguments, acquireLeaseOperationSpec);
     }
     /**
      * [Update] The Lease Blob operation establishes and manages a lock on a blob for write and delete
@@ -20777,9 +21306,9 @@ class Blob$1 {
     releaseLease(leaseId, options) {
         const operationArguments = {
             leaseId,
-            options: coreHttp.operationOptionsToRequestOptionsBase(options || {})
+            options: coreHttp__namespace.operationOptionsToRequestOptionsBase(options || {})
         };
-        return this.client.sendOperationRequest(operationArguments, releaseLeaseOperationSpec$1);
+        return this.client.sendOperationRequest(operationArguments, releaseLeaseOperationSpec);
     }
     /**
      * [Update] The Lease Blob operation establishes and manages a lock on a blob for write and delete
@@ -20790,9 +21319,9 @@ class Blob$1 {
     renewLease(leaseId, options) {
         const operationArguments = {
             leaseId,
-            options: coreHttp.operationOptionsToRequestOptionsBase(options || {})
+            options: coreHttp__namespace.operationOptionsToRequestOptionsBase(options || {})
         };
-        return this.client.sendOperationRequest(operationArguments, renewLeaseOperationSpec$1);
+        return this.client.sendOperationRequest(operationArguments, renewLeaseOperationSpec);
     }
     /**
      * [Update] The Lease Blob operation establishes and manages a lock on a blob for write and delete
@@ -20807,9 +21336,9 @@ class Blob$1 {
         const operationArguments = {
             leaseId,
             proposedLeaseId,
-            options: coreHttp.operationOptionsToRequestOptionsBase(options || {})
+            options: coreHttp__namespace.operationOptionsToRequestOptionsBase(options || {})
         };
-        return this.client.sendOperationRequest(operationArguments, changeLeaseOperationSpec$1);
+        return this.client.sendOperationRequest(operationArguments, changeLeaseOperationSpec);
     }
     /**
      * [Update] The Lease Blob operation establishes and manages a lock on a blob for write and delete
@@ -20818,9 +21347,9 @@ class Blob$1 {
      */
     breakLease(options) {
         const operationArguments = {
-            options: coreHttp.operationOptionsToRequestOptionsBase(options || {})
+            options: coreHttp__namespace.operationOptionsToRequestOptionsBase(options || {})
         };
-        return this.client.sendOperationRequest(operationArguments, breakLeaseOperationSpec$1);
+        return this.client.sendOperationRequest(operationArguments, breakLeaseOperationSpec);
     }
     /**
      * The Create Snapshot operation creates a read-only snapshot of a blob
@@ -20828,7 +21357,7 @@ class Blob$1 {
      */
     createSnapshot(options) {
         const operationArguments = {
-            options: coreHttp.operationOptionsToRequestOptionsBase(options || {})
+            options: coreHttp__namespace.operationOptionsToRequestOptionsBase(options || {})
         };
         return this.client.sendOperationRequest(operationArguments, createSnapshotOperationSpec);
     }
@@ -20843,7 +21372,7 @@ class Blob$1 {
     startCopyFromURL(copySource, options) {
         const operationArguments = {
             copySource,
-            options: coreHttp.operationOptionsToRequestOptionsBase(options || {})
+            options: coreHttp__namespace.operationOptionsToRequestOptionsBase(options || {})
         };
         return this.client.sendOperationRequest(operationArguments, startCopyFromURLOperationSpec);
     }
@@ -20859,7 +21388,7 @@ class Blob$1 {
     copyFromURL(copySource, options) {
         const operationArguments = {
             copySource,
-            options: coreHttp.operationOptionsToRequestOptionsBase(options || {})
+            options: coreHttp__namespace.operationOptionsToRequestOptionsBase(options || {})
         };
         return this.client.sendOperationRequest(operationArguments, copyFromURLOperationSpec);
     }
@@ -20873,7 +21402,7 @@ class Blob$1 {
     abortCopyFromURL(copyId, options) {
         const operationArguments = {
             copyId,
-            options: coreHttp.operationOptionsToRequestOptionsBase(options || {})
+            options: coreHttp__namespace.operationOptionsToRequestOptionsBase(options || {})
         };
         return this.client.sendOperationRequest(operationArguments, abortCopyFromURLOperationSpec);
     }
@@ -20889,7 +21418,7 @@ class Blob$1 {
     setTier(tier, options) {
         const operationArguments = {
             tier,
-            options: coreHttp.operationOptionsToRequestOptionsBase(options || {})
+            options: coreHttp__namespace.operationOptionsToRequestOptionsBase(options || {})
         };
         return this.client.sendOperationRequest(operationArguments, setTierOperationSpec);
     }
@@ -20899,9 +21428,9 @@ class Blob$1 {
      */
     getAccountInfo(options) {
         const operationArguments = {
-            options: coreHttp.operationOptionsToRequestOptionsBase(options || {})
+            options: coreHttp__namespace.operationOptionsToRequestOptionsBase(options || {})
         };
-        return this.client.sendOperationRequest(operationArguments, getAccountInfoOperationSpec$2);
+        return this.client.sendOperationRequest(operationArguments, getAccountInfoOperationSpec);
     }
     /**
      * The Query operation enables users to select/project on blob data by providing simple query
@@ -20910,7 +21439,7 @@ class Blob$1 {
      */
     query(options) {
         const operationArguments = {
-            options: coreHttp.operationOptionsToRequestOptionsBase(options || {})
+            options: coreHttp__namespace.operationOptionsToRequestOptionsBase(options || {})
         };
         return this.client.sendOperationRequest(operationArguments, queryOperationSpec);
     }
@@ -20920,7 +21449,7 @@ class Blob$1 {
      */
     getTags(options) {
         const operationArguments = {
-            options: coreHttp.operationOptionsToRequestOptionsBase(options || {})
+            options: coreHttp__namespace.operationOptionsToRequestOptionsBase(options || {})
         };
         return this.client.sendOperationRequest(operationArguments, getTagsOperationSpec);
     }
@@ -20930,13 +21459,13 @@ class Blob$1 {
      */
     setTags(options) {
         const operationArguments = {
-            options: coreHttp.operationOptionsToRequestOptionsBase(options || {})
+            options: coreHttp__namespace.operationOptionsToRequestOptionsBase(options || {})
         };
         return this.client.sendOperationRequest(operationArguments, setTagsOperationSpec);
     }
 }
 // Operation Specifications
-const xmlSerializer$2 = new coreHttp.Serializer(Mappers, /* isXml */ true);
+const xmlSerializer$3 = new coreHttp__namespace.Serializer(Mappers, /* isXml */ true);
 const downloadOperationSpec = {
     path: "/{containerName}/{blob}",
     httpMethod: "GET",
@@ -20984,9 +21513,9 @@ const downloadOperationSpec = {
         ifTags
     ],
     isXML: true,
-    serializer: xmlSerializer$2
+    serializer: xmlSerializer$3
 };
-const getPropertiesOperationSpec$2 = {
+const getPropertiesOperationSpec = {
     path: "/{containerName}/{blob}",
     httpMethod: "HEAD",
     responses: {
@@ -21019,9 +21548,9 @@ const getPropertiesOperationSpec$2 = {
         ifTags
     ],
     isXML: true,
-    serializer: xmlSerializer$2
+    serializer: xmlSerializer$3
 };
-const deleteOperationSpec$1 = {
+const deleteOperationSpec = {
     path: "/{containerName}/{blob}",
     httpMethod: "DELETE",
     responses: {
@@ -21053,7 +21582,7 @@ const deleteOperationSpec$1 = {
         deleteSnapshots
     ],
     isXML: true,
-    serializer: xmlSerializer$2
+    serializer: xmlSerializer$3
 };
 const undeleteOperationSpec = {
     path: "/{containerName}/{blob}",
@@ -21075,7 +21604,7 @@ const undeleteOperationSpec = {
         accept1
     ],
     isXML: true,
-    serializer: xmlSerializer$2
+    serializer: xmlSerializer$3
 };
 const setExpiryOperationSpec = {
     path: "/{containerName}/{blob}",
@@ -21099,7 +21628,7 @@ const setExpiryOperationSpec = {
         expiresOn
     ],
     isXML: true,
-    serializer: xmlSerializer$2
+    serializer: xmlSerializer$3
 };
 const setHttpHeadersOperationSpec = {
     path: "/{containerName}/{blob}",
@@ -21133,7 +21662,7 @@ const setHttpHeadersOperationSpec = {
         blobContentDisposition
     ],
     isXML: true,
-    serializer: xmlSerializer$2
+    serializer: xmlSerializer$3
 };
 const setImmutabilityPolicyOperationSpec = {
     path: "/{containerName}/{blob}",
@@ -21158,7 +21687,7 @@ const setImmutabilityPolicyOperationSpec = {
         immutabilityPolicyMode
     ],
     isXML: true,
-    serializer: xmlSerializer$2
+    serializer: xmlSerializer$3
 };
 const deleteImmutabilityPolicyOperationSpec = {
     path: "/{containerName}/{blob}",
@@ -21180,7 +21709,7 @@ const deleteImmutabilityPolicyOperationSpec = {
         accept1
     ],
     isXML: true,
-    serializer: xmlSerializer$2
+    serializer: xmlSerializer$3
 };
 const setLegalHoldOperationSpec = {
     path: "/{containerName}/{blob}",
@@ -21203,9 +21732,9 @@ const setLegalHoldOperationSpec = {
         legalHold
     ],
     isXML: true,
-    serializer: xmlSerializer$2
+    serializer: xmlSerializer$3
 };
-const setMetadataOperationSpec$1 = {
+const setMetadataOperationSpec = {
     path: "/{containerName}/{blob}",
     httpMethod: "PUT",
     responses: {
@@ -21236,9 +21765,9 @@ const setMetadataOperationSpec$1 = {
         encryptionScope
     ],
     isXML: true,
-    serializer: xmlSerializer$2
+    serializer: xmlSerializer$3
 };
-const acquireLeaseOperationSpec$1 = {
+const acquireLeaseOperationSpec = {
     path: "/{containerName}/{blob}",
     httpMethod: "PUT",
     responses: {
@@ -21266,9 +21795,9 @@ const acquireLeaseOperationSpec$1 = {
         ifTags
     ],
     isXML: true,
-    serializer: xmlSerializer$2
+    serializer: xmlSerializer$3
 };
-const releaseLeaseOperationSpec$1 = {
+const releaseLeaseOperationSpec = {
     path: "/{containerName}/{blob}",
     httpMethod: "PUT",
     responses: {
@@ -21295,9 +21824,9 @@ const releaseLeaseOperationSpec$1 = {
         ifTags
     ],
     isXML: true,
-    serializer: xmlSerializer$2
+    serializer: xmlSerializer$3
 };
-const renewLeaseOperationSpec$1 = {
+const renewLeaseOperationSpec = {
     path: "/{containerName}/{blob}",
     httpMethod: "PUT",
     responses: {
@@ -21324,9 +21853,9 @@ const renewLeaseOperationSpec$1 = {
         ifTags
     ],
     isXML: true,
-    serializer: xmlSerializer$2
+    serializer: xmlSerializer$3
 };
-const changeLeaseOperationSpec$1 = {
+const changeLeaseOperationSpec = {
     path: "/{containerName}/{blob}",
     httpMethod: "PUT",
     responses: {
@@ -21354,9 +21883,9 @@ const changeLeaseOperationSpec$1 = {
         ifTags
     ],
     isXML: true,
-    serializer: xmlSerializer$2
+    serializer: xmlSerializer$3
 };
-const breakLeaseOperationSpec$1 = {
+const breakLeaseOperationSpec = {
     path: "/{containerName}/{blob}",
     httpMethod: "PUT",
     responses: {
@@ -21383,7 +21912,7 @@ const breakLeaseOperationSpec$1 = {
         ifTags
     ],
     isXML: true,
-    serializer: xmlSerializer$2
+    serializer: xmlSerializer$3
 };
 const createSnapshotOperationSpec = {
     path: "/{containerName}/{blob}",
@@ -21416,7 +21945,7 @@ const createSnapshotOperationSpec = {
         encryptionScope
     ],
     isXML: true,
-    serializer: xmlSerializer$2
+    serializer: xmlSerializer$3
 };
 const startCopyFromURLOperationSpec = {
     path: "/{containerName}/{blob}",
@@ -21458,7 +21987,7 @@ const startCopyFromURLOperationSpec = {
         legalHold1
     ],
     isXML: true,
-    serializer: xmlSerializer$2
+    serializer: xmlSerializer$3
 };
 const copyFromURLOperationSpec = {
     path: "/{containerName}/{blob}",
@@ -21487,6 +22016,7 @@ const copyFromURLOperationSpec = {
         ifTags,
         immutabilityPolicyExpiry,
         immutabilityPolicyMode,
+        encryptionScope,
         tier,
         sourceIfModifiedSince,
         sourceIfUnmodifiedSince,
@@ -21500,7 +22030,7 @@ const copyFromURLOperationSpec = {
         copySourceAuthorization
     ],
     isXML: true,
-    serializer: xmlSerializer$2
+    serializer: xmlSerializer$3
 };
 const abortCopyFromURLOperationSpec = {
     path: "/{containerName}/{blob}",
@@ -21528,7 +22058,7 @@ const abortCopyFromURLOperationSpec = {
         copyActionAbortConstant
     ],
     isXML: true,
-    serializer: xmlSerializer$2
+    serializer: xmlSerializer$3
 };
 const setTierOperationSpec = {
     path: "/{containerName}/{blob}",
@@ -21562,9 +22092,9 @@ const setTierOperationSpec = {
         tier1
     ],
     isXML: true,
-    serializer: xmlSerializer$2
+    serializer: xmlSerializer$3
 };
-const getAccountInfoOperationSpec$2 = {
+const getAccountInfoOperationSpec = {
     path: "/{containerName}/{blob}",
     httpMethod: "GET",
     responses: {
@@ -21580,7 +22110,7 @@ const getAccountInfoOperationSpec$2 = {
     urlParameters: [url],
     headerParameters: [version, accept1],
     isXML: true,
-    serializer: xmlSerializer$2
+    serializer: xmlSerializer$3
 };
 const queryOperationSpec = {
     path: "/{containerName}/{blob}",
@@ -21630,7 +22160,7 @@ const queryOperationSpec = {
     isXML: true,
     contentType: "application/xml; charset=utf-8",
     mediaType: "xml",
-    serializer: xmlSerializer$2
+    serializer: xmlSerializer$3
 };
 const getTagsOperationSpec = {
     path: "/{containerName}/{blob}",
@@ -21660,7 +22190,7 @@ const getTagsOperationSpec = {
         ifTags
     ],
     isXML: true,
-    serializer: xmlSerializer$2
+    serializer: xmlSerializer$3
 };
 const setTagsOperationSpec = {
     path: "/{containerName}/{blob}",
@@ -21694,7 +22224,7 @@ const setTagsOperationSpec = {
     isXML: true,
     contentType: "application/xml; charset=utf-8",
     mediaType: "xml",
-    serializer: xmlSerializer$2
+    serializer: xmlSerializer$3
 };
 
 /*
@@ -21724,7 +22254,7 @@ class PageBlob {
         const operationArguments = {
             contentLength,
             blobContentLength,
-            options: coreHttp.operationOptionsToRequestOptionsBase(options || {})
+            options: coreHttp__namespace.operationOptionsToRequestOptionsBase(options || {})
         };
         return this.client.sendOperationRequest(operationArguments, createOperationSpec$1);
     }
@@ -21738,7 +22268,7 @@ class PageBlob {
         const operationArguments = {
             contentLength,
             body,
-            options: coreHttp.operationOptionsToRequestOptionsBase(options || {})
+            options: coreHttp__namespace.operationOptionsToRequestOptionsBase(options || {})
         };
         return this.client.sendOperationRequest(operationArguments, uploadPagesOperationSpec);
     }
@@ -21750,7 +22280,7 @@ class PageBlob {
     clearPages(contentLength, options) {
         const operationArguments = {
             contentLength,
-            options: coreHttp.operationOptionsToRequestOptionsBase(options || {})
+            options: coreHttp__namespace.operationOptionsToRequestOptionsBase(options || {})
         };
         return this.client.sendOperationRequest(operationArguments, clearPagesOperationSpec);
     }
@@ -21771,7 +22301,7 @@ class PageBlob {
             sourceRange,
             contentLength,
             range,
-            options: coreHttp.operationOptionsToRequestOptionsBase(options || {})
+            options: coreHttp__namespace.operationOptionsToRequestOptionsBase(options || {})
         };
         return this.client.sendOperationRequest(operationArguments, uploadPagesFromURLOperationSpec);
     }
@@ -21782,7 +22312,7 @@ class PageBlob {
      */
     getPageRanges(options) {
         const operationArguments = {
-            options: coreHttp.operationOptionsToRequestOptionsBase(options || {})
+            options: coreHttp__namespace.operationOptionsToRequestOptionsBase(options || {})
         };
         return this.client.sendOperationRequest(operationArguments, getPageRangesOperationSpec);
     }
@@ -21793,7 +22323,7 @@ class PageBlob {
      */
     getPageRangesDiff(options) {
         const operationArguments = {
-            options: coreHttp.operationOptionsToRequestOptionsBase(options || {})
+            options: coreHttp__namespace.operationOptionsToRequestOptionsBase(options || {})
         };
         return this.client.sendOperationRequest(operationArguments, getPageRangesDiffOperationSpec);
     }
@@ -21806,7 +22336,7 @@ class PageBlob {
     resize(blobContentLength, options) {
         const operationArguments = {
             blobContentLength,
-            options: coreHttp.operationOptionsToRequestOptionsBase(options || {})
+            options: coreHttp__namespace.operationOptionsToRequestOptionsBase(options || {})
         };
         return this.client.sendOperationRequest(operationArguments, resizeOperationSpec);
     }
@@ -21820,7 +22350,7 @@ class PageBlob {
     updateSequenceNumber(sequenceNumberAction, options) {
         const operationArguments = {
             sequenceNumberAction,
-            options: coreHttp.operationOptionsToRequestOptionsBase(options || {})
+            options: coreHttp__namespace.operationOptionsToRequestOptionsBase(options || {})
         };
         return this.client.sendOperationRequest(operationArguments, updateSequenceNumberOperationSpec);
     }
@@ -21839,14 +22369,14 @@ class PageBlob {
     copyIncremental(copySource, options) {
         const operationArguments = {
             copySource,
-            options: coreHttp.operationOptionsToRequestOptionsBase(options || {})
+            options: coreHttp__namespace.operationOptionsToRequestOptionsBase(options || {})
         };
         return this.client.sendOperationRequest(operationArguments, copyIncrementalOperationSpec);
     }
 }
 // Operation Specifications
-const xmlSerializer$3 = new coreHttp.Serializer(Mappers, /* isXml */ true);
-const serializer = new coreHttp.Serializer(Mappers, /* isXml */ false);
+const xmlSerializer$2 = new coreHttp__namespace.Serializer(Mappers, /* isXml */ true);
+const serializer$2 = new coreHttp__namespace.Serializer(Mappers, /* isXml */ false);
 const createOperationSpec$1 = {
     path: "/{containerName}/{blob}",
     httpMethod: "PUT",
@@ -21893,7 +22423,7 @@ const createOperationSpec$1 = {
         blobSequenceNumber
     ],
     isXML: true,
-    serializer: xmlSerializer$3
+    serializer: xmlSerializer$2
 };
 const uploadPagesOperationSpec = {
     path: "/{containerName}/{blob}",
@@ -21935,7 +22465,7 @@ const uploadPagesOperationSpec = {
         ifSequenceNumberEqualTo
     ],
     mediaType: "binary",
-    serializer
+    serializer: serializer$2
 };
 const clearPagesOperationSpec = {
     path: "/{containerName}/{blob}",
@@ -21973,7 +22503,7 @@ const clearPagesOperationSpec = {
         pageWrite1
     ],
     isXML: true,
-    serializer: xmlSerializer$3
+    serializer: xmlSerializer$2
 };
 const uploadPagesFromURLOperationSpec = {
     path: "/{containerName}/{blob}",
@@ -22020,7 +22550,7 @@ const uploadPagesFromURLOperationSpec = {
         range1
     ],
     isXML: true,
-    serializer: xmlSerializer$3
+    serializer: xmlSerializer$2
 };
 const getPageRangesOperationSpec = {
     path: "/{containerName}/{blob}",
@@ -22054,7 +22584,7 @@ const getPageRangesOperationSpec = {
         ifTags
     ],
     isXML: true,
-    serializer: xmlSerializer$3
+    serializer: xmlSerializer$2
 };
 const getPageRangesDiffOperationSpec = {
     path: "/{containerName}/{blob}",
@@ -22090,7 +22620,7 @@ const getPageRangesDiffOperationSpec = {
         prevSnapshotUrl
     ],
     isXML: true,
-    serializer: xmlSerializer$3
+    serializer: xmlSerializer$2
 };
 const resizeOperationSpec = {
     path: "/{containerName}/{blob}",
@@ -22123,7 +22653,7 @@ const resizeOperationSpec = {
         blobContentLength
     ],
     isXML: true,
-    serializer: xmlSerializer$3
+    serializer: xmlSerializer$2
 };
 const updateSequenceNumberOperationSpec = {
     path: "/{containerName}/{blob}",
@@ -22153,7 +22683,7 @@ const updateSequenceNumberOperationSpec = {
         sequenceNumberAction
     ],
     isXML: true,
-    serializer: xmlSerializer$3
+    serializer: xmlSerializer$2
 };
 const copyIncrementalOperationSpec = {
     path: "/{containerName}/{blob}",
@@ -22181,7 +22711,7 @@ const copyIncrementalOperationSpec = {
         copySource
     ],
     isXML: true,
-    serializer: xmlSerializer$3
+    serializer: xmlSerializer$2
 };
 
 /*
@@ -22208,9 +22738,9 @@ class AppendBlob {
     create(contentLength, options) {
         const operationArguments = {
             contentLength,
-            options: coreHttp.operationOptionsToRequestOptionsBase(options || {})
+            options: coreHttp__namespace.operationOptionsToRequestOptionsBase(options || {})
         };
-        return this.client.sendOperationRequest(operationArguments, createOperationSpec$2);
+        return this.client.sendOperationRequest(operationArguments, createOperationSpec);
     }
     /**
      * The Append Block operation commits a new block of data to the end of an existing append blob. The
@@ -22224,7 +22754,7 @@ class AppendBlob {
         const operationArguments = {
             contentLength,
             body,
-            options: coreHttp.operationOptionsToRequestOptionsBase(options || {})
+            options: coreHttp__namespace.operationOptionsToRequestOptionsBase(options || {})
         };
         return this.client.sendOperationRequest(operationArguments, appendBlockOperationSpec);
     }
@@ -22241,7 +22771,7 @@ class AppendBlob {
         const operationArguments = {
             sourceUrl,
             contentLength,
-            options: coreHttp.operationOptionsToRequestOptionsBase(options || {})
+            options: coreHttp__namespace.operationOptionsToRequestOptionsBase(options || {})
         };
         return this.client.sendOperationRequest(operationArguments, appendBlockFromUrlOperationSpec);
     }
@@ -22252,15 +22782,15 @@ class AppendBlob {
      */
     seal(options) {
         const operationArguments = {
-            options: coreHttp.operationOptionsToRequestOptionsBase(options || {})
+            options: coreHttp__namespace.operationOptionsToRequestOptionsBase(options || {})
         };
         return this.client.sendOperationRequest(operationArguments, sealOperationSpec);
     }
 }
 // Operation Specifications
-const xmlSerializer$4 = new coreHttp.Serializer(Mappers, /* isXml */ true);
-const serializer$1 = new coreHttp.Serializer(Mappers, /* isXml */ false);
-const createOperationSpec$2 = {
+const xmlSerializer$1 = new coreHttp__namespace.Serializer(Mappers, /* isXml */ true);
+const serializer$1 = new coreHttp__namespace.Serializer(Mappers, /* isXml */ false);
+const createOperationSpec = {
     path: "/{containerName}/{blob}",
     httpMethod: "PUT",
     responses: {
@@ -22303,7 +22833,7 @@ const createOperationSpec$2 = {
         blobType1
     ],
     isXML: true,
-    serializer: xmlSerializer$4
+    serializer: xmlSerializer$1
 };
 const appendBlockOperationSpec = {
     path: "/{containerName}/{blob}",
@@ -22387,7 +22917,7 @@ const appendBlockFromUrlOperationSpec = {
         sourceRange1
     ],
     isXML: true,
-    serializer: xmlSerializer$4
+    serializer: xmlSerializer$1
 };
 const sealOperationSpec = {
     path: "/{containerName}/{blob}",
@@ -22415,7 +22945,7 @@ const sealOperationSpec = {
         appendPosition
     ],
     isXML: true,
-    serializer: xmlSerializer$4
+    serializer: xmlSerializer$1
 };
 
 /*
@@ -22447,7 +22977,7 @@ class BlockBlob {
         const operationArguments = {
             contentLength,
             body,
-            options: coreHttp.operationOptionsToRequestOptionsBase(options || {})
+            options: coreHttp__namespace.operationOptionsToRequestOptionsBase(options || {})
         };
         return this.client.sendOperationRequest(operationArguments, uploadOperationSpec);
     }
@@ -22468,7 +22998,7 @@ class BlockBlob {
         const operationArguments = {
             contentLength,
             copySource,
-            options: coreHttp.operationOptionsToRequestOptionsBase(options || {})
+            options: coreHttp__namespace.operationOptionsToRequestOptionsBase(options || {})
         };
         return this.client.sendOperationRequest(operationArguments, putBlobFromUrlOperationSpec);
     }
@@ -22486,7 +23016,7 @@ class BlockBlob {
             blockId,
             contentLength,
             body,
-            options: coreHttp.operationOptionsToRequestOptionsBase(options || {})
+            options: coreHttp__namespace.operationOptionsToRequestOptionsBase(options || {})
         };
         return this.client.sendOperationRequest(operationArguments, stageBlockOperationSpec);
     }
@@ -22505,7 +23035,7 @@ class BlockBlob {
             blockId,
             contentLength,
             sourceUrl,
-            options: coreHttp.operationOptionsToRequestOptionsBase(options || {})
+            options: coreHttp__namespace.operationOptionsToRequestOptionsBase(options || {})
         };
         return this.client.sendOperationRequest(operationArguments, stageBlockFromURLOperationSpec);
     }
@@ -22523,7 +23053,7 @@ class BlockBlob {
     commitBlockList(blocks, options) {
         const operationArguments = {
             blocks,
-            options: coreHttp.operationOptionsToRequestOptionsBase(options || {})
+            options: coreHttp__namespace.operationOptionsToRequestOptionsBase(options || {})
         };
         return this.client.sendOperationRequest(operationArguments, commitBlockListOperationSpec);
     }
@@ -22537,14 +23067,14 @@ class BlockBlob {
     getBlockList(listType, options) {
         const operationArguments = {
             listType,
-            options: coreHttp.operationOptionsToRequestOptionsBase(options || {})
+            options: coreHttp__namespace.operationOptionsToRequestOptionsBase(options || {})
         };
         return this.client.sendOperationRequest(operationArguments, getBlockListOperationSpec);
     }
 }
 // Operation Specifications
-const xmlSerializer$5 = new coreHttp.Serializer(Mappers, /* isXml */ true);
-const serializer$2 = new coreHttp.Serializer(Mappers, /* isXml */ false);
+const xmlSerializer = new coreHttp__namespace.Serializer(Mappers, /* isXml */ true);
+const serializer = new coreHttp__namespace.Serializer(Mappers, /* isXml */ false);
 const uploadOperationSpec = {
     path: "/{containerName}/{blob}",
     httpMethod: "PUT",
@@ -22592,7 +23122,7 @@ const uploadOperationSpec = {
         blobType2
     ],
     mediaType: "binary",
-    serializer: serializer$2
+    serializer
 };
 const putBlobFromUrlOperationSpec = {
     path: "/{containerName}/{blob}",
@@ -22645,7 +23175,7 @@ const putBlobFromUrlOperationSpec = {
         copySourceBlobProperties
     ],
     isXML: true,
-    serializer: xmlSerializer$5
+    serializer: xmlSerializer
 };
 const stageBlockOperationSpec = {
     path: "/{containerName}/{blob}",
@@ -22681,7 +23211,7 @@ const stageBlockOperationSpec = {
         accept2
     ],
     mediaType: "binary",
-    serializer: serializer$2
+    serializer
 };
 const stageBlockFromURLOperationSpec = {
     path: "/{containerName}/{blob}",
@@ -22722,7 +23252,7 @@ const stageBlockFromURLOperationSpec = {
         sourceRange1
     ],
     isXML: true,
-    serializer: xmlSerializer$5
+    serializer: xmlSerializer
 };
 const commitBlockListOperationSpec = {
     path: "/{containerName}/{blob}",
@@ -22772,7 +23302,7 @@ const commitBlockListOperationSpec = {
     isXML: true,
     contentType: "application/xml; charset=utf-8",
     mediaType: "xml",
-    serializer: xmlSerializer$5
+    serializer: xmlSerializer
 };
 const getBlockListOperationSpec = {
     path: "/{containerName}/{blob}",
@@ -22802,7 +23332,7 @@ const getBlockListOperationSpec = {
         ifTags
     ],
     isXML: true,
-    serializer: xmlSerializer$5
+    serializer: xmlSerializer
 };
 
 // Copyright (c) Microsoft Corporation.
@@ -22813,8 +23343,8 @@ const logger = logger$1.createClientLogger("storage-blob");
 
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-const SDK_VERSION = "12.8.0";
-const SERVICE_VERSION = "2020-10-02";
+const SDK_VERSION = "12.9.0";
+const SERVICE_VERSION = "2021-04-10";
 const BLOCK_BLOB_MAX_UPLOAD_BLOB_BYTES = 256 * 1024 * 1024; // 256MB
 const BLOCK_BLOB_MAX_STAGE_BLOCK_BYTES = 4000 * 1024 * 1024; // 4000MB
 const BLOCK_BLOB_MAX_BLOCKS = 50000;
@@ -22831,15 +23361,15 @@ const URLConstants = {
         SIGNATURE: "sig",
         SNAPSHOT: "snapshot",
         VERSIONID: "versionid",
-        TIMEOUT: "timeout"
-    }
+        TIMEOUT: "timeout",
+    },
 };
 const HTTPURLConnection = {
     HTTP_ACCEPTED: 202,
     HTTP_CONFLICT: 409,
     HTTP_NOT_FOUND: 404,
     HTTP_PRECON_FAILED: 412,
-    HTTP_RANGE_NOT_SATISFIABLE: 416
+    HTTP_RANGE_NOT_SATISFIABLE: 416,
 };
 const HeaderConstants = {
     AUTHORIZATION: "Authorization",
@@ -22864,7 +23394,7 @@ const HeaderConstants = {
     X_MS_COPY_SOURCE: "x-ms-copy-source",
     X_MS_DATE: "x-ms-date",
     X_MS_ERROR_CODE: "x-ms-error-code",
-    X_MS_VERSION: "x-ms-version"
+    X_MS_VERSION: "x-ms-version",
 };
 const ETagNone = "";
 const ETagAny = "*";
@@ -22969,7 +23499,7 @@ const StorageBlobLoggingAllowedHeaderNames = [
     "x-ms-tag-count",
     "x-ms-encryption-key-sha256",
     "x-ms-if-tags",
-    "x-ms-source-if-tags"
+    "x-ms-source-if-tags",
 ];
 const StorageBlobLoggingAllowedQueryParameters = [
     "comp",
@@ -23004,8 +23534,9 @@ const StorageBlobLoggingAllowedQueryParameters = [
     "skt",
     "sktid",
     "skv",
-    "snapshot"
+    "snapshot",
 ];
+const BlobUsesCustomerSpecifiedEncryptionMsg = "BlobUsesCustomerSpecifiedEncryption";
 
 // Copyright (c) Microsoft Corporation.
 /**
@@ -23145,7 +23676,7 @@ function extractConnectionStringParts(connectionString) {
             url: blobEndpoint,
             accountName,
             accountKey,
-            proxyUri
+            proxyUri,
         };
     }
     else {
@@ -23477,14 +24008,14 @@ function toBlobTags(tags) {
         return undefined;
     }
     const res = {
-        blobTagSet: []
+        blobTagSet: [],
     };
     for (const key in tags) {
         if (Object.prototype.hasOwnProperty.call(tags, key)) {
             const value = tags[key];
             res.blobTagSet.push({
                 key,
-                value
+                value,
             });
         }
     }
@@ -23524,33 +24055,33 @@ function toQuerySerialization(textConfiguration) {
                         fieldQuote: textConfiguration.fieldQuote || "",
                         recordSeparator: textConfiguration.recordSeparator,
                         escapeChar: textConfiguration.escapeCharacter || "",
-                        headersPresent: textConfiguration.hasHeaders || false
-                    }
-                }
+                        headersPresent: textConfiguration.hasHeaders || false,
+                    },
+                },
             };
         case "json":
             return {
                 format: {
                     type: "json",
                     jsonTextConfiguration: {
-                        recordSeparator: textConfiguration.recordSeparator
-                    }
-                }
+                        recordSeparator: textConfiguration.recordSeparator,
+                    },
+                },
             };
         case "arrow":
             return {
                 format: {
                     type: "arrow",
                     arrowConfiguration: {
-                        schema: textConfiguration.schema
-                    }
-                }
+                        schema: textConfiguration.schema,
+                    },
+                },
             };
         case "parquet":
             return {
                 format: {
-                    type: "parquet"
-                }
+                    type: "parquet",
+                },
             };
         default:
             throw Error("Invalid BlobQueryTextConfiguration.");
@@ -23574,7 +24105,7 @@ function parseObjectReplicationRecord(objectReplicationRecord) {
         }
         const rule = {
             ruleId: ids[1],
-            replicationStatus: objectReplicationRecord[key]
+            replicationStatus: objectReplicationRecord[key],
         };
         const policyIndex = orProperties.findIndex((policy) => policy.policyId === ids[0]);
         if (policyIndex > -1) {
@@ -23583,7 +24114,7 @@ function parseObjectReplicationRecord(objectReplicationRecord) {
         else {
             orProperties.push({
                 policyId: ids[0],
-                rules: [rule]
+                rules: [rule],
             });
         }
     }
@@ -23601,6 +24132,202 @@ function attachCredential(thing, credential) {
 }
 function httpAuthorizationToString(httpAuthorization) {
     return httpAuthorization ? httpAuthorization.scheme + " " + httpAuthorization.value : undefined;
+}
+function BlobNameToString(name) {
+    if (name.encoded) {
+        return decodeURIComponent(name.content);
+    }
+    else {
+        return name.content;
+    }
+}
+function ConvertInternalResponseOfListBlobFlat(internalResponse) {
+    return Object.assign(Object.assign({}, internalResponse), { segment: {
+            blobItems: internalResponse.segment.blobItems.map((blobItemInteral) => {
+                const blobItem = Object.assign(Object.assign({}, blobItemInteral), { name: BlobNameToString(blobItemInteral.name) });
+                return blobItem;
+            }),
+        } });
+}
+function ConvertInternalResponseOfListBlobHierarchy(internalResponse) {
+    var _a;
+    return Object.assign(Object.assign({}, internalResponse), { segment: {
+            blobPrefixes: (_a = internalResponse.segment.blobPrefixes) === null || _a === void 0 ? void 0 : _a.map((blobPrefixInternal) => {
+                const blobPrefix = {
+                    name: BlobNameToString(blobPrefixInternal.name),
+                };
+                return blobPrefix;
+            }),
+            blobItems: internalResponse.segment.blobItems.map((blobItemInteral) => {
+                const blobItem = Object.assign(Object.assign({}, blobItemInteral), { name: BlobNameToString(blobItemInteral.name) });
+                return blobItem;
+            }),
+        } });
+}
+function decodeBase64String(value) {
+    if (coreHttp.isNode) {
+        return Buffer.from(value, "base64");
+    }
+    else {
+        const byteString = atob(value);
+        const arr = new Uint8Array(byteString.length);
+        for (let i = 0; i < byteString.length; i++) {
+            arr[i] = byteString.charCodeAt(i);
+        }
+        return arr;
+    }
+}
+function ParseBoolean(content) {
+    if (content === undefined)
+        return undefined;
+    if (content === "true")
+        return true;
+    if (content === "false")
+        return false;
+    return undefined;
+}
+function ParseBlobName(blobNameInXML) {
+    if (blobNameInXML["$"] !== undefined && blobNameInXML["#"] !== undefined) {
+        return {
+            encoded: ParseBoolean(blobNameInXML["$"]["Encoded"]),
+            content: blobNameInXML["#"],
+        };
+    }
+    else {
+        return {
+            encoded: false,
+            content: blobNameInXML,
+        };
+    }
+}
+function ParseBlobItem(blobInXML) {
+    const blobPropertiesInXML = blobInXML["Properties"];
+    const blobProperties = {
+        createdOn: new Date(blobPropertiesInXML["Creation-Time"]),
+        lastModified: new Date(blobPropertiesInXML["Last-Modified"]),
+        etag: blobPropertiesInXML["Etag"],
+        contentLength: blobPropertiesInXML["Content-Length"] === undefined
+            ? undefined
+            : parseFloat(blobPropertiesInXML["Content-Length"]),
+        contentType: blobPropertiesInXML["Content-Type"],
+        contentEncoding: blobPropertiesInXML["Content-Encoding"],
+        contentLanguage: blobPropertiesInXML["Content-Language"],
+        contentMD5: decodeBase64String(blobPropertiesInXML["Content-MD5"]),
+        contentDisposition: blobPropertiesInXML["Content-Disposition"],
+        cacheControl: blobPropertiesInXML["Cache-Control"],
+        blobSequenceNumber: blobPropertiesInXML["x-ms-blob-sequence-number"] === undefined
+            ? undefined
+            : parseFloat(blobPropertiesInXML["x-ms-blob-sequence-number"]),
+        blobType: blobPropertiesInXML["BlobType"],
+        leaseStatus: blobPropertiesInXML["LeaseStatus"],
+        leaseState: blobPropertiesInXML["LeaseState"],
+        leaseDuration: blobPropertiesInXML["LeaseDuration"],
+        copyId: blobPropertiesInXML["CopyId"],
+        copyStatus: blobPropertiesInXML["CopyStatus"],
+        copySource: blobPropertiesInXML["CopySource"],
+        copyProgress: blobPropertiesInXML["CopyProgress"],
+        copyCompletedOn: blobPropertiesInXML["CopyCompletionTime"] === undefined
+            ? undefined
+            : new Date(blobPropertiesInXML["CopyCompletionTime"]),
+        copyStatusDescription: blobPropertiesInXML["CopyStatusDescription"],
+        serverEncrypted: ParseBoolean(blobPropertiesInXML["ServerEncrypted"]),
+        incrementalCopy: ParseBoolean(blobPropertiesInXML["IncrementalCopy"]),
+        destinationSnapshot: blobPropertiesInXML["DestinationSnapshot"],
+        deletedOn: blobPropertiesInXML["DeletedTime"] === undefined
+            ? undefined
+            : new Date(blobPropertiesInXML["DeletedTime"]),
+        remainingRetentionDays: blobPropertiesInXML["RemainingRetentionDays"] === undefined
+            ? undefined
+            : parseFloat(blobPropertiesInXML["RemainingRetentionDays"]),
+        accessTier: blobPropertiesInXML["AccessTier"],
+        accessTierInferred: ParseBoolean(blobPropertiesInXML["AccessTierInferred"]),
+        archiveStatus: blobPropertiesInXML["ArchiveStatus"],
+        customerProvidedKeySha256: blobPropertiesInXML["CustomerProvidedKeySha256"],
+        encryptionScope: blobPropertiesInXML["EncryptionScope"],
+        accessTierChangedOn: blobPropertiesInXML["AccessTierChangeTime"] === undefined
+            ? undefined
+            : new Date(blobPropertiesInXML["AccessTierChangeTime"]),
+        tagCount: blobPropertiesInXML["TagCount"] === undefined
+            ? undefined
+            : parseFloat(blobPropertiesInXML["TagCount"]),
+        expiresOn: blobPropertiesInXML["Expiry-Time"] === undefined
+            ? undefined
+            : new Date(blobPropertiesInXML["Expiry-Time"]),
+        isSealed: ParseBoolean(blobPropertiesInXML["Sealed"]),
+        rehydratePriority: blobPropertiesInXML["RehydratePriority"],
+        lastAccessedOn: blobPropertiesInXML["LastAccessTime"] === undefined
+            ? undefined
+            : new Date(blobPropertiesInXML["LastAccessTime"]),
+        immutabilityPolicyExpiresOn: blobPropertiesInXML["ImmutabilityPolicyUntilDate"] === undefined
+            ? undefined
+            : new Date(blobPropertiesInXML["ImmutabilityPolicyUntilDate"]),
+        immutabilityPolicyMode: blobPropertiesInXML["ImmutabilityPolicyMode"],
+        legalHold: ParseBoolean(blobPropertiesInXML["LegalHold"]),
+    };
+    return {
+        name: ParseBlobName(blobInXML["Name"]),
+        deleted: ParseBoolean(blobInXML["Deleted"]),
+        snapshot: blobInXML["Snapshot"],
+        versionId: blobInXML["VersionId"],
+        isCurrentVersion: ParseBoolean(blobInXML["IsCurrentVersion"]),
+        properties: blobProperties,
+        metadata: blobInXML["Metadata"],
+        blobTags: ParseBlobTags(blobInXML["Tags"]),
+        objectReplicationMetadata: blobInXML["OrMetadata"],
+        hasVersionsOnly: ParseBoolean(blobInXML["HasVersionsOnly"]),
+    };
+}
+function ParseBlobPrefix(blobPrefixInXML) {
+    return {
+        name: ParseBlobName(blobPrefixInXML["Name"]),
+    };
+}
+function ParseBlobTag(blobTagInXML) {
+    return {
+        key: blobTagInXML["Key"],
+        value: blobTagInXML["Value"],
+    };
+}
+function ParseBlobTags(blobTagsInXML) {
+    if (blobTagsInXML === undefined ||
+        blobTagsInXML["TagSet"] === undefined ||
+        blobTagsInXML["TagSet"]["Tag"] === undefined) {
+        return undefined;
+    }
+    const blobTagSet = [];
+    if (blobTagsInXML["TagSet"]["Tag"] instanceof Array) {
+        blobTagsInXML["TagSet"]["Tag"].forEach((blobTagInXML) => {
+            blobTagSet.push(ParseBlobTag(blobTagInXML));
+        });
+    }
+    else {
+        blobTagSet.push(ParseBlobTag(blobTagsInXML["TagSet"]["Tag"]));
+    }
+    return { blobTagSet: blobTagSet };
+}
+function ProcessBlobItems(blobArrayInXML) {
+    const blobItems = [];
+    if (blobArrayInXML instanceof Array) {
+        blobArrayInXML.forEach((blobInXML) => {
+            blobItems.push(ParseBlobItem(blobInXML));
+        });
+    }
+    else {
+        blobItems.push(ParseBlobItem(blobArrayInXML));
+    }
+    return blobItems;
+}
+function ProcessBlobPrefixes(blobPrefixesInXML) {
+    const blobPrefixes = [];
+    if (blobPrefixesInXML instanceof Array) {
+        blobPrefixesInXML.forEach((blobPrefixInXML) => {
+            blobPrefixes.push(ParseBlobPrefix(blobPrefixInXML));
+        });
+    }
+    else {
+        blobPrefixes.push(ParseBlobPrefix(blobPrefixesInXML));
+    }
+    return blobPrefixes;
 }
 
 // Copyright (c) Microsoft Corporation.
@@ -23632,9 +24359,16 @@ class StorageBrowserPolicy extends coreHttp.BaseRequestPolicy {
      * @param request -
      */
     async sendRequest(request) {
-        {
+        if (coreHttp.isNode) {
             return this._nextPolicy.sendRequest(request);
         }
+        if (request.method.toUpperCase() === "GET" || request.method.toUpperCase() === "HEAD") {
+            request.url = setURLParameter(request.url, URLConstants.Parameters.FORCE_BROWSER_NO_CACHE, new Date().getTime().toString());
+        }
+        request.headers.remove(HeaderConstants.COOKIE);
+        // According to XHR standards, content-length should be fully controlled by browsers
+        request.headers.remove(HeaderConstants.CONTENT_LENGTH);
+        return this._nextPolicy.sendRequest(request);
     }
 }
 
@@ -23655,6 +24389,10 @@ class StorageBrowserPolicyFactory {
 }
 
 // Copyright (c) Microsoft Corporation.
+/**
+ * RetryPolicy types.
+ */
+exports.StorageRetryPolicyType = void 0;
 (function (StorageRetryPolicyType) {
     /**
      * Exponential retry. Retry time delay grows exponentially.
@@ -23672,7 +24410,7 @@ const DEFAULT_RETRY_OPTIONS = {
     retryDelayInMs: 4 * 1000,
     retryPolicyType: exports.StorageRetryPolicyType.EXPONENTIAL,
     secondaryHost: "",
-    tryTimeoutInMs: undefined // Use server side default timeout strategy
+    tryTimeoutInMs: undefined, // Use server side default timeout strategy
 };
 const RETRY_ABORT_ERROR = new abortController.AbortError("The operation was aborted.");
 /**
@@ -23709,7 +24447,7 @@ class StorageRetryPolicy extends coreHttp.BaseRequestPolicy {
                 : DEFAULT_RETRY_OPTIONS.maxRetryDelayInMs,
             secondaryHost: retryOptions.secondaryHost
                 ? retryOptions.secondaryHost
-                : DEFAULT_RETRY_OPTIONS.secondaryHost
+                : DEFAULT_RETRY_OPTIONS.secondaryHost,
         };
     }
     /**
@@ -23786,7 +24524,7 @@ class StorageRetryPolicy extends coreHttp.BaseRequestPolicy {
             "ENOTFOUND",
             "TIMEOUT",
             "EPIPE",
-            "REQUEST_SEND_ERROR" // For default xhr based http client provided in ms-rest-js
+            "REQUEST_SEND_ERROR", // For default xhr based http client provided in ms-rest-js
         ];
         if (err) {
             for (const retriableError of retriableErrors) {
@@ -23972,7 +24710,7 @@ class TelemetryPolicy extends coreHttp.BaseRequestPolicy {
      * @param request -
      */
     async sendRequest(request) {
-        {
+        if (coreHttp.isNode) {
             if (!request.headers) {
                 request.headers = new coreHttp.HttpHeaders();
             }
@@ -23995,7 +24733,7 @@ class TelemetryPolicyFactory {
      */
     constructor(telemetry) {
         const userAgentInfo = [];
-        {
+        if (coreHttp.isNode) {
             if (telemetry) {
                 const telemetryString = telemetry.userAgentPrefix || "";
                 if (telemetryString.length > 0 && userAgentInfo.indexOf(telemetryString) === -1) {
@@ -24008,7 +24746,7 @@ class TelemetryPolicyFactory {
                 userAgentInfo.push(libInfo);
             }
             // e.g. (NODE-VERSION 4.9.1; Windows_NT 10.0.16299)
-            const runtimeInfo = `(NODE-VERSION ${process.version}; ${os.type()} ${os.release()})`;
+            const runtimeInfo = `(NODE-VERSION ${process.version}; ${os__namespace.type()} ${os__namespace.release()})`;
             if (userAgentInfo.indexOf(runtimeInfo) === -1) {
                 userAgentInfo.push(runtimeInfo);
             }
@@ -24030,6 +24768,247 @@ class TelemetryPolicyFactory {
 const _defaultHttpClient = new coreHttp.DefaultHttpClient();
 function getCachedDefaultHttpClient() {
     return _defaultHttpClient;
+}
+
+// Copyright (c) Microsoft Corporation.
+/**
+ * A set of constants used internally when processing requests.
+ */
+const Constants = {
+    DefaultScope: "/.default",
+    /**
+     * Defines constants for use with HTTP headers.
+     */
+    HeaderConstants: {
+        /**
+         * The Authorization header.
+         */
+        AUTHORIZATION: "authorization",
+    },
+};
+// Default options for the cycler if none are provided
+const DEFAULT_CYCLER_OPTIONS = {
+    forcedRefreshWindowInMs: 1000,
+    retryIntervalInMs: 3000,
+    refreshWindowInMs: 1000 * 60 * 2, // Start refreshing 2m before expiry
+};
+/**
+ * Converts an an unreliable access token getter (which may resolve with null)
+ * into an AccessTokenGetter by retrying the unreliable getter in a regular
+ * interval.
+ *
+ * @param getAccessToken - a function that produces a promise of an access
+ * token that may fail by returning null
+ * @param retryIntervalInMs - the time (in milliseconds) to wait between retry
+ * attempts
+ * @param timeoutInMs - the timestamp after which the refresh attempt will fail,
+ * throwing an exception
+ * @returns - a promise that, if it resolves, will resolve with an access token
+ */
+async function beginRefresh(getAccessToken, retryIntervalInMs, timeoutInMs) {
+    // This wrapper handles exceptions gracefully as long as we haven't exceeded
+    // the timeout.
+    async function tryGetAccessToken() {
+        if (Date.now() < timeoutInMs) {
+            try {
+                return await getAccessToken();
+            }
+            catch (_a) {
+                return null;
+            }
+        }
+        else {
+            const finalToken = await getAccessToken();
+            // Timeout is up, so throw if it's still null
+            if (finalToken === null) {
+                throw new Error("Failed to refresh access token.");
+            }
+            return finalToken;
+        }
+    }
+    let token = await tryGetAccessToken();
+    while (token === null) {
+        await coreHttp.delay(retryIntervalInMs);
+        token = await tryGetAccessToken();
+    }
+    return token;
+}
+/**
+ * Creates a token cycler from a credential, scopes, and optional settings.
+ *
+ * A token cycler represents a way to reliably retrieve a valid access token
+ * from a TokenCredential. It will handle initializing the token, refreshing it
+ * when it nears expiration, and synchronizes refresh attempts to avoid
+ * concurrency hazards.
+ *
+ * @param credential - the underlying TokenCredential that provides the access
+ * token
+ * @param scopes - the scopes to request authorization for
+ * @param tokenCyclerOptions - optionally override default settings for the cycler
+ *
+ * @returns - a function that reliably produces a valid access token
+ */
+function createTokenCycler(credential, scopes, tokenCyclerOptions) {
+    let refreshWorker = null;
+    let token = null;
+    const options = Object.assign(Object.assign({}, DEFAULT_CYCLER_OPTIONS), tokenCyclerOptions);
+    /**
+     * This little holder defines several predicates that we use to construct
+     * the rules of refreshing the token.
+     */
+    const cycler = {
+        /**
+         * Produces true if a refresh job is currently in progress.
+         */
+        get isRefreshing() {
+            return refreshWorker !== null;
+        },
+        /**
+         * Produces true if the cycler SHOULD refresh (we are within the refresh
+         * window and not already refreshing)
+         */
+        get shouldRefresh() {
+            var _a;
+            return (!cycler.isRefreshing &&
+                ((_a = token === null || token === void 0 ? void 0 : token.expiresOnTimestamp) !== null && _a !== void 0 ? _a : 0) - options.refreshWindowInMs < Date.now());
+        },
+        /**
+         * Produces true if the cycler MUST refresh (null or nearly-expired
+         * token).
+         */
+        get mustRefresh() {
+            return (token === null || token.expiresOnTimestamp - options.forcedRefreshWindowInMs < Date.now());
+        },
+    };
+    /**
+     * Starts a refresh job or returns the existing job if one is already
+     * running.
+     */
+    function refresh(getTokenOptions) {
+        var _a;
+        if (!cycler.isRefreshing) {
+            // We bind `scopes` here to avoid passing it around a lot
+            const tryGetAccessToken = () => credential.getToken(scopes, getTokenOptions);
+            // Take advantage of promise chaining to insert an assignment to `token`
+            // before the refresh can be considered done.
+            refreshWorker = beginRefresh(tryGetAccessToken, options.retryIntervalInMs, 
+            // If we don't have a token, then we should timeout immediately
+            (_a = token === null || token === void 0 ? void 0 : token.expiresOnTimestamp) !== null && _a !== void 0 ? _a : Date.now())
+                .then((_token) => {
+                refreshWorker = null;
+                token = _token;
+                return token;
+            })
+                .catch((reason) => {
+                // We also should reset the refresher if we enter a failed state.  All
+                // existing awaiters will throw, but subsequent requests will start a
+                // new retry chain.
+                refreshWorker = null;
+                token = null;
+                throw reason;
+            });
+        }
+        return refreshWorker;
+    }
+    return async (tokenOptions) => {
+        //
+        // Simple rules:
+        // - If we MUST refresh, then return the refresh task, blocking
+        //   the pipeline until a token is available.
+        // - If we SHOULD refresh, then run refresh but don't return it
+        //   (we can still use the cached token).
+        // - Return the token, since it's fine if we didn't return in
+        //   step 1.
+        //
+        if (cycler.mustRefresh)
+            return refresh(tokenOptions);
+        if (cycler.shouldRefresh) {
+            refresh(tokenOptions);
+        }
+        return token;
+    };
+}
+/**
+ * We will retrieve the challenge only if the response status code was 401,
+ * and if the response contained the header "WWW-Authenticate" with a non-empty value.
+ */
+function getChallenge(response) {
+    const challenge = response.headers.get("WWW-Authenticate");
+    if (response.status === 401 && challenge) {
+        return challenge;
+    }
+    return;
+}
+/**
+ * Converts: `Bearer a="b" c="d"`.
+ * Into: `[ { a: 'b', c: 'd' }]`.
+ *
+ * @internal
+ */
+function parseChallenge(challenge) {
+    const bearerChallenge = challenge.slice("Bearer ".length);
+    const challengeParts = `${bearerChallenge.trim()} `.split(" ").filter((x) => x);
+    const keyValuePairs = challengeParts.map((keyValue) => (([key, value]) => ({ [key]: value }))(keyValue.trim().split("=")));
+    // Key-value pairs to plain object:
+    return keyValuePairs.reduce((a, b) => (Object.assign(Object.assign({}, a), b)), {});
+}
+// #endregion
+/**
+ * Creates a new factory for a RequestPolicy that applies a bearer token to
+ * the requests' `Authorization` headers.
+ *
+ * @param credential - The TokenCredential implementation that can supply the bearer token.
+ * @param scopes - The scopes for which the bearer token applies.
+ */
+function storageBearerTokenChallengeAuthenticationPolicy(credential, scopes) {
+    // This simple function encapsulates the entire process of reliably retrieving the token
+    let getToken = createTokenCycler(credential, scopes);
+    class StorageBearerTokenChallengeAuthenticationPolicy extends coreHttp.BaseRequestPolicy {
+        constructor(nextPolicy, options) {
+            super(nextPolicy, options);
+        }
+        async sendRequest(webResource) {
+            if (!webResource.url.toLowerCase().startsWith("https://")) {
+                throw new Error("Bearer token authentication is not permitted for non-TLS protected (non-https) URLs.");
+            }
+            const getTokenInternal = getToken;
+            const token = (await getTokenInternal({
+                abortSignal: webResource.abortSignal,
+                tracingOptions: {
+                    tracingContext: webResource.tracingContext,
+                },
+            })).token;
+            webResource.headers.set(Constants.HeaderConstants.AUTHORIZATION, `Bearer ${token}`);
+            const response = await this._nextPolicy.sendRequest(webResource);
+            if ((response === null || response === void 0 ? void 0 : response.status) === 401) {
+                const challenge = getChallenge(response);
+                if (challenge) {
+                    const challengeInfo = parseChallenge(challenge);
+                    const challengeScopes = challengeInfo.resource_id + Constants.DefaultScope;
+                    const parsedAuthUri = coreHttp.URLBuilder.parse(challengeInfo.authorization_uri);
+                    const pathSegments = parsedAuthUri.getPath().split("/");
+                    const tenantId = pathSegments[1];
+                    const getTokenForChallenge = createTokenCycler(credential, challengeScopes);
+                    const tokenForChallenge = (await getTokenForChallenge({
+                        abortSignal: webResource.abortSignal,
+                        tracingOptions: {
+                            tracingContext: webResource.tracingContext,
+                        },
+                        tenantId: tenantId,
+                    })).token;
+                    getToken = getTokenForChallenge;
+                    webResource.headers.set(Constants.HeaderConstants.AUTHORIZATION, `Bearer ${tokenForChallenge}`);
+                    return this._nextPolicy.sendRequest(webResource);
+                }
+            }
+            return response;
+        }
+    }
+    return {
+        create: (nextPolicy, options) => {
+            return new StorageBearerTokenChallengeAuthenticationPolicy(nextPolicy, options);
+        },
+    };
 }
 
 // Copyright (c) Microsoft Corporation.
@@ -24077,7 +25056,7 @@ class Pipeline {
     toServiceClientOptions() {
         return {
             httpClient: this.options.httpClient,
-            requestPolicyFactories: this.factories
+            requestPolicyFactories: this.factories,
         };
     }
 }
@@ -24089,6 +25068,7 @@ class Pipeline {
  * @returns A new Pipeline object.
  */
 function newPipeline(credential, pipelineOptions = {}) {
+    var _a;
     if (credential === undefined) {
         credential = new AnonymousCredential();
     }
@@ -24110,16 +25090,16 @@ function newPipeline(credential, pipelineOptions = {}) {
         coreHttp.logPolicy({
             logger: logger.info,
             allowedHeaderNames: StorageBlobLoggingAllowedHeaderNames,
-            allowedQueryParameters: StorageBlobLoggingAllowedQueryParameters
-        })
+            allowedQueryParameters: StorageBlobLoggingAllowedQueryParameters,
+        }),
     ];
-    {
+    if (coreHttp.isNode) {
         // policies only available in Node.js runtime, not in browsers
         factories.push(coreHttp.proxyPolicy(pipelineOptions.proxyOptions));
         factories.push(coreHttp.disableResponseDecompressionPolicy());
     }
     factories.push(coreHttp.isTokenCredential(credential)
-        ? attachCredential(coreHttp.bearerTokenAuthenticationPolicy(credential, StorageOAuthScopes), credential)
+        ? attachCredential(storageBearerTokenChallengeAuthenticationPolicy(credential, (_a = pipelineOptions.audience) !== null && _a !== void 0 ? _a : StorageOAuthScopes), credential)
         : credential);
     return new Pipeline(factories, pipelineOptions);
 }
@@ -24146,7 +25126,9 @@ class StorageSharedKeyCredentialPolicy extends CredentialPolicy {
      */
     signRequest(request) {
         request.headers.set(HeaderConstants.X_MS_DATE, new Date().toUTCString());
-        if (request.body && typeof request.body === "string" && request.body.length > 0) {
+        if (request.body &&
+            (typeof request.body === "string" || request.body !== undefined) &&
+            request.body.length > 0) {
             request.headers.set(HeaderConstants.CONTENT_LENGTH, Buffer.byteLength(request.body));
         }
         const stringToSign = [
@@ -24161,7 +25143,7 @@ class StorageSharedKeyCredentialPolicy extends CredentialPolicy {
             this.getHeaderValueToSign(request, HeaderConstants.IF_MATCH),
             this.getHeaderValueToSign(request, HeaderConstants.IF_NONE_MATCH),
             this.getHeaderValueToSign(request, HeaderConstants.IF_UNMODIFIED_SINCE),
-            this.getHeaderValueToSign(request, HeaderConstants.RANGE)
+            this.getHeaderValueToSign(request, HeaderConstants.RANGE),
         ].join("\n") +
             "\n" +
             this.getCanonicalizedHeadersString(request) +
@@ -24290,9 +25272,7 @@ class StorageSharedKeyCredential extends Credential {
      * @param stringToSign -
      */
     computeHMACSHA256(stringToSign) {
-        return crypto.createHmac("sha256", this.accountKey)
-            .update(stringToSign, "utf8")
-            .digest("base64");
+        return crypto.createHmac("sha256", this.accountKey).update(stringToSign, "utf8").digest("base64");
     }
 }
 
@@ -24304,8 +25284,8 @@ class StorageSharedKeyCredential extends Credential {
  * Changes may cause incorrect behavior and will be lost if the code is regenerated.
  */
 const packageName = "azure-storage-blob";
-const packageVersion = "12.8.0";
-class StorageClientContext extends coreHttp.ServiceClient {
+const packageVersion = "12.9.0";
+class StorageClientContext extends coreHttp__namespace.ServiceClient {
     /**
      * Initializes a new instance of the StorageClientContext class.
      * @param url The URL of the service account, container, or blob that is the target of the desired
@@ -24321,7 +25301,7 @@ class StorageClientContext extends coreHttp.ServiceClient {
             options = {};
         }
         if (!options.userAgent) {
-            const defaultUserAgent = coreHttp.getDefaultUserAgentValue();
+            const defaultUserAgent = coreHttp__namespace.getDefaultUserAgentValue();
             options.userAgent = `${packageName}/${packageVersion} ${defaultUserAgent}`;
         }
         super(undefined, options);
@@ -24330,7 +25310,7 @@ class StorageClientContext extends coreHttp.ServiceClient {
         // Parameter assignments
         this.url = url;
         // Assigning values to Constant parameters
-        this.version = options.version || "2020-10-02";
+        this.version = options.version || "2021-04-10";
     }
 }
 
@@ -24377,7 +25357,7 @@ class StorageClient {
  */
 const createSpan = coreTracing.createSpanFunction({
     packagePrefix: "Azure.Storage.Blob",
-    namespace: "Microsoft.Storage"
+    namespace: "Microsoft.Storage",
 });
 /**
  * @internal
@@ -24391,7 +25371,7 @@ function convertTracingToRequestOptionsBase(options) {
     return {
         // By passing spanOptions if they exist at runtime, we're backwards compatible with @azure/core-tracing@preview.13 and earlier.
         spanOptions: (_a = options === null || options === void 0 ? void 0 : options.tracingOptions) === null || _a === void 0 ? void 0 : _a.spanOptions,
-        tracingContext: (_b = options === null || options === void 0 ? void 0 : options.tracingOptions) === null || _b === void 0 ? void 0 : _b.tracingContext
+        tracingContext: (_b = options === null || options === void 0 ? void 0 : options.tracingOptions) === null || _b === void 0 ? void 0 : _b.tracingContext,
     };
 }
 
@@ -24448,6 +25428,10 @@ class BlobSASPermissions {
          * Specifies SetImmutabilityPolicy access granted.
          */
         this.setImmutabilityPolicy = false;
+        /**
+         * Specifies that Permanent Delete is permitted.
+         */
+        this.permanentDelete = false;
     }
     /**
      * Creates a {@link BlobSASPermissions} from the specified permissions string. This method will throw an
@@ -24488,6 +25472,9 @@ class BlobSASPermissions {
                     break;
                 case "i":
                     blobSASPermissions.setImmutabilityPolicy = true;
+                    break;
+                case "y":
+                    blobSASPermissions.permanentDelete = true;
                     break;
                 default:
                     throw new RangeError(`Invalid permission: ${char}`);
@@ -24533,6 +25520,9 @@ class BlobSASPermissions {
         if (permissionLike.setImmutabilityPolicy) {
             blobSASPermissions.setImmutabilityPolicy = true;
         }
+        if (permissionLike.permanentDelete) {
+            blobSASPermissions.permanentDelete = true;
+        }
         return blobSASPermissions;
     }
     /**
@@ -24572,6 +25562,9 @@ class BlobSASPermissions {
         }
         if (this.setImmutabilityPolicy) {
             permissions.push("i");
+        }
+        if (this.permanentDelete) {
+            permissions.push("y");
         }
         return permissions.join("");
     }
@@ -24632,6 +25625,14 @@ class ContainerSASPermissions {
          * Specifies SetImmutabilityPolicy access granted.
          */
         this.setImmutabilityPolicy = false;
+        /**
+         * Specifies that Permanent Delete is permitted.
+         */
+        this.permanentDelete = false;
+        /**
+         * Specifies that Filter Blobs by Tags is permitted.
+         */
+        this.filterByTags = false;
     }
     /**
      * Creates an {@link ContainerSASPermissions} from the specified permissions string. This method will throw an
@@ -24675,6 +25676,12 @@ class ContainerSASPermissions {
                     break;
                 case "i":
                     containerSASPermissions.setImmutabilityPolicy = true;
+                    break;
+                case "y":
+                    containerSASPermissions.permanentDelete = true;
+                    break;
+                case "f":
+                    containerSASPermissions.filterByTags = true;
                     break;
                 default:
                     throw new RangeError(`Invalid permission ${char}`);
@@ -24723,6 +25730,12 @@ class ContainerSASPermissions {
         if (permissionLike.setImmutabilityPolicy) {
             containerSASPermissions.setImmutabilityPolicy = true;
         }
+        if (permissionLike.permanentDelete) {
+            containerSASPermissions.permanentDelete = true;
+        }
+        if (permissionLike.filterByTags) {
+            containerSASPermissions.filterByTags = true;
+        }
         return containerSASPermissions;
     }
     /**
@@ -24768,6 +25781,12 @@ class ContainerSASPermissions {
         if (this.setImmutabilityPolicy) {
             permissions.push("i");
         }
+        if (this.permanentDelete) {
+            permissions.push("y");
+        }
+        if (this.filterByTags) {
+            permissions.push("f");
+        }
         return permissions.join("");
     }
 }
@@ -24797,9 +25816,7 @@ class UserDelegationKeyCredential {
      */
     computeHMACSHA256(stringToSign) {
         // console.log(`stringToSign: ${JSON.stringify(stringToSign)}`);
-        return crypto.createHmac("sha256", this.key)
-            .update(stringToSign, "utf8")
-            .digest("base64");
+        return crypto.createHmac("sha256", this.key).update(stringToSign, "utf8").digest("base64");
     }
 }
 
@@ -24817,6 +25834,10 @@ function ipRangeToString(ipRange) {
 }
 
 // Copyright (c) Microsoft Corporation.
+/**
+ * Protocols for generated SAS.
+ */
+exports.SASProtocol = void 0;
 (function (SASProtocol) {
     /**
      * Protocol that allows HTTPS only
@@ -24837,7 +25858,7 @@ function ipRangeToString(ipRange) {
  * NOTE: Instances of this class are immutable.
  */
 class SASQueryParameters {
-    constructor(version, signature, permissionsOrOptions, services, resourceTypes, protocol, startsOn, expiresOn, ipRange, identifier, resource, cacheControl, contentDisposition, contentEncoding, contentLanguage, contentType, userDelegationKey, preauthorizedAgentObjectId, correlationId) {
+    constructor(version, signature, permissionsOrOptions, services, resourceTypes, protocol, startsOn, expiresOn, ipRange, identifier, resource, cacheControl, contentDisposition, contentEncoding, contentLanguage, contentType, userDelegationKey, preauthorizedAgentObjectId, correlationId, encryptionScope) {
         this.version = version;
         this.signature = signature;
         if (permissionsOrOptions !== undefined && typeof permissionsOrOptions !== "string") {
@@ -24850,6 +25871,7 @@ class SASQueryParameters {
             this.expiresOn = permissionsOrOptions.expiresOn;
             this.ipRangeInner = permissionsOrOptions.ipRange;
             this.identifier = permissionsOrOptions.identifier;
+            this.encryptionScope = permissionsOrOptions.encryptionScope;
             this.resource = permissionsOrOptions.resource;
             this.cacheControl = permissionsOrOptions.cacheControl;
             this.contentDisposition = permissionsOrOptions.contentDisposition;
@@ -24875,6 +25897,7 @@ class SASQueryParameters {
             this.protocol = protocol;
             this.startsOn = startsOn;
             this.ipRangeInner = ipRange;
+            this.encryptionScope = encryptionScope;
             this.identifier = identifier;
             this.resource = resource;
             this.cacheControl = cacheControl;
@@ -24903,7 +25926,7 @@ class SASQueryParameters {
         if (this.ipRangeInner) {
             return {
                 end: this.ipRangeInner.end,
-                start: this.ipRangeInner.start
+                start: this.ipRangeInner.start,
             };
         }
         return undefined;
@@ -24922,6 +25945,7 @@ class SASQueryParameters {
             "se",
             "sip",
             "si",
+            "ses",
             "skoid",
             "sktid",
             "skt",
@@ -24937,7 +25961,7 @@ class SASQueryParameters {
             "rscl",
             "rsct",
             "saoid",
-            "scid"
+            "scid",
         ];
         const queries = [];
         for (const param of params) {
@@ -24965,6 +25989,9 @@ class SASQueryParameters {
                     break;
                 case "si":
                     this.tryAppendQueryParameter(queries, param, this.identifier);
+                    break;
+                case "ses":
+                    this.tryAppendQueryParameter(queries, param, this.encryptionScope);
                     break;
                 case "skoid": // Signed object ID
                     this.tryAppendQueryParameter(queries, param, this.signedOid);
@@ -25050,6 +26077,15 @@ function generateBlobSASQueryParameters(blobSASSignatureValues, sharedKeyCredent
     if (sharedKeyCredential === undefined && userDelegationKeyCredential === undefined) {
         throw TypeError("Invalid sharedKeyCredential, userDelegationKey or accountName.");
     }
+    // Version 2020-12-06 adds support for encryptionscope in SAS.
+    if (version >= "2020-12-06") {
+        if (sharedKeyCredential !== undefined) {
+            return generateBlobSASQueryParameters20201206(blobSASSignatureValues, sharedKeyCredential);
+        }
+        else {
+            return generateBlobSASQueryParametersUDK20201206(blobSASSignatureValues, userDelegationKeyCredential);
+        }
+    }
     // Version 2019-12-12 adds support for the blob tags permission.
     // Version 2018-11-09 adds support for the signed resource and signed blob snapshot time fields.
     // https://docs.microsoft.com/en-us/rest/api/storageservices/constructing-a-service-sas#constructing-the-signature-string
@@ -25131,7 +26167,7 @@ function generateBlobSASQueryParameters20150405(blobSASSignatureValues, sharedKe
         blobSASSignatureValues.contentDisposition ? blobSASSignatureValues.contentDisposition : "",
         blobSASSignatureValues.contentEncoding ? blobSASSignatureValues.contentEncoding : "",
         blobSASSignatureValues.contentLanguage ? blobSASSignatureValues.contentLanguage : "",
-        blobSASSignatureValues.contentType ? blobSASSignatureValues.contentType : ""
+        blobSASSignatureValues.contentType ? blobSASSignatureValues.contentType : "",
     ].join("\n");
     const signature = sharedKeyCredential.computeHMACSHA256(stringToSign);
     return new SASQueryParameters(blobSASSignatureValues.version, signature, verifiedPermissions, undefined, undefined, blobSASSignatureValues.protocol, blobSASSignatureValues.startsOn, blobSASSignatureValues.expiresOn, blobSASSignatureValues.ipRange, blobSASSignatureValues.identifier, resource, blobSASSignatureValues.cacheControl, blobSASSignatureValues.contentDisposition, blobSASSignatureValues.contentEncoding, blobSASSignatureValues.contentLanguage, blobSASSignatureValues.contentType);
@@ -25200,10 +26236,80 @@ function generateBlobSASQueryParameters20181109(blobSASSignatureValues, sharedKe
         blobSASSignatureValues.contentDisposition ? blobSASSignatureValues.contentDisposition : "",
         blobSASSignatureValues.contentEncoding ? blobSASSignatureValues.contentEncoding : "",
         blobSASSignatureValues.contentLanguage ? blobSASSignatureValues.contentLanguage : "",
-        blobSASSignatureValues.contentType ? blobSASSignatureValues.contentType : ""
+        blobSASSignatureValues.contentType ? blobSASSignatureValues.contentType : "",
     ].join("\n");
     const signature = sharedKeyCredential.computeHMACSHA256(stringToSign);
     return new SASQueryParameters(blobSASSignatureValues.version, signature, verifiedPermissions, undefined, undefined, blobSASSignatureValues.protocol, blobSASSignatureValues.startsOn, blobSASSignatureValues.expiresOn, blobSASSignatureValues.ipRange, blobSASSignatureValues.identifier, resource, blobSASSignatureValues.cacheControl, blobSASSignatureValues.contentDisposition, blobSASSignatureValues.contentEncoding, blobSASSignatureValues.contentLanguage, blobSASSignatureValues.contentType);
+}
+/**
+ * ONLY AVAILABLE IN NODE.JS RUNTIME.
+ * IMPLEMENTATION FOR API VERSION FROM 2020-12-06.
+ *
+ * Creates an instance of SASQueryParameters.
+ *
+ * Only accepts required settings needed to create a SAS. For optional settings please
+ * set corresponding properties directly, such as permissions, startsOn and identifier.
+ *
+ * WARNING: When identifier is not provided, permissions and expiresOn are required.
+ * You MUST assign value to identifier or expiresOn & permissions manually if you initial with
+ * this constructor.
+ *
+ * @param blobSASSignatureValues -
+ * @param sharedKeyCredential -
+ */
+function generateBlobSASQueryParameters20201206(blobSASSignatureValues, sharedKeyCredential) {
+    blobSASSignatureValues = SASSignatureValuesSanityCheckAndAutofill(blobSASSignatureValues);
+    if (!blobSASSignatureValues.identifier &&
+        !(blobSASSignatureValues.permissions && blobSASSignatureValues.expiresOn)) {
+        throw new RangeError("Must provide 'permissions' and 'expiresOn' for Blob SAS generation when 'identifier' is not provided.");
+    }
+    let resource = "c";
+    let timestamp = blobSASSignatureValues.snapshotTime;
+    if (blobSASSignatureValues.blobName) {
+        resource = "b";
+        if (blobSASSignatureValues.snapshotTime) {
+            resource = "bs";
+        }
+        else if (blobSASSignatureValues.versionId) {
+            resource = "bv";
+            timestamp = blobSASSignatureValues.versionId;
+        }
+    }
+    // Calling parse and toString guarantees the proper ordering and throws on invalid characters.
+    let verifiedPermissions;
+    if (blobSASSignatureValues.permissions) {
+        if (blobSASSignatureValues.blobName) {
+            verifiedPermissions = BlobSASPermissions.parse(blobSASSignatureValues.permissions.toString()).toString();
+        }
+        else {
+            verifiedPermissions = ContainerSASPermissions.parse(blobSASSignatureValues.permissions.toString()).toString();
+        }
+    }
+    // Signature is generated on the un-url-encoded values.
+    const stringToSign = [
+        verifiedPermissions ? verifiedPermissions : "",
+        blobSASSignatureValues.startsOn
+            ? truncatedISO8061Date(blobSASSignatureValues.startsOn, false)
+            : "",
+        blobSASSignatureValues.expiresOn
+            ? truncatedISO8061Date(blobSASSignatureValues.expiresOn, false)
+            : "",
+        getCanonicalName(sharedKeyCredential.accountName, blobSASSignatureValues.containerName, blobSASSignatureValues.blobName),
+        blobSASSignatureValues.identifier,
+        blobSASSignatureValues.ipRange ? ipRangeToString(blobSASSignatureValues.ipRange) : "",
+        blobSASSignatureValues.protocol ? blobSASSignatureValues.protocol : "",
+        blobSASSignatureValues.version,
+        resource,
+        timestamp,
+        blobSASSignatureValues.encryptionScope,
+        blobSASSignatureValues.cacheControl ? blobSASSignatureValues.cacheControl : "",
+        blobSASSignatureValues.contentDisposition ? blobSASSignatureValues.contentDisposition : "",
+        blobSASSignatureValues.contentEncoding ? blobSASSignatureValues.contentEncoding : "",
+        blobSASSignatureValues.contentLanguage ? blobSASSignatureValues.contentLanguage : "",
+        blobSASSignatureValues.contentType ? blobSASSignatureValues.contentType : "",
+    ].join("\n");
+    const signature = sharedKeyCredential.computeHMACSHA256(stringToSign);
+    return new SASQueryParameters(blobSASSignatureValues.version, signature, verifiedPermissions, undefined, undefined, blobSASSignatureValues.protocol, blobSASSignatureValues.startsOn, blobSASSignatureValues.expiresOn, blobSASSignatureValues.ipRange, blobSASSignatureValues.identifier, resource, blobSASSignatureValues.cacheControl, blobSASSignatureValues.contentDisposition, blobSASSignatureValues.contentEncoding, blobSASSignatureValues.contentLanguage, blobSASSignatureValues.contentType, undefined, undefined, undefined, blobSASSignatureValues.encryptionScope);
 }
 /**
  * ONLY AVAILABLE IN NODE.JS RUNTIME.
@@ -25276,7 +26382,7 @@ function generateBlobSASQueryParametersUDK20181109(blobSASSignatureValues, userD
         blobSASSignatureValues.contentDisposition,
         blobSASSignatureValues.contentEncoding,
         blobSASSignatureValues.contentLanguage,
-        blobSASSignatureValues.contentType
+        blobSASSignatureValues.contentType,
     ].join("\n");
     const signature = userDelegationKeyCredential.computeHMACSHA256(stringToSign);
     return new SASQueryParameters(blobSASSignatureValues.version, signature, verifiedPermissions, undefined, undefined, blobSASSignatureValues.protocol, blobSASSignatureValues.startsOn, blobSASSignatureValues.expiresOn, blobSASSignatureValues.ipRange, blobSASSignatureValues.identifier, resource, blobSASSignatureValues.cacheControl, blobSASSignatureValues.contentDisposition, blobSASSignatureValues.contentEncoding, blobSASSignatureValues.contentLanguage, blobSASSignatureValues.contentType, userDelegationKeyCredential.userDelegationKey);
@@ -25355,10 +26461,90 @@ function generateBlobSASQueryParametersUDK20200210(blobSASSignatureValues, userD
         blobSASSignatureValues.contentDisposition,
         blobSASSignatureValues.contentEncoding,
         blobSASSignatureValues.contentLanguage,
-        blobSASSignatureValues.contentType
+        blobSASSignatureValues.contentType,
     ].join("\n");
     const signature = userDelegationKeyCredential.computeHMACSHA256(stringToSign);
     return new SASQueryParameters(blobSASSignatureValues.version, signature, verifiedPermissions, undefined, undefined, blobSASSignatureValues.protocol, blobSASSignatureValues.startsOn, blobSASSignatureValues.expiresOn, blobSASSignatureValues.ipRange, blobSASSignatureValues.identifier, resource, blobSASSignatureValues.cacheControl, blobSASSignatureValues.contentDisposition, blobSASSignatureValues.contentEncoding, blobSASSignatureValues.contentLanguage, blobSASSignatureValues.contentType, userDelegationKeyCredential.userDelegationKey, blobSASSignatureValues.preauthorizedAgentObjectId, blobSASSignatureValues.correlationId);
+}
+/**
+ * ONLY AVAILABLE IN NODE.JS RUNTIME.
+ * IMPLEMENTATION FOR API VERSION FROM 2020-12-06.
+ *
+ * Creates an instance of SASQueryParameters.
+ *
+ * Only accepts required settings needed to create a SAS. For optional settings please
+ * set corresponding properties directly, such as permissions, startsOn.
+ *
+ * WARNING: identifier will be ignored, permissions and expiresOn are required.
+ *
+ * @param blobSASSignatureValues -
+ * @param userDelegationKeyCredential -
+ */
+function generateBlobSASQueryParametersUDK20201206(blobSASSignatureValues, userDelegationKeyCredential) {
+    blobSASSignatureValues = SASSignatureValuesSanityCheckAndAutofill(blobSASSignatureValues);
+    // Stored access policies are not supported for a user delegation SAS.
+    if (!blobSASSignatureValues.permissions || !blobSASSignatureValues.expiresOn) {
+        throw new RangeError("Must provide 'permissions' and 'expiresOn' for Blob SAS generation when generating user delegation SAS.");
+    }
+    let resource = "c";
+    let timestamp = blobSASSignatureValues.snapshotTime;
+    if (blobSASSignatureValues.blobName) {
+        resource = "b";
+        if (blobSASSignatureValues.snapshotTime) {
+            resource = "bs";
+        }
+        else if (blobSASSignatureValues.versionId) {
+            resource = "bv";
+            timestamp = blobSASSignatureValues.versionId;
+        }
+    }
+    // Calling parse and toString guarantees the proper ordering and throws on invalid characters.
+    let verifiedPermissions;
+    if (blobSASSignatureValues.permissions) {
+        if (blobSASSignatureValues.blobName) {
+            verifiedPermissions = BlobSASPermissions.parse(blobSASSignatureValues.permissions.toString()).toString();
+        }
+        else {
+            verifiedPermissions = ContainerSASPermissions.parse(blobSASSignatureValues.permissions.toString()).toString();
+        }
+    }
+    // Signature is generated on the un-url-encoded values.
+    const stringToSign = [
+        verifiedPermissions ? verifiedPermissions : "",
+        blobSASSignatureValues.startsOn
+            ? truncatedISO8061Date(blobSASSignatureValues.startsOn, false)
+            : "",
+        blobSASSignatureValues.expiresOn
+            ? truncatedISO8061Date(blobSASSignatureValues.expiresOn, false)
+            : "",
+        getCanonicalName(userDelegationKeyCredential.accountName, blobSASSignatureValues.containerName, blobSASSignatureValues.blobName),
+        userDelegationKeyCredential.userDelegationKey.signedObjectId,
+        userDelegationKeyCredential.userDelegationKey.signedTenantId,
+        userDelegationKeyCredential.userDelegationKey.signedStartsOn
+            ? truncatedISO8061Date(userDelegationKeyCredential.userDelegationKey.signedStartsOn, false)
+            : "",
+        userDelegationKeyCredential.userDelegationKey.signedExpiresOn
+            ? truncatedISO8061Date(userDelegationKeyCredential.userDelegationKey.signedExpiresOn, false)
+            : "",
+        userDelegationKeyCredential.userDelegationKey.signedService,
+        userDelegationKeyCredential.userDelegationKey.signedVersion,
+        blobSASSignatureValues.preauthorizedAgentObjectId,
+        undefined,
+        blobSASSignatureValues.correlationId,
+        blobSASSignatureValues.ipRange ? ipRangeToString(blobSASSignatureValues.ipRange) : "",
+        blobSASSignatureValues.protocol ? blobSASSignatureValues.protocol : "",
+        blobSASSignatureValues.version,
+        resource,
+        timestamp,
+        blobSASSignatureValues.encryptionScope,
+        blobSASSignatureValues.cacheControl,
+        blobSASSignatureValues.contentDisposition,
+        blobSASSignatureValues.contentEncoding,
+        blobSASSignatureValues.contentLanguage,
+        blobSASSignatureValues.contentType,
+    ].join("\n");
+    const signature = userDelegationKeyCredential.computeHMACSHA256(stringToSign);
+    return new SASQueryParameters(blobSASSignatureValues.version, signature, verifiedPermissions, undefined, undefined, blobSASSignatureValues.protocol, blobSASSignatureValues.startsOn, blobSASSignatureValues.expiresOn, blobSASSignatureValues.ipRange, blobSASSignatureValues.identifier, resource, blobSASSignatureValues.cacheControl, blobSASSignatureValues.contentDisposition, blobSASSignatureValues.contentEncoding, blobSASSignatureValues.contentLanguage, blobSASSignatureValues.contentType, userDelegationKeyCredential.userDelegationKey, blobSASSignatureValues.preauthorizedAgentObjectId, blobSASSignatureValues.correlationId, blobSASSignatureValues.encryptionScope);
 }
 function getCanonicalName(accountName, containerName, blobName) {
     // Container: "/blob/account/containerName"
@@ -25394,6 +26580,11 @@ function SASSignatureValuesSanityCheckAndAutofill(blobSASSignatureValues) {
         throw RangeError("'version' must be >= '2019-10-10' when providing 'x' permission.");
     }
     if (blobSASSignatureValues.permissions &&
+        blobSASSignatureValues.permissions.permanentDelete &&
+        version < "2019-10-10") {
+        throw RangeError("'version' must be >= '2019-10-10' when providing 'y' permission.");
+    }
+    if (blobSASSignatureValues.permissions &&
         blobSASSignatureValues.permissions.tag &&
         version < "2019-12-12") {
         throw RangeError("'version' must be >= '2019-12-12' when providing 't' permission.");
@@ -25403,9 +26594,17 @@ function SASSignatureValuesSanityCheckAndAutofill(blobSASSignatureValues) {
         (blobSASSignatureValues.permissions.move || blobSASSignatureValues.permissions.execute)) {
         throw RangeError("'version' must be >= '2020-02-10' when providing the 'm' or 'e' permission.");
     }
+    if (version < "2021-04-10" &&
+        blobSASSignatureValues.permissions &&
+        blobSASSignatureValues.permissions.filterByTags) {
+        throw RangeError("'version' must be >= '2021-04-10' when providing the 'f' permission.");
+    }
     if (version < "2020-02-10" &&
         (blobSASSignatureValues.preauthorizedAgentObjectId || blobSASSignatureValues.correlationId)) {
         throw RangeError("'version' must be >= '2020-02-10' when providing 'preauthorizedAgentObjectId' or 'correlationId'.");
+    }
+    if (blobSASSignatureValues.encryptionScope && version < "2020-12-06") {
+        throw RangeError("'version' must be >= '2020-12-06' when provided 'encryptionScope' in SAS.");
     }
     blobSASSignatureValues.version = version;
     return blobSASSignatureValues;
@@ -25480,7 +26679,7 @@ class BlobLeaseClient {
         catch (e) {
             span.setStatus({
                 code: coreTracing.SpanStatusCode.ERROR,
-                message: e.message
+                message: e.message,
             });
             throw e;
         }
@@ -25515,7 +26714,7 @@ class BlobLeaseClient {
         catch (e) {
             span.setStatus({
                 code: coreTracing.SpanStatusCode.ERROR,
-                message: e.message
+                message: e.message,
             });
             throw e;
         }
@@ -25548,7 +26747,7 @@ class BlobLeaseClient {
         catch (e) {
             span.setStatus({
                 code: coreTracing.SpanStatusCode.ERROR,
-                message: e.message
+                message: e.message,
             });
             throw e;
         }
@@ -25580,7 +26779,7 @@ class BlobLeaseClient {
         catch (e) {
             span.setStatus({
                 code: coreTracing.SpanStatusCode.ERROR,
-                message: e.message
+                message: e.message,
             });
             throw e;
         }
@@ -25615,7 +26814,7 @@ class BlobLeaseClient {
         catch (e) {
             span.setStatus({
                 code: coreTracing.SpanStatusCode.ERROR,
-                message: e.message
+                message: e.message,
             });
             throw e;
         }
@@ -25695,8 +26894,7 @@ class RetriableReadableStream extends stream.Readable {
                     });
                 }
                 else {
-                    this.destroy(new Error(`Data corruption failure: received less data than required and reached maxRetires limitation. Received data offset: ${this
-                        .offset - 1}, data needed offset: ${this.end}, retries: ${this.retries}, max retries: ${this.maxRetryRequests}`));
+                    this.destroy(new Error(`Data corruption failure: received less data than required and reached maxRetires limitation. Received data offset: ${this.offset - 1}, data needed offset: ${this.end}, retries: ${this.retries}, max retries: ${this.maxRetryRequests}`));
                 }
             }
             else {
@@ -26541,7 +27739,7 @@ class AvroReader {
     }
     async initialize(options = {}) {
         const header = await AvroParser.readFixedBytes(this._headerStream, AVRO_INIT_BYTES.length, {
-            abortSignal: options.abortSignal
+            abortSignal: options.abortSignal,
         });
         if (!arraysEqual(header, AVRO_INIT_BYTES)) {
             throw new Error("Stream is not an Avro file.");
@@ -26549,7 +27747,7 @@ class AvroReader {
         // File metadata is written as if defined by the following map schema:
         // { "type": "map", "values": "bytes"}
         this._metadata = await AvroParser.readMap(this._headerStream, AvroParser.readString, {
-            abortSignal: options.abortSignal
+            abortSignal: options.abortSignal,
         });
         // Validate codec
         const codec = this._metadata[AVRO_CODEC_KEY];
@@ -26558,7 +27756,7 @@ class AvroReader {
         }
         // The 16-byte, randomly-generated sync marker for this file.
         this._syncMarker = await AvroParser.readFixedBytes(this._headerStream, AVRO_SYNC_MARKER_SIZE, {
-            abortSignal: options.abortSignal
+            abortSignal: options.abortSignal,
         });
         // Parse the schema
         const schema = JSON.parse(this._metadata[AVRO_SCHEMA_KEY]);
@@ -26567,7 +27765,7 @@ class AvroReader {
             this._blockOffset = this._initialBlockOffset + this._dataStream.position;
         }
         this._itemsRemainingInBlock = await AvroParser.readLong(this._dataStream, {
-            abortSignal: options.abortSignal
+            abortSignal: options.abortSignal,
         });
         // skip block length
         await AvroParser.readLong(this._dataStream, { abortSignal: options.abortSignal });
@@ -26589,13 +27787,13 @@ class AvroReader {
             }
             while (this.hasNext()) {
                 const result = yield tslib.__await(this._itemType.read(this._dataStream, {
-                    abortSignal: options.abortSignal
+                    abortSignal: options.abortSignal,
                 }));
                 this._itemsRemainingInBlock--;
                 this._objectIndex++;
                 if (this._itemsRemainingInBlock == 0) {
                     const marker = yield tslib.__await(AvroParser.readFixedBytes(this._dataStream, AVRO_SYNC_MARKER_SIZE, {
-                        abortSignal: options.abortSignal
+                        abortSignal: options.abortSignal,
                     }));
                     this._blockOffset = this._initialBlockOffset + this._dataStream.position;
                     this._objectIndex = 0;
@@ -26604,7 +27802,7 @@ class AvroReader {
                     }
                     try {
                         this._itemsRemainingInBlock = yield tslib.__await(AvroParser.readLong(this._dataStream, {
-                            abortSignal: options.abortSignal
+                            abortSignal: options.abortSignal,
                         }));
                     }
                     catch (err) {
@@ -26803,7 +28001,7 @@ class BlobQuickQueryStream extends stream.Readable {
                             position,
                             name,
                             isFatal: fatal,
-                            description
+                            description,
                         });
                     }
                     break;
@@ -27179,6 +28377,11 @@ class BlobQueryResponse {
 }
 
 // Copyright (c) Microsoft Corporation.
+/**
+ * Represents the access tier on a blob.
+ * For detailed information about block blob level tiering see {@link https://docs.microsoft.com/azure/storage/blobs/storage-blob-storage-tiers|Hot, cool and archive storage tiers.}
+ */
+exports.BlockBlobTier = void 0;
 (function (BlockBlobTier) {
     /**
      * Optimized for storing data that is accessed frequently.
@@ -27194,6 +28397,12 @@ class BlobQueryResponse {
      */
     BlockBlobTier["Archive"] = "Archive";
 })(exports.BlockBlobTier || (exports.BlockBlobTier = {}));
+/**
+ * Specifies the page blob tier to set the blob to. This is only applicable to page blobs on premium storage accounts.
+ * Please see {@link https://docs.microsoft.com/azure/storage/storage-premium-storage#scalability-and-performance-targets|here}
+ * for detailed information on the corresponding IOPS and throughput per PageBlobTier.
+ */
+exports.PremiumPageBlobTier = void 0;
 (function (PremiumPageBlobTier) {
     /**
      * P4 Tier.
@@ -27254,6 +28463,20 @@ function ensureCpkIfSpecified(cpk, isHttps) {
         cpk.encryptionAlgorithm = EncryptionAlgorithmAES25;
     }
 }
+/**
+ * Defines the known cloud audiences for Storage.
+ */
+exports.StorageBlobAudience = void 0;
+(function (StorageBlobAudience) {
+    /**
+     * The OAuth scope to use to retrieve an AAD token for Azure Storage.
+     */
+    StorageBlobAudience["StorageOAuthScopes"] = "https://storage.azure.com/.default";
+    /**
+     * The OAuth scope to use to retrieve an AAD token for Azure Disk.
+     */
+    StorageBlobAudience["DiskComputeOAuthScopes"] = "https://disk.compute.azure.com/.default";
+})(exports.StorageBlobAudience || (exports.StorageBlobAudience = {}));
 
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
@@ -27266,16 +28489,16 @@ function ensureCpkIfSpecified(cpk, isHttps) {
 function rangeResponseFromModel(response) {
     const pageRange = (response._response.parsedBody.pageRange || []).map((x) => ({
         offset: x.start,
-        count: x.end - x.start
+        count: x.end - x.start,
     }));
     const clearRange = (response._response.parsedBody.clearRange || []).map((x) => ({
         offset: x.start,
-        count: x.end - x.start
+        count: x.end - x.start,
     }));
     return Object.assign(Object.assign({}, response), { pageRange,
         clearRange, _response: Object.assign(Object.assign({}, response._response), { parsedBody: {
                 pageRange,
-                clearRange
+                clearRange,
             } }) });
 }
 
@@ -27288,7 +28511,7 @@ function rangeResponseFromModel(response) {
  */
 class BlobBeginCopyFromUrlPoller extends coreLro.Poller {
     constructor(options) {
-        const { blobClient, copySource, intervalInMs = 15000, onProgress, resumeFrom, startCopyFromURLOptions } = options;
+        const { blobClient, copySource, intervalInMs = 15000, onProgress, resumeFrom, startCopyFromURLOptions, } = options;
         let state;
         if (resumeFrom) {
             state = JSON.parse(resumeFrom).state;
@@ -27324,7 +28547,7 @@ const cancel = async function cancel(options = {}) {
     }
     // if abortCopyFromURL throws, it will bubble up to user's poller.cancelOperation call
     await state.blobClient.abortCopyFromURL(copyId, {
-        abortSignal: options.abortSignal
+        abortSignal: options.abortSignal,
     });
     state.isCancelled = true;
     return makeBlobBeginCopyFromURLPollOperation(state);
@@ -27402,7 +28625,7 @@ function makeBlobBeginCopyFromURLPollOperation(state) {
         state: Object.assign({}, state),
         cancel,
         toString,
-        update
+        update,
     };
 }
 
@@ -27631,7 +28854,7 @@ class BuffersStream extends stream.Readable {
  * maxBufferLength is max size of each buffer in the pooled buffers.
  */
 // Can't use import as Typescript doesn't recognize "buffer".
-const maxBufferLength = __webpack_require__(293).constants.MAX_LENGTH;
+const maxBufferLength = __webpack_require__(407).constants.MAX_LENGTH;
 /**
  * This class provides a buffer container which conceptually has no hard size limit.
  * It accepts a capacity, an array of input buffers and the total length of input data.
@@ -28044,7 +29267,7 @@ async function streamToBuffer2(stream, buffer, encoding) {
  */
 async function readStreamToLocalFile(rs, file) {
     return new Promise((resolve, reject) => {
-        const ws = fs.createWriteStream(file);
+        const ws = fs__namespace.createWriteStream(file);
         rs.on("error", (err) => {
             reject(err);
         });
@@ -28060,8 +29283,8 @@ async function readStreamToLocalFile(rs, file) {
  *
  * Promisified version of fs.stat().
  */
-const fsStat = util.promisify(fs.stat);
-const fsCreateReadStream = fs.createReadStream;
+const fsStat = util__namespace.promisify(fs__namespace.stat);
+const fsCreateReadStream = fs__namespace.createReadStream;
 
 /**
  * A BlobClient represents a URL to an Azure Storage blob; the blob may be a block blob,
@@ -28104,11 +29327,16 @@ class BlobClient extends StorageClient {
             const blobName = blobNameOrOptions;
             const extractedCreds = extractConnectionStringParts(urlOrConnectionString);
             if (extractedCreds.kind === "AccountConnString") {
-                {
+                if (coreHttp.isNode) {
                     const sharedKeyCredential = new StorageSharedKeyCredential(extractedCreds.accountName, extractedCreds.accountKey);
                     url = appendToURLPath(appendToURLPath(extractedCreds.url, encodeURIComponent(containerName)), encodeURIComponent(blobName));
-                    options.proxyOptions = coreHttp.getDefaultProxySettings(extractedCreds.proxyUri);
+                    if (!options.proxyOptions) {
+                        options.proxyOptions = coreHttp.getDefaultProxySettings(extractedCreds.proxyUri);
+                    }
                     pipeline = newPipeline(sharedKeyCredential, options);
+                }
+                else {
+                    throw new Error("Account connection string is only supported in Node.js environment");
                 }
             }
             else if (extractedCreds.kind === "SASConnString") {
@@ -28126,10 +29354,8 @@ class BlobClient extends StorageClient {
             throw new Error("Expecting non-empty strings for containerName and blobName parameters");
         }
         super(url, pipeline);
-        ({
-            blobName: this._name,
-            containerName: this._containerName
-        } = this.getBlobAndContainerNamesFromUrl());
+        ({ blobName: this._name, containerName: this._containerName } =
+            this.getBlobAndContainerNamesFromUrl());
         this.blobContext = new Blob$1(this.storageClientContext);
         this._snapshot = getURLParameter(this.url, URLConstants.Parameters.SNAPSHOT);
         this._versionId = getURLParameter(this.url, URLConstants.Parameters.VERSIONID);
@@ -28254,11 +29480,13 @@ class BlobClient extends StorageClient {
         const { span, updatedOptions } = createSpan("BlobClient-download", options);
         try {
             const res = await this.blobContext.download(Object.assign({ abortSignal: options.abortSignal, leaseAccessConditions: options.conditions, modifiedAccessConditions: Object.assign(Object.assign({}, options.conditions), { ifTags: (_a = options.conditions) === null || _a === void 0 ? void 0 : _a.tagConditions }), requestOptions: {
-                    onDownloadProgress: coreHttp.isNode ? undefined : options.onProgress // for Node.js, progress is reported by RetriableReadableStream
+                    onDownloadProgress: coreHttp.isNode ? undefined : options.onProgress, // for Node.js, progress is reported by RetriableReadableStream
                 }, range: offset === 0 && !count ? undefined : rangeToString({ offset, count }), rangeGetContentMD5: options.rangeGetContentMD5, rangeGetContentCRC64: options.rangeGetContentCrc64, snapshot: options.snapshot, cpkInfo: options.customerProvidedKey }, convertTracingToRequestOptionsBase(updatedOptions)));
             const wrappedRes = Object.assign(Object.assign({}, res), { _response: res._response, objectReplicationDestinationPolicyId: res.objectReplicationPolicyId, objectReplicationSourceProperties: parseObjectReplicationRecord(res.objectReplicationRules) });
             // Return browser response immediately
-            if (false) {}
+            if (!coreHttp.isNode) {
+                return wrappedRes;
+            }
             // We support retrying when download stream unexpected ends in Node.js runtime
             // Following code shouldn't be bundled into browser build, however some
             // bundlers may try to bundle following code and "FileReadResponse.ts".
@@ -28283,16 +29511,16 @@ class BlobClient extends StorageClient {
                         ifModifiedSince: options.conditions.ifModifiedSince,
                         ifNoneMatch: options.conditions.ifNoneMatch,
                         ifUnmodifiedSince: options.conditions.ifUnmodifiedSince,
-                        ifTags: (_a = options.conditions) === null || _a === void 0 ? void 0 : _a.tagConditions
+                        ifTags: (_a = options.conditions) === null || _a === void 0 ? void 0 : _a.tagConditions,
                     },
                     range: rangeToString({
                         count: offset + res.contentLength - start,
-                        offset: start
+                        offset: start,
                     }),
                     rangeGetContentMD5: options.rangeGetContentMD5,
                     rangeGetContentCRC64: options.rangeGetContentCrc64,
                     snapshot: options.snapshot,
-                    cpkInfo: options.customerProvidedKey
+                    cpkInfo: options.customerProvidedKey,
                 };
                 // Debug purpose only
                 // console.log(
@@ -28303,13 +29531,13 @@ class BlobClient extends StorageClient {
                 return (await this.blobContext.download(Object.assign({ abortSignal: options.abortSignal }, updatedDownloadOptions))).readableStreamBody;
             }, offset, res.contentLength, {
                 maxRetryRequests: options.maxRetryRequests,
-                onProgress: options.onProgress
+                onProgress: options.onProgress,
             });
         }
         catch (e) {
             span.setStatus({
                 code: coreTracing.SpanStatusCode.ERROR,
-                message: e.message
+                message: e.message,
             });
             throw e;
         }
@@ -28334,21 +29562,23 @@ class BlobClient extends StorageClient {
                 abortSignal: options.abortSignal,
                 customerProvidedKey: options.customerProvidedKey,
                 conditions: options.conditions,
-                tracingOptions: updatedOptions.tracingOptions
+                tracingOptions: updatedOptions.tracingOptions,
             });
             return true;
         }
         catch (e) {
             if (e.statusCode === 404) {
-                span.setStatus({
-                    code: coreTracing.SpanStatusCode.ERROR,
-                    message: "Expected exception when checking blob existence"
-                });
+                // Expected exception when checking blob existence
                 return false;
+            }
+            else if (e.statusCode === 409 &&
+                e.details.errorCode === BlobUsesCustomerSpecifiedEncryptionMsg) {
+                // Expected exception when checking blob existence
+                return true;
             }
             span.setStatus({
                 code: coreTracing.SpanStatusCode.ERROR,
-                message: e.message
+                message: e.message,
             });
             throw e;
         }
@@ -28380,7 +29610,7 @@ class BlobClient extends StorageClient {
         catch (e) {
             span.setStatus({
                 code: coreTracing.SpanStatusCode.ERROR,
-                message: e.message
+                message: e.message,
             });
             throw e;
         }
@@ -28407,7 +29637,7 @@ class BlobClient extends StorageClient {
         catch (e) {
             span.setStatus({
                 code: coreTracing.SpanStatusCode.ERROR,
-                message: e.message
+                message: e.message,
             });
             throw e;
         }
@@ -28429,20 +29659,19 @@ class BlobClient extends StorageClient {
         const { span, updatedOptions } = createSpan("BlobClient-deleteIfExists", options);
         try {
             const res = await this.delete(updatedOptions);
-            return Object.assign(Object.assign({ succeeded: true }, res), { _response: res._response // _response is made non-enumerable
-             });
+            return Object.assign(Object.assign({ succeeded: true }, res), { _response: res._response });
         }
         catch (e) {
             if (((_a = e.details) === null || _a === void 0 ? void 0 : _a.errorCode) === "BlobNotFound") {
                 span.setStatus({
                     code: coreTracing.SpanStatusCode.ERROR,
-                    message: "Expected exception when deleting a blob or snapshot only if it exists."
+                    message: "Expected exception when deleting a blob or snapshot only if it exists.",
                 });
                 return Object.assign(Object.assign({ succeeded: false }, (_b = e.response) === null || _b === void 0 ? void 0 : _b.parsedHeaders), { _response: e.response });
             }
             span.setStatus({
                 code: coreTracing.SpanStatusCode.ERROR,
-                message: e.message
+                message: e.message,
             });
             throw e;
         }
@@ -28466,7 +29695,7 @@ class BlobClient extends StorageClient {
         catch (e) {
             span.setStatus({
                 code: coreTracing.SpanStatusCode.ERROR,
-                message: e.message
+                message: e.message,
             });
             throw e;
         }
@@ -28500,7 +29729,7 @@ class BlobClient extends StorageClient {
         catch (e) {
             span.setStatus({
                 code: coreTracing.SpanStatusCode.ERROR,
-                message: e.message
+                message: e.message,
             });
             throw e;
         }
@@ -28530,7 +29759,7 @@ class BlobClient extends StorageClient {
         catch (e) {
             span.setStatus({
                 code: coreTracing.SpanStatusCode.ERROR,
-                message: e.message
+                message: e.message,
             });
             throw e;
         }
@@ -28556,7 +29785,7 @@ class BlobClient extends StorageClient {
         catch (e) {
             span.setStatus({
                 code: coreTracing.SpanStatusCode.ERROR,
-                message: e.message
+                message: e.message,
             });
             throw e;
         }
@@ -28580,7 +29809,7 @@ class BlobClient extends StorageClient {
         catch (e) {
             span.setStatus({
                 code: coreTracing.SpanStatusCode.ERROR,
-                message: e.message
+                message: e.message,
             });
             throw e;
         }
@@ -28614,7 +29843,7 @@ class BlobClient extends StorageClient {
         catch (e) {
             span.setStatus({
                 code: coreTracing.SpanStatusCode.ERROR,
-                message: e.message
+                message: e.message,
             });
             throw e;
         }
@@ -28698,7 +29927,7 @@ class BlobClient extends StorageClient {
         const client = {
             abortCopyFromURL: (...args) => this.abortCopyFromURL(...args),
             getProperties: (...args) => this.getProperties(...args),
-            startCopyFromURL: (...args) => this.startCopyFromURL(...args)
+            startCopyFromURL: (...args) => this.startCopyFromURL(...args),
         };
         const poller = new BlobBeginCopyFromUrlPoller({
             blobClient: client,
@@ -28706,7 +29935,7 @@ class BlobClient extends StorageClient {
             intervalInMs: options.intervalInMs,
             onProgress: options.onProgress,
             resumeFrom: options.resumeFrom,
-            startCopyFromURLOptions: options
+            startCopyFromURLOptions: options,
         });
         // Trigger the startCopyFromURL call by calling poll.
         // Any errors from this method should be surfaced to the user.
@@ -28729,7 +29958,7 @@ class BlobClient extends StorageClient {
         catch (e) {
             span.setStatus({
                 code: coreTracing.SpanStatusCode.ERROR,
-                message: e.message
+                message: e.message,
             });
             throw e;
         }
@@ -28755,13 +29984,13 @@ class BlobClient extends StorageClient {
                     sourceIfMatch: options.sourceConditions.ifMatch,
                     sourceIfModifiedSince: options.sourceConditions.ifModifiedSince,
                     sourceIfNoneMatch: options.sourceConditions.ifNoneMatch,
-                    sourceIfUnmodifiedSince: options.sourceConditions.ifUnmodifiedSince
-                }, sourceContentMD5: options.sourceContentMD5, copySourceAuthorization: httpAuthorizationToString(options.sourceAuthorization), blobTagsString: toBlobTagsString(options.tags), immutabilityPolicyExpiry: (_b = options.immutabilityPolicy) === null || _b === void 0 ? void 0 : _b.expiriesOn, immutabilityPolicyMode: (_c = options.immutabilityPolicy) === null || _c === void 0 ? void 0 : _c.policyMode, legalHold: options.legalHold }, convertTracingToRequestOptionsBase(updatedOptions)));
+                    sourceIfUnmodifiedSince: options.sourceConditions.ifUnmodifiedSince,
+                }, sourceContentMD5: options.sourceContentMD5, copySourceAuthorization: httpAuthorizationToString(options.sourceAuthorization), blobTagsString: toBlobTagsString(options.tags), immutabilityPolicyExpiry: (_b = options.immutabilityPolicy) === null || _b === void 0 ? void 0 : _b.expiriesOn, immutabilityPolicyMode: (_c = options.immutabilityPolicy) === null || _c === void 0 ? void 0 : _c.policyMode, legalHold: options.legalHold, encryptionScope: options.encryptionScope }, convertTracingToRequestOptionsBase(updatedOptions)));
         }
         catch (e) {
             span.setStatus({
                 code: coreTracing.SpanStatusCode.ERROR,
-                message: e.message
+                message: e.message,
             });
             throw e;
         }
@@ -28789,7 +30018,7 @@ class BlobClient extends StorageClient {
         catch (e) {
             span.setStatus({
                 code: coreTracing.SpanStatusCode.ERROR,
-                message: e.message
+                message: e.message,
             });
             throw e;
         }
@@ -28866,7 +30095,7 @@ class BlobClient extends StorageClient {
                         conditions: options.conditions,
                         maxRetryRequests: options.maxRetryRequestsPerBlock,
                         customerProvidedKey: options.customerProvidedKey,
-                        tracingOptions: Object.assign(Object.assign({}, options.tracingOptions), convertTracingToRequestOptionsBase(updatedOptions))
+                        tracingOptions: Object.assign(Object.assign({}, options.tracingOptions), convertTracingToRequestOptionsBase(updatedOptions)),
                     });
                     const stream = response.readableStreamBody;
                     await streamToBuffer(stream, buffer, off - offset, chunkEnd - offset);
@@ -28885,7 +30114,7 @@ class BlobClient extends StorageClient {
         catch (e) {
             span.setStatus({
                 code: coreTracing.SpanStatusCode.ERROR,
-                message: e.message
+                message: e.message,
             });
             throw e;
         }
@@ -28923,7 +30152,7 @@ class BlobClient extends StorageClient {
         catch (e) {
             span.setStatus({
                 code: coreTracing.SpanStatusCode.ERROR,
-                message: e.message
+                message: e.message,
             });
             throw e;
         }
@@ -29004,13 +30233,13 @@ class BlobClient extends StorageClient {
                     sourceIfModifiedSince: options.sourceConditions.ifModifiedSince,
                     sourceIfNoneMatch: options.sourceConditions.ifNoneMatch,
                     sourceIfUnmodifiedSince: options.sourceConditions.ifUnmodifiedSince,
-                    sourceIfTags: options.sourceConditions.tagConditions
+                    sourceIfTags: options.sourceConditions.tagConditions,
                 }, immutabilityPolicyExpiry: (_b = options.immutabilityPolicy) === null || _b === void 0 ? void 0 : _b.expiriesOn, immutabilityPolicyMode: (_c = options.immutabilityPolicy) === null || _c === void 0 ? void 0 : _c.policyMode, legalHold: options.legalHold, rehydratePriority: options.rehydratePriority, tier: toAccessTier(options.tier), blobTagsString: toBlobTagsString(options.tags), sealBlob: options.sealBlob }, convertTracingToRequestOptionsBase(updatedOptions)));
         }
         catch (e) {
             span.setStatus({
                 code: coreTracing.SpanStatusCode.ERROR,
-                message: e.message
+                message: e.message,
             });
             throw e;
         }
@@ -29051,7 +30280,7 @@ class BlobClient extends StorageClient {
         catch (e) {
             span.setStatus({
                 code: coreTracing.SpanStatusCode.ERROR,
-                message: e.message
+                message: e.message,
             });
             throw e;
         }
@@ -29072,7 +30301,7 @@ class BlobClient extends StorageClient {
         catch (e) {
             span.setStatus({
                 code: coreTracing.SpanStatusCode.ERROR,
-                message: e.message
+                message: e.message,
             });
             throw e;
         }
@@ -29093,7 +30322,7 @@ class BlobClient extends StorageClient {
         catch (e) {
             span.setStatus({
                 code: coreTracing.SpanStatusCode.ERROR,
-                message: e.message
+                message: e.message,
             });
             throw e;
         }
@@ -29144,11 +30373,16 @@ class AppendBlobClient extends BlobClient {
             const blobName = blobNameOrOptions;
             const extractedCreds = extractConnectionStringParts(urlOrConnectionString);
             if (extractedCreds.kind === "AccountConnString") {
-                {
+                if (coreHttp.isNode) {
                     const sharedKeyCredential = new StorageSharedKeyCredential(extractedCreds.accountName, extractedCreds.accountKey);
                     url = appendToURLPath(appendToURLPath(extractedCreds.url, encodeURIComponent(containerName)), encodeURIComponent(blobName));
-                    options.proxyOptions = coreHttp.getDefaultProxySettings(extractedCreds.proxyUri);
+                    if (!options.proxyOptions) {
+                        options.proxyOptions = coreHttp.getDefaultProxySettings(extractedCreds.proxyUri);
+                    }
                     pipeline = newPipeline(sharedKeyCredential, options);
+                }
+                else {
+                    throw new Error("Account connection string is only supported in Node.js environment");
                 }
             }
             else if (extractedCreds.kind === "SASConnString") {
@@ -29204,7 +30438,7 @@ class AppendBlobClient extends BlobClient {
         catch (e) {
             span.setStatus({
                 code: coreTracing.SpanStatusCode.ERROR,
-                message: e.message
+                message: e.message,
             });
             throw e;
         }
@@ -29225,20 +30459,19 @@ class AppendBlobClient extends BlobClient {
         const conditions = { ifNoneMatch: ETagAny };
         try {
             const res = await this.create(Object.assign(Object.assign({}, updatedOptions), { conditions }));
-            return Object.assign(Object.assign({ succeeded: true }, res), { _response: res._response // _response is made non-enumerable
-             });
+            return Object.assign(Object.assign({ succeeded: true }, res), { _response: res._response });
         }
         catch (e) {
             if (((_a = e.details) === null || _a === void 0 ? void 0 : _a.errorCode) === "BlobAlreadyExists") {
                 span.setStatus({
                     code: coreTracing.SpanStatusCode.ERROR,
-                    message: "Expected exception when creating a blob only if it does not already exist."
+                    message: "Expected exception when creating a blob only if it does not already exist.",
                 });
                 return Object.assign(Object.assign({ succeeded: false }, (_b = e.response) === null || _b === void 0 ? void 0 : _b.parsedHeaders), { _response: e.response });
             }
             span.setStatus({
                 code: coreTracing.SpanStatusCode.ERROR,
-                message: e.message
+                message: e.message,
             });
             throw e;
         }
@@ -29261,7 +30494,7 @@ class AppendBlobClient extends BlobClient {
         catch (e) {
             span.setStatus({
                 code: coreTracing.SpanStatusCode.ERROR,
-                message: e.message
+                message: e.message,
             });
             throw e;
         }
@@ -29300,13 +30533,13 @@ class AppendBlobClient extends BlobClient {
         try {
             ensureCpkIfSpecified(options.customerProvidedKey, this.isHttps);
             return await this.appendBlobContext.appendBlock(contentLength, body, Object.assign({ abortSignal: options.abortSignal, appendPositionAccessConditions: options.conditions, leaseAccessConditions: options.conditions, modifiedAccessConditions: Object.assign(Object.assign({}, options.conditions), { ifTags: (_a = options.conditions) === null || _a === void 0 ? void 0 : _a.tagConditions }), requestOptions: {
-                    onUploadProgress: options.onProgress
+                    onUploadProgress: options.onProgress,
                 }, transactionalContentMD5: options.transactionalContentMD5, transactionalContentCrc64: options.transactionalContentCrc64, cpkInfo: options.customerProvidedKey, encryptionScope: options.encryptionScope }, convertTracingToRequestOptionsBase(updatedOptions)));
         }
         catch (e) {
             span.setStatus({
                 code: coreTracing.SpanStatusCode.ERROR,
-                message: e.message
+                message: e.message,
             });
             throw e;
         }
@@ -29339,13 +30572,13 @@ class AppendBlobClient extends BlobClient {
                     sourceIfMatch: options.sourceConditions.ifMatch,
                     sourceIfModifiedSince: options.sourceConditions.ifModifiedSince,
                     sourceIfNoneMatch: options.sourceConditions.ifNoneMatch,
-                    sourceIfUnmodifiedSince: options.sourceConditions.ifUnmodifiedSince
+                    sourceIfUnmodifiedSince: options.sourceConditions.ifUnmodifiedSince,
                 }, copySourceAuthorization: httpAuthorizationToString(options.sourceAuthorization), cpkInfo: options.customerProvidedKey, encryptionScope: options.encryptionScope }, convertTracingToRequestOptionsBase(updatedOptions)));
         }
         catch (e) {
             span.setStatus({
                 code: coreTracing.SpanStatusCode.ERROR,
-                message: e.message
+                message: e.message,
             });
             throw e;
         }
@@ -29396,11 +30629,16 @@ class BlockBlobClient extends BlobClient {
             const blobName = blobNameOrOptions;
             const extractedCreds = extractConnectionStringParts(urlOrConnectionString);
             if (extractedCreds.kind === "AccountConnString") {
-                {
+                if (coreHttp.isNode) {
                     const sharedKeyCredential = new StorageSharedKeyCredential(extractedCreds.accountName, extractedCreds.accountKey);
                     url = appendToURLPath(appendToURLPath(extractedCreds.url, encodeURIComponent(containerName)), encodeURIComponent(blobName));
-                    options.proxyOptions = coreHttp.getDefaultProxySettings(extractedCreds.proxyUri);
+                    if (!options.proxyOptions) {
+                        options.proxyOptions = coreHttp.getDefaultProxySettings(extractedCreds.proxyUri);
+                    }
                     pipeline = newPipeline(sharedKeyCredential, options);
+                }
+                else {
+                    throw new Error("Account connection string is only supported in Node.js environment");
                 }
             }
             else if (extractedCreds.kind === "SASConnString") {
@@ -29467,23 +30705,25 @@ class BlockBlobClient extends BlobClient {
         ensureCpkIfSpecified(options.customerProvidedKey, this.isHttps);
         const { span, updatedOptions } = createSpan("BlockBlobClient-query", options);
         try {
-            if (false) {}
+            if (!coreHttp.isNode) {
+                throw new Error("This operation currently is only supported in Node.js.");
+            }
             const response = await this._blobContext.query(Object.assign({ abortSignal: options.abortSignal, queryRequest: {
                     queryType: "SQL",
                     expression: query,
                     inputSerialization: toQuerySerialization(options.inputTextConfiguration),
-                    outputSerialization: toQuerySerialization(options.outputTextConfiguration)
+                    outputSerialization: toQuerySerialization(options.outputTextConfiguration),
                 }, leaseAccessConditions: options.conditions, modifiedAccessConditions: Object.assign(Object.assign({}, options.conditions), { ifTags: (_a = options.conditions) === null || _a === void 0 ? void 0 : _a.tagConditions }) }, convertTracingToRequestOptionsBase(updatedOptions)));
             return new BlobQueryResponse(response, {
                 abortSignal: options.abortSignal,
                 onProgress: options.onProgress,
-                onError: options.onError
+                onError: options.onError,
             });
         }
         catch (e) {
             span.setStatus({
                 code: coreTracing.SpanStatusCode.ERROR,
-                message: e.message
+                message: e.message,
             });
             throw e;
         }
@@ -29525,13 +30765,13 @@ class BlockBlobClient extends BlobClient {
         try {
             ensureCpkIfSpecified(options.customerProvidedKey, this.isHttps);
             return await this.blockBlobContext.upload(contentLength, body, Object.assign({ abortSignal: options.abortSignal, blobHttpHeaders: options.blobHTTPHeaders, leaseAccessConditions: options.conditions, metadata: options.metadata, modifiedAccessConditions: Object.assign(Object.assign({}, options.conditions), { ifTags: (_a = options.conditions) === null || _a === void 0 ? void 0 : _a.tagConditions }), requestOptions: {
-                    onUploadProgress: options.onProgress
+                    onUploadProgress: options.onProgress,
                 }, cpkInfo: options.customerProvidedKey, encryptionScope: options.encryptionScope, immutabilityPolicyExpiry: (_b = options.immutabilityPolicy) === null || _b === void 0 ? void 0 : _b.expiriesOn, immutabilityPolicyMode: (_c = options.immutabilityPolicy) === null || _c === void 0 ? void 0 : _c.policyMode, legalHold: options.legalHold, tier: toAccessTier(options.tier), blobTagsString: toBlobTagsString(options.tags) }, convertTracingToRequestOptionsBase(updatedOptions)));
         }
         catch (e) {
             span.setStatus({
                 code: coreTracing.SpanStatusCode.ERROR,
-                message: e.message
+                message: e.message,
             });
             throw e;
         }
@@ -29568,13 +30808,13 @@ class BlockBlobClient extends BlobClient {
                     sourceIfModifiedSince: (_b = options.sourceConditions) === null || _b === void 0 ? void 0 : _b.ifModifiedSince,
                     sourceIfNoneMatch: (_c = options.sourceConditions) === null || _c === void 0 ? void 0 : _c.ifNoneMatch,
                     sourceIfUnmodifiedSince: (_d = options.sourceConditions) === null || _d === void 0 ? void 0 : _d.ifUnmodifiedSince,
-                    sourceIfTags: (_e = options.sourceConditions) === null || _e === void 0 ? void 0 : _e.tagConditions
+                    sourceIfTags: (_e = options.sourceConditions) === null || _e === void 0 ? void 0 : _e.tagConditions,
                 }, cpkInfo: options.customerProvidedKey, copySourceAuthorization: httpAuthorizationToString(options.sourceAuthorization), tier: toAccessTier(options.tier), blobTagsString: toBlobTagsString(options.tags) }), convertTracingToRequestOptionsBase(updatedOptions)));
         }
         catch (e) {
             span.setStatus({
                 code: coreTracing.SpanStatusCode.ERROR,
-                message: e.message
+                message: e.message,
             });
             throw e;
         }
@@ -29598,13 +30838,13 @@ class BlockBlobClient extends BlobClient {
         try {
             ensureCpkIfSpecified(options.customerProvidedKey, this.isHttps);
             return await this.blockBlobContext.stageBlock(blockId, contentLength, body, Object.assign({ abortSignal: options.abortSignal, leaseAccessConditions: options.conditions, requestOptions: {
-                    onUploadProgress: options.onProgress
+                    onUploadProgress: options.onProgress,
                 }, transactionalContentMD5: options.transactionalContentMD5, transactionalContentCrc64: options.transactionalContentCrc64, cpkInfo: options.customerProvidedKey, encryptionScope: options.encryptionScope }, convertTracingToRequestOptionsBase(updatedOptions)));
         }
         catch (e) {
             span.setStatus({
                 code: coreTracing.SpanStatusCode.ERROR,
-                message: e.message
+                message: e.message,
             });
             throw e;
         }
@@ -29642,7 +30882,7 @@ class BlockBlobClient extends BlobClient {
         catch (e) {
             span.setStatus({
                 code: coreTracing.SpanStatusCode.ERROR,
-                message: e.message
+                message: e.message,
             });
             throw e;
         }
@@ -29673,7 +30913,7 @@ class BlockBlobClient extends BlobClient {
         catch (e) {
             span.setStatus({
                 code: coreTracing.SpanStatusCode.ERROR,
-                message: e.message
+                message: e.message,
             });
             throw e;
         }
@@ -29707,7 +30947,7 @@ class BlockBlobClient extends BlobClient {
         catch (e) {
             span.setStatus({
                 code: coreTracing.SpanStatusCode.ERROR,
-                message: e.message
+                message: e.message,
             });
             throw e;
         }
@@ -29734,7 +30974,7 @@ class BlockBlobClient extends BlobClient {
     async uploadData(data, options = {}) {
         const { span, updatedOptions } = createSpan("BlockBlobClient-uploadData", options);
         try {
-            if (true) {
+            if (coreHttp.isNode) {
                 let buffer;
                 if (data instanceof Buffer) {
                     buffer = data;
@@ -29748,12 +30988,15 @@ class BlockBlobClient extends BlobClient {
                 }
                 return this.uploadSeekableInternal((offset, size) => buffer.slice(offset, offset + size), buffer.byteLength, updatedOptions);
             }
-            else {}
+            else {
+                const browserBlob = new Blob([data]);
+                return this.uploadSeekableInternal((offset, size) => browserBlob.slice(offset, offset + size), browserBlob.size, updatedOptions);
+            }
         }
         catch (e) {
             span.setStatus({
                 code: coreTracing.SpanStatusCode.ERROR,
-                message: e.message
+                message: e.message,
             });
             throw e;
         }
@@ -29789,7 +31032,7 @@ class BlockBlobClient extends BlobClient {
         catch (e) {
             span.setStatus({
                 code: coreTracing.SpanStatusCode.ERROR,
-                message: e.message
+                message: e.message,
             });
             throw e;
         }
@@ -29802,7 +31045,7 @@ class BlockBlobClient extends BlobClient {
      * Uploads data to block blob. Requires a bodyFactory as the data source,
      * which need to return a {@link HttpRequestBody} object with the offset and size provided.
      *
-     * When data length is no more than the specifiled {@link BlockBlobParallelUploadOptions.maxSingleShotSize} (default is
+     * When data length is no more than the specified {@link BlockBlobParallelUploadOptions.maxSingleShotSize} (default is
      * {@link BLOCK_BLOB_MAX_UPLOAD_BLOB_BYTES}), this method will use 1 {@link upload} call to finish the upload.
      * Otherwise, this method will call {@link stageBlock} to upload blocks, and finally call {@link commitBlockList}
      * to commit the block list.
@@ -29868,14 +31111,14 @@ class BlockBlobClient extends BlobClient {
                         abortSignal: options.abortSignal,
                         conditions: options.conditions,
                         encryptionScope: options.encryptionScope,
-                        tracingOptions: updatedOptions.tracingOptions
+                        tracingOptions: updatedOptions.tracingOptions,
                     });
                     // Update progress after block is successfully uploaded to server, in case of block trying
                     // TODO: Hook with convenience layer progress event in finer level
                     transferProgress += contentLength;
                     if (options.onProgress) {
                         options.onProgress({
-                            loadedBytes: transferProgress
+                            loadedBytes: transferProgress,
                         });
                     }
                 });
@@ -29886,7 +31129,7 @@ class BlockBlobClient extends BlobClient {
         catch (e) {
             span.setStatus({
                 code: coreTracing.SpanStatusCode.ERROR,
-                message: e.message
+                message: e.message,
             });
             throw e;
         }
@@ -29915,14 +31158,14 @@ class BlockBlobClient extends BlobClient {
                 return () => fsCreateReadStream(filePath, {
                     autoClose: true,
                     end: count ? offset + count - 1 : Infinity,
-                    start: offset
+                    start: offset,
                 });
             }, size, Object.assign(Object.assign({}, options), { tracingOptions: Object.assign(Object.assign({}, options.tracingOptions), convertTracingToRequestOptionsBase(updatedOptions)) }));
         }
         catch (e) {
             span.setStatus({
                 code: coreTracing.SpanStatusCode.ERROR,
-                message: e.message
+                message: e.message,
             });
             throw e;
         }
@@ -29966,7 +31209,7 @@ class BlockBlobClient extends BlobClient {
                 await this.stageBlock(blockID, body, length, {
                     conditions: options.conditions,
                     encryptionScope: options.encryptionScope,
-                    tracingOptions: updatedOptions.tracingOptions
+                    tracingOptions: updatedOptions.tracingOptions,
                 });
                 // Update progress after block is successfully uploaded to server, in case of block trying
                 transferProgress += length;
@@ -29985,7 +31228,7 @@ class BlockBlobClient extends BlobClient {
         catch (e) {
             span.setStatus({
                 code: coreTracing.SpanStatusCode.ERROR,
-                message: e.message
+                message: e.message,
             });
             throw e;
         }
@@ -30036,11 +31279,16 @@ class PageBlobClient extends BlobClient {
             const blobName = blobNameOrOptions;
             const extractedCreds = extractConnectionStringParts(urlOrConnectionString);
             if (extractedCreds.kind === "AccountConnString") {
-                {
+                if (coreHttp.isNode) {
                     const sharedKeyCredential = new StorageSharedKeyCredential(extractedCreds.accountName, extractedCreds.accountKey);
                     url = appendToURLPath(appendToURLPath(extractedCreds.url, encodeURIComponent(containerName)), encodeURIComponent(blobName));
-                    options.proxyOptions = coreHttp.getDefaultProxySettings(extractedCreds.proxyUri);
+                    if (!options.proxyOptions) {
+                        options.proxyOptions = coreHttp.getDefaultProxySettings(extractedCreds.proxyUri);
+                    }
                     pipeline = newPipeline(sharedKeyCredential, options);
+                }
+                else {
+                    throw new Error("Account connection string is only supported in Node.js environment");
                 }
             }
             else if (extractedCreds.kind === "SASConnString") {
@@ -30091,7 +31339,7 @@ class PageBlobClient extends BlobClient {
         catch (e) {
             span.setStatus({
                 code: coreTracing.SpanStatusCode.ERROR,
-                message: e.message
+                message: e.message,
             });
             throw e;
         }
@@ -30114,20 +31362,19 @@ class PageBlobClient extends BlobClient {
         try {
             const conditions = { ifNoneMatch: ETagAny };
             const res = await this.create(size, Object.assign(Object.assign({}, options), { conditions, tracingOptions: updatedOptions.tracingOptions }));
-            return Object.assign(Object.assign({ succeeded: true }, res), { _response: res._response // _response is made non-enumerable
-             });
+            return Object.assign(Object.assign({ succeeded: true }, res), { _response: res._response });
         }
         catch (e) {
             if (((_a = e.details) === null || _a === void 0 ? void 0 : _a.errorCode) === "BlobAlreadyExists") {
                 span.setStatus({
                     code: coreTracing.SpanStatusCode.ERROR,
-                    message: "Expected exception when creating a blob only if it does not already exist."
+                    message: "Expected exception when creating a blob only if it does not already exist.",
                 });
                 return Object.assign(Object.assign({ succeeded: false }, (_b = e.response) === null || _b === void 0 ? void 0 : _b.parsedHeaders), { _response: e.response });
             }
             span.setStatus({
                 code: coreTracing.SpanStatusCode.ERROR,
-                message: e.message
+                message: e.message,
             });
             throw e;
         }
@@ -30152,13 +31399,13 @@ class PageBlobClient extends BlobClient {
         try {
             ensureCpkIfSpecified(options.customerProvidedKey, this.isHttps);
             return await this.pageBlobContext.uploadPages(count, body, Object.assign({ abortSignal: options.abortSignal, leaseAccessConditions: options.conditions, modifiedAccessConditions: Object.assign(Object.assign({}, options.conditions), { ifTags: (_a = options.conditions) === null || _a === void 0 ? void 0 : _a.tagConditions }), requestOptions: {
-                    onUploadProgress: options.onProgress
+                    onUploadProgress: options.onProgress,
                 }, range: rangeToString({ offset, count }), sequenceNumberAccessConditions: options.conditions, transactionalContentMD5: options.transactionalContentMD5, transactionalContentCrc64: options.transactionalContentCrc64, cpkInfo: options.customerProvidedKey, encryptionScope: options.encryptionScope }, convertTracingToRequestOptionsBase(updatedOptions)));
         }
         catch (e) {
             span.setStatus({
                 code: coreTracing.SpanStatusCode.ERROR,
-                message: e.message
+                message: e.message,
             });
             throw e;
         }
@@ -30188,13 +31435,13 @@ class PageBlobClient extends BlobClient {
                     sourceIfMatch: options.sourceConditions.ifMatch,
                     sourceIfModifiedSince: options.sourceConditions.ifModifiedSince,
                     sourceIfNoneMatch: options.sourceConditions.ifNoneMatch,
-                    sourceIfUnmodifiedSince: options.sourceConditions.ifUnmodifiedSince
+                    sourceIfUnmodifiedSince: options.sourceConditions.ifUnmodifiedSince,
                 }, cpkInfo: options.customerProvidedKey, encryptionScope: options.encryptionScope, copySourceAuthorization: httpAuthorizationToString(options.sourceAuthorization) }, convertTracingToRequestOptionsBase(updatedOptions)));
         }
         catch (e) {
             span.setStatus({
                 code: coreTracing.SpanStatusCode.ERROR,
-                message: e.message
+                message: e.message,
             });
             throw e;
         }
@@ -30221,7 +31468,7 @@ class PageBlobClient extends BlobClient {
         catch (e) {
             span.setStatus({
                 code: coreTracing.SpanStatusCode.ERROR,
-                message: e.message
+                message: e.message,
             });
             throw e;
         }
@@ -30250,7 +31497,7 @@ class PageBlobClient extends BlobClient {
         catch (e) {
             span.setStatus({
                 code: coreTracing.SpanStatusCode.ERROR,
-                message: e.message
+                message: e.message,
             });
             throw e;
         }
@@ -30280,7 +31527,7 @@ class PageBlobClient extends BlobClient {
         catch (e) {
             span.setStatus({
                 code: coreTracing.SpanStatusCode.ERROR,
-                message: e.message
+                message: e.message,
             });
             throw e;
         }
@@ -30310,7 +31557,7 @@ class PageBlobClient extends BlobClient {
         catch (e) {
             span.setStatus({
                 code: coreTracing.SpanStatusCode.ERROR,
-                message: e.message
+                message: e.message,
             });
             throw e;
         }
@@ -30336,7 +31583,7 @@ class PageBlobClient extends BlobClient {
         catch (e) {
             span.setStatus({
                 code: coreTracing.SpanStatusCode.ERROR,
-                message: e.message
+                message: e.message,
             });
             throw e;
         }
@@ -30363,7 +31610,7 @@ class PageBlobClient extends BlobClient {
         catch (e) {
             span.setStatus({
                 code: coreTracing.SpanStatusCode.ERROR,
-                message: e.message
+                message: e.message,
             });
             throw e;
         }
@@ -30393,7 +31640,7 @@ class PageBlobClient extends BlobClient {
         catch (e) {
             span.setStatus({
                 code: coreTracing.SpanStatusCode.ERROR,
-                message: e.message
+                message: e.message,
             });
             throw e;
         }
@@ -30541,7 +31788,7 @@ class BatchResponseParser {
         return {
             subResponses: deserializedSubResponses,
             subResponsesSucceededCount: subResponsesSucceededCount,
-            subResponsesFailedCount: subResponsesFailedCount
+            subResponsesFailedCount: subResponsesFailedCount,
         };
     }
 }
@@ -30688,7 +31935,7 @@ class BlobBatch {
             this.setBatchType("delete");
             await this.addSubRequestInternal({
                 url: url,
-                credential: credential
+                credential: credential,
             }, async () => {
                 await new BlobClient(url, this.batchRequest.createPipeline(credential)).delete(updatedOptions);
             });
@@ -30696,7 +31943,7 @@ class BlobBatch {
         catch (e) {
             span.setStatus({
                 code: coreTracing.SpanStatusCode.ERROR,
-                message: e.message
+                message: e.message,
             });
             throw e;
         }
@@ -30735,7 +31982,7 @@ class BlobBatch {
             this.setBatchType("setAccessTier");
             await this.addSubRequestInternal({
                 url: url,
-                credential: credential
+                credential: credential,
             }, async () => {
                 await new BlobClient(url, this.batchRequest.createPipeline(credential)).setAccessTier(tier, updatedOptions);
             });
@@ -30743,7 +31990,7 @@ class BlobBatch {
         catch (e) {
             span.setStatus({
                 code: coreTracing.SpanStatusCode.ERROR,
-                message: e.message
+                message: e.message,
             });
             throw e;
         }
@@ -30800,7 +32047,7 @@ class InnerBatchRequest {
             this.subRequestPrefix,
             `${HeaderConstants.CONTENT_ID}: ${this.operationCount}`,
             "",
-            `${request.method.toString()} ${getURLPathAndQuery(request.url)} ${HTTP_VERSION_1_1}${HTTP_LINE_ENDING}` // sub request start line with method
+            `${request.method.toString()} ${getURLPathAndQuery(request.url)} ${HTTP_VERSION_1_1}${HTTP_LINE_ENDING}`, // sub request start line with method
         ].join(HTTP_LINE_ENDING);
         for (const header of request.headers.headersArray()) {
             this.body += `${header.name}: ${header.value}${HTTP_LINE_ENDING}`;
@@ -30840,7 +32087,7 @@ class BatchRequestAssemblePolicy extends coreHttp.BaseRequestPolicy {
         this.dummyResponse = {
             request: new coreHttp.WebResource(),
             status: 200,
-            headers: new coreHttp.HttpHeaders()
+            headers: new coreHttp.HttpHeaders(),
         };
         this.batchRequest = batchRequest;
     }
@@ -31007,14 +32254,14 @@ class BlobBatchClient {
                 version: rawBatchResponse.version,
                 subResponses: responseSummary.subResponses,
                 subResponsesSucceededCount: responseSummary.subResponsesSucceededCount,
-                subResponsesFailedCount: responseSummary.subResponsesFailedCount
+                subResponsesFailedCount: responseSummary.subResponsesFailedCount,
             };
             return res;
         }
         catch (e) {
             span.setStatus({
                 code: coreTracing.SpanStatusCode.ERROR,
-                message: e.message
+                message: e.message,
             });
             throw e;
         }
@@ -31060,11 +32307,16 @@ class ContainerClient extends StorageClient {
             const containerName = credentialOrPipelineOrContainerName;
             const extractedCreds = extractConnectionStringParts(urlOrConnectionString);
             if (extractedCreds.kind === "AccountConnString") {
-                {
+                if (coreHttp.isNode) {
                     const sharedKeyCredential = new StorageSharedKeyCredential(extractedCreds.accountName, extractedCreds.accountKey);
                     url = appendToURLPath(extractedCreds.url, encodeURIComponent(containerName));
-                    options.proxyOptions = coreHttp.getDefaultProxySettings(extractedCreds.proxyUri);
+                    if (!options.proxyOptions) {
+                        options.proxyOptions = coreHttp.getDefaultProxySettings(extractedCreds.proxyUri);
+                    }
                     pipeline = newPipeline(sharedKeyCredential, options);
+                }
+                else {
+                    throw new Error("Account connection string is only supported in Node.js environment");
                 }
             }
             else if (extractedCreds.kind === "SASConnString") {
@@ -31117,7 +32369,7 @@ class ContainerClient extends StorageClient {
         catch (e) {
             span.setStatus({
                 code: coreTracing.SpanStatusCode.ERROR,
-                message: e.message
+                message: e.message,
             });
             throw e;
         }
@@ -31137,20 +32389,19 @@ class ContainerClient extends StorageClient {
         const { span, updatedOptions } = createSpan("ContainerClient-createIfNotExists", options);
         try {
             const res = await this.create(updatedOptions);
-            return Object.assign(Object.assign({ succeeded: true }, res), { _response: res._response // _response is made non-enumerable
-             });
+            return Object.assign(Object.assign({ succeeded: true }, res), { _response: res._response });
         }
         catch (e) {
             if (((_a = e.details) === null || _a === void 0 ? void 0 : _a.errorCode) === "ContainerAlreadyExists") {
                 span.setStatus({
                     code: coreTracing.SpanStatusCode.ERROR,
-                    message: "Expected exception when creating a container only if it does not already exist."
+                    message: "Expected exception when creating a container only if it does not already exist.",
                 });
                 return Object.assign(Object.assign({ succeeded: false }, (_b = e.response) === null || _b === void 0 ? void 0 : _b.parsedHeaders), { _response: e.response });
             }
             span.setStatus({
                 code: coreTracing.SpanStatusCode.ERROR,
-                message: e.message
+                message: e.message,
             });
             throw e;
         }
@@ -31172,7 +32423,7 @@ class ContainerClient extends StorageClient {
         try {
             await this.getProperties({
                 abortSignal: options.abortSignal,
-                tracingOptions: updatedOptions.tracingOptions
+                tracingOptions: updatedOptions.tracingOptions,
             });
             return true;
         }
@@ -31180,13 +32431,13 @@ class ContainerClient extends StorageClient {
             if (e.statusCode === 404) {
                 span.setStatus({
                     code: coreTracing.SpanStatusCode.ERROR,
-                    message: "Expected exception when checking container existence"
+                    message: "Expected exception when checking container existence",
                 });
                 return false;
             }
             span.setStatus({
                 code: coreTracing.SpanStatusCode.ERROR,
-                message: e.message
+                message: e.message,
             });
             throw e;
         }
@@ -31260,7 +32511,7 @@ class ContainerClient extends StorageClient {
         catch (e) {
             span.setStatus({
                 code: coreTracing.SpanStatusCode.ERROR,
-                message: e.message
+                message: e.message,
             });
             throw e;
         }
@@ -31286,7 +32537,7 @@ class ContainerClient extends StorageClient {
         catch (e) {
             span.setStatus({
                 code: coreTracing.SpanStatusCode.ERROR,
-                message: e.message
+                message: e.message,
             });
             throw e;
         }
@@ -31306,20 +32557,19 @@ class ContainerClient extends StorageClient {
         const { span, updatedOptions } = createSpan("ContainerClient-deleteIfExists", options);
         try {
             const res = await this.delete(updatedOptions);
-            return Object.assign(Object.assign({ succeeded: true }, res), { _response: res._response // _response is made non-enumerable
-             });
+            return Object.assign(Object.assign({ succeeded: true }, res), { _response: res._response });
         }
         catch (e) {
             if (((_a = e.details) === null || _a === void 0 ? void 0 : _a.errorCode) === "ContainerNotFound") {
                 span.setStatus({
                     code: coreTracing.SpanStatusCode.ERROR,
-                    message: "Expected exception when deleting a container only if it exists."
+                    message: "Expected exception when deleting a container only if it exists.",
                 });
                 return Object.assign(Object.assign({ succeeded: false }, (_b = e.response) === null || _b === void 0 ? void 0 : _b.parsedHeaders), { _response: e.response });
             }
             span.setStatus({
                 code: coreTracing.SpanStatusCode.ERROR,
-                message: e.message
+                message: e.message,
             });
             throw e;
         }
@@ -31353,7 +32603,7 @@ class ContainerClient extends StorageClient {
         catch (e) {
             span.setStatus({
                 code: coreTracing.SpanStatusCode.ERROR,
-                message: e.message
+                message: e.message,
             });
             throw e;
         }
@@ -31389,13 +32639,13 @@ class ContainerClient extends StorageClient {
                 requestId: response.requestId,
                 clientRequestId: response.clientRequestId,
                 signedIdentifiers: [],
-                version: response.version
+                version: response.version,
             };
             for (const identifier of response) {
                 let accessPolicy = undefined;
                 if (identifier.accessPolicy) {
                     accessPolicy = {
-                        permissions: identifier.accessPolicy.permissions
+                        permissions: identifier.accessPolicy.permissions,
                     };
                     if (identifier.accessPolicy.expiresOn) {
                         accessPolicy.expiresOn = new Date(identifier.accessPolicy.expiresOn);
@@ -31406,7 +32656,7 @@ class ContainerClient extends StorageClient {
                 }
                 res.signedIdentifiers.push({
                     accessPolicy,
-                    id: identifier.id
+                    id: identifier.id,
                 });
             }
             return res;
@@ -31414,7 +32664,7 @@ class ContainerClient extends StorageClient {
         catch (e) {
             span.setStatus({
                 code: coreTracing.SpanStatusCode.ERROR,
-                message: e.message
+                message: e.message,
             });
             throw e;
         }
@@ -31453,9 +32703,9 @@ class ContainerClient extends StorageClient {
                         permissions: identifier.accessPolicy.permissions,
                         startsOn: identifier.accessPolicy.startsOn
                             ? truncatedISO8061Date(identifier.accessPolicy.startsOn)
-                            : ""
+                            : "",
                     },
-                    id: identifier.id
+                    id: identifier.id,
                 });
             }
             return await this.containerContext.setAccessPolicy(Object.assign({ abortSignal: options.abortSignal, access, containerAcl: acl, leaseAccessConditions: options.conditions, modifiedAccessConditions: options.conditions }, convertTracingToRequestOptionsBase(updatedOptions)));
@@ -31463,7 +32713,7 @@ class ContainerClient extends StorageClient {
         catch (e) {
             span.setStatus({
                 code: coreTracing.SpanStatusCode.ERROR,
-                message: e.message
+                message: e.message,
             });
             throw e;
         }
@@ -31509,13 +32759,13 @@ class ContainerClient extends StorageClient {
             const response = await blockBlobClient.upload(body, contentLength, updatedOptions);
             return {
                 blockBlobClient,
-                response
+                response,
             };
         }
         catch (e) {
             span.setStatus({
                 code: coreTracing.SpanStatusCode.ERROR,
-                message: e.message
+                message: e.message,
             });
             throw e;
         }
@@ -31546,7 +32796,7 @@ class ContainerClient extends StorageClient {
         catch (e) {
             span.setStatus({
                 code: coreTracing.SpanStatusCode.ERROR,
-                message: e.message
+                message: e.message,
             });
             throw e;
         }
@@ -31568,8 +32818,12 @@ class ContainerClient extends StorageClient {
         const { span, updatedOptions } = createSpan("ContainerClient-listBlobFlatSegment", options);
         try {
             const response = await this.containerContext.listBlobFlatSegment(Object.assign(Object.assign({ marker }, options), convertTracingToRequestOptionsBase(updatedOptions)));
-            const wrappedResponse = Object.assign(Object.assign({}, response), { _response: response._response, segment: Object.assign(Object.assign({}, response.segment), { blobItems: response.segment.blobItems.map((blobItemInteral) => {
-                        const blobItem = Object.assign(Object.assign({}, blobItemInteral), { tags: toTags(blobItemInteral.blobTags), objectReplicationSourceProperties: parseObjectReplicationRecord(blobItemInteral.objectReplicationMetadata) });
+            response.segment.blobItems = [];
+            if (response.segment["Blob"] !== undefined) {
+                response.segment.blobItems = ProcessBlobItems(response.segment["Blob"]);
+            }
+            const wrappedResponse = Object.assign(Object.assign({}, response), { _response: Object.assign(Object.assign({}, response._response), { parsedBody: ConvertInternalResponseOfListBlobFlat(response._response.parsedBody) }), segment: Object.assign(Object.assign({}, response.segment), { blobItems: response.segment.blobItems.map((blobItemInteral) => {
+                        const blobItem = Object.assign(Object.assign({}, blobItemInteral), { name: BlobNameToString(blobItemInteral.name), tags: toTags(blobItemInteral.blobTags), objectReplicationSourceProperties: parseObjectReplicationRecord(blobItemInteral.objectReplicationMetadata) });
                         return blobItem;
                     }) }) });
             return wrappedResponse;
@@ -31577,7 +32831,7 @@ class ContainerClient extends StorageClient {
         catch (e) {
             span.setStatus({
                 code: coreTracing.SpanStatusCode.ERROR,
-                message: e.message
+                message: e.message,
             });
             throw e;
         }
@@ -31597,19 +32851,33 @@ class ContainerClient extends StorageClient {
      * @param options - Options to Container List Blob Hierarchy Segment operation.
      */
     async listBlobHierarchySegment(delimiter, marker, options = {}) {
+        var _a;
         const { span, updatedOptions } = createSpan("ContainerClient-listBlobHierarchySegment", options);
         try {
             const response = await this.containerContext.listBlobHierarchySegment(delimiter, Object.assign(Object.assign({ marker }, options), convertTracingToRequestOptionsBase(updatedOptions)));
-            const wrappedResponse = Object.assign(Object.assign({}, response), { _response: response._response, segment: Object.assign(Object.assign({}, response.segment), { blobItems: response.segment.blobItems.map((blobItemInteral) => {
-                        const blobItem = Object.assign(Object.assign({}, blobItemInteral), { tags: toTags(blobItemInteral.blobTags), objectReplicationSourceProperties: parseObjectReplicationRecord(blobItemInteral.objectReplicationMetadata) });
+            response.segment.blobItems = [];
+            if (response.segment["Blob"] !== undefined) {
+                response.segment.blobItems = ProcessBlobItems(response.segment["Blob"]);
+            }
+            response.segment.blobPrefixes = [];
+            if (response.segment["BlobPrefix"] !== undefined) {
+                response.segment.blobPrefixes = ProcessBlobPrefixes(response.segment["BlobPrefix"]);
+            }
+            const wrappedResponse = Object.assign(Object.assign({}, response), { _response: Object.assign(Object.assign({}, response._response), { parsedBody: ConvertInternalResponseOfListBlobHierarchy(response._response.parsedBody) }), segment: Object.assign(Object.assign({}, response.segment), { blobItems: response.segment.blobItems.map((blobItemInteral) => {
+                        const blobItem = Object.assign(Object.assign({}, blobItemInteral), { name: BlobNameToString(blobItemInteral.name), tags: toTags(blobItemInteral.blobTags), objectReplicationSourceProperties: parseObjectReplicationRecord(blobItemInteral.objectReplicationMetadata) });
                         return blobItem;
+                    }), blobPrefixes: (_a = response.segment.blobPrefixes) === null || _a === void 0 ? void 0 : _a.map((blobPrefixInternal) => {
+                        const blobPrefix = {
+                            name: BlobNameToString(blobPrefixInternal.name),
+                        };
+                        return blobPrefix;
                     }) }) });
             return wrappedResponse;
         }
         catch (e) {
             span.setStatus({
                 code: coreTracing.SpanStatusCode.ERROR,
-                message: e.message
+                message: e.message,
             });
             throw e;
         }
@@ -31791,7 +33059,7 @@ class ContainerClient extends StorageClient {
              */
             byPage: (settings = {}) => {
                 return this.listSegments(settings.continuationToken, Object.assign({ maxPageSize: settings.maxPageSize }, updatedOptions));
-            }
+            },
         };
     }
     /**
@@ -31865,7 +33133,7 @@ class ContainerClient extends StorageClient {
      *   if (item.kind === "prefix") {
      *     console.log(`\tBlobPrefix: ${item.name}`);
      *   } else {
-     *     console.log(`\tBlobItem: name - ${item.name}, last modified - ${item.properties.lastModified}`);
+     *     console.log(`\tBlobItem: name - ${item.name}`);
      *   }
      * }
      * ```
@@ -31880,7 +33148,7 @@ class ContainerClient extends StorageClient {
      *   if (item.kind === "prefix") {
      *     console.log(`\tBlobPrefix: ${item.name}`);
      *   } else {
-     *     console.log(`\tBlobItem: name - ${item.name}, last modified - ${item.properties.lastModified}`);
+     *     console.log(`\tBlobItem: name - ${item.name}`);
      *   }
      *   entity = await iter.next();
      * }
@@ -31898,7 +33166,7 @@ class ContainerClient extends StorageClient {
      *     }
      *   }
      *   for (const blob of response.segment.blobItems) {
-     *     console.log(`\tBlobItem: name - ${blob.name}, last modified - ${blob.properties.lastModified}`);
+     *     console.log(`\tBlobItem: name - ${blob.name}`);
      *   }
      * }
      * ```
@@ -31909,7 +33177,9 @@ class ContainerClient extends StorageClient {
      * console.log("Listing blobs by hierarchy by page, specifying a prefix and a max page size");
      *
      * let i = 1;
-     * for await (const response of containerClient.listBlobsByHierarchy("/", { prefix: "prefix2/sub1/"}).byPage({ maxPageSize: 2 })) {
+     * for await (const response of containerClient
+     *   .listBlobsByHierarchy("/", { prefix: "prefix2/sub1/" })
+     *   .byPage({ maxPageSize: 2 })) {
      *   console.log(`Page ${i++}`);
      *   const segment = response.segment;
      *
@@ -31920,7 +33190,7 @@ class ContainerClient extends StorageClient {
      *   }
      *
      *   for (const blob of response.segment.blobItems) {
-     *     console.log(`\tBlobItem: name - ${blob.name}, last modified - ${blob.properties.lastModified}`);
+     *     console.log(`\tBlobItem: name - ${blob.name}`);
      *   }
      * }
      * ```
@@ -31987,7 +33257,208 @@ class ContainerClient extends StorageClient {
              */
             byPage: (settings = {}) => {
                 return this.listHierarchySegments(delimiter, settings.continuationToken, Object.assign({ maxPageSize: settings.maxPageSize }, updatedOptions));
+            },
+        };
+    }
+    /**
+     * The Filter Blobs operation enables callers to list blobs in the container whose tags
+     * match a given search expression.
+     *
+     * @param tagFilterSqlExpression - The where parameter enables the caller to query blobs whose tags match a given expression.
+     *                                        The given expression must evaluate to true for a blob to be returned in the results.
+     *                                        The[OData - ABNF] filter syntax rule defines the formal grammar for the value of the where query parameter;
+     *                                        however, only a subset of the OData filter syntax is supported in the Blob service.
+     * @param marker - A string value that identifies the portion of
+     *                          the list of blobs to be returned with the next listing operation. The
+     *                          operation returns the continuationToken value within the response body if the
+     *                          listing operation did not return all blobs remaining to be listed
+     *                          with the current page. The continuationToken value can be used as the value for
+     *                          the marker parameter in a subsequent call to request the next page of list
+     *                          items. The marker value is opaque to the client.
+     * @param options - Options to find blobs by tags.
+     */
+    async findBlobsByTagsSegment(tagFilterSqlExpression, marker, options = {}) {
+        const { span, updatedOptions } = createSpan("ContainerClient-findBlobsByTagsSegment", options);
+        try {
+            const response = await this.containerContext.filterBlobs(Object.assign({ abortSignal: options.abortSignal, where: tagFilterSqlExpression, marker, maxPageSize: options.maxPageSize }, convertTracingToRequestOptionsBase(updatedOptions)));
+            const wrappedResponse = Object.assign(Object.assign({}, response), { _response: response._response, blobs: response.blobs.map((blob) => {
+                    var _a;
+                    let tagValue = "";
+                    if (((_a = blob.tags) === null || _a === void 0 ? void 0 : _a.blobTagSet.length) === 1) {
+                        tagValue = blob.tags.blobTagSet[0].value;
+                    }
+                    return Object.assign(Object.assign({}, blob), { tags: toTags(blob.tags), tagValue });
+                }) });
+            return wrappedResponse;
+        }
+        catch (e) {
+            span.setStatus({
+                code: coreTracing.SpanStatusCode.ERROR,
+                message: e.message,
+            });
+            throw e;
+        }
+        finally {
+            span.end();
+        }
+    }
+    /**
+     * Returns an AsyncIterableIterator for ContainerFindBlobsByTagsSegmentResponse.
+     *
+     * @param tagFilterSqlExpression -  The where parameter enables the caller to query blobs whose tags match a given expression.
+     *                                         The given expression must evaluate to true for a blob to be returned in the results.
+     *                                         The[OData - ABNF] filter syntax rule defines the formal grammar for the value of the where query parameter;
+     *                                         however, only a subset of the OData filter syntax is supported in the Blob service.
+     * @param marker - A string value that identifies the portion of
+     *                          the list of blobs to be returned with the next listing operation. The
+     *                          operation returns the continuationToken value within the response body if the
+     *                          listing operation did not return all blobs remaining to be listed
+     *                          with the current page. The continuationToken value can be used as the value for
+     *                          the marker parameter in a subsequent call to request the next page of list
+     *                          items. The marker value is opaque to the client.
+     * @param options - Options to find blobs by tags.
+     */
+    findBlobsByTagsSegments(tagFilterSqlExpression, marker, options = {}) {
+        return tslib.__asyncGenerator(this, arguments, function* findBlobsByTagsSegments_1() {
+            let response;
+            if (!!marker || marker === undefined) {
+                do {
+                    response = yield tslib.__await(this.findBlobsByTagsSegment(tagFilterSqlExpression, marker, options));
+                    response.blobs = response.blobs || [];
+                    marker = response.continuationToken;
+                    yield yield tslib.__await(response);
+                } while (marker);
             }
+        });
+    }
+    /**
+     * Returns an AsyncIterableIterator for blobs.
+     *
+     * @param tagFilterSqlExpression -  The where parameter enables the caller to query blobs whose tags match a given expression.
+     *                                         The given expression must evaluate to true for a blob to be returned in the results.
+     *                                         The[OData - ABNF] filter syntax rule defines the formal grammar for the value of the where query parameter;
+     *                                         however, only a subset of the OData filter syntax is supported in the Blob service.
+     * @param options - Options to findBlobsByTagsItems.
+     */
+    findBlobsByTagsItems(tagFilterSqlExpression, options = {}) {
+        return tslib.__asyncGenerator(this, arguments, function* findBlobsByTagsItems_1() {
+            var e_3, _a;
+            let marker;
+            try {
+                for (var _b = tslib.__asyncValues(this.findBlobsByTagsSegments(tagFilterSqlExpression, marker, options)), _c; _c = yield tslib.__await(_b.next()), !_c.done;) {
+                    const segment = _c.value;
+                    yield tslib.__await(yield* tslib.__asyncDelegator(tslib.__asyncValues(segment.blobs)));
+                }
+            }
+            catch (e_3_1) { e_3 = { error: e_3_1 }; }
+            finally {
+                try {
+                    if (_c && !_c.done && (_a = _b.return)) yield tslib.__await(_a.call(_b));
+                }
+                finally { if (e_3) throw e_3.error; }
+            }
+        });
+    }
+    /**
+     * Returns an async iterable iterator to find all blobs with specified tag
+     * under the specified container.
+     *
+     * .byPage() returns an async iterable iterator to list the blobs in pages.
+     *
+     * Example using `for await` syntax:
+     *
+     * ```js
+     * let i = 1;
+     * for await (const blob of containerClient.findBlobsByTags("tagkey='tagvalue'")) {
+     *   console.log(`Blob ${i++}: ${blob.name}`);
+     * }
+     * ```
+     *
+     * Example using `iter.next()`:
+     *
+     * ```js
+     * let i = 1;
+     * const iter = containerClient.findBlobsByTags("tagkey='tagvalue'");
+     * let blobItem = await iter.next();
+     * while (!blobItem.done) {
+     *   console.log(`Blob ${i++}: ${blobItem.value.name}`);
+     *   blobItem = await iter.next();
+     * }
+     * ```
+     *
+     * Example using `byPage()`:
+     *
+     * ```js
+     * // passing optional maxPageSize in the page settings
+     * let i = 1;
+     * for await (const response of containerClient.findBlobsByTags("tagkey='tagvalue'").byPage({ maxPageSize: 20 })) {
+     *   if (response.blobs) {
+     *     for (const blob of response.blobs) {
+     *       console.log(`Blob ${i++}: ${blob.name}`);
+     *     }
+     *   }
+     * }
+     * ```
+     *
+     * Example using paging with a marker:
+     *
+     * ```js
+     * let i = 1;
+     * let iterator = containerClient.findBlobsByTags("tagkey='tagvalue'").byPage({ maxPageSize: 2 });
+     * let response = (await iterator.next()).value;
+     *
+     * // Prints 2 blob names
+     * if (response.blobs) {
+     *   for (const blob of response.blobs) {
+     *     console.log(`Blob ${i++}: ${blob.name}`);
+     *   }
+     * }
+     *
+     * // Gets next marker
+     * let marker = response.continuationToken;
+     * // Passing next marker as continuationToken
+     * iterator = containerClient
+     *   .findBlobsByTags("tagkey='tagvalue'")
+     *   .byPage({ continuationToken: marker, maxPageSize: 10 });
+     * response = (await iterator.next()).value;
+     *
+     * // Prints blob names
+     * if (response.blobs) {
+     *   for (const blob of response.blobs) {
+     *      console.log(`Blob ${i++}: ${blob.name}`);
+     *   }
+     * }
+     * ```
+     *
+     * @param tagFilterSqlExpression -  The where parameter enables the caller to query blobs whose tags match a given expression.
+     *                                         The given expression must evaluate to true for a blob to be returned in the results.
+     *                                         The[OData - ABNF] filter syntax rule defines the formal grammar for the value of the where query parameter;
+     *                                         however, only a subset of the OData filter syntax is supported in the Blob service.
+     * @param options - Options to find blobs by tags.
+     */
+    findBlobsByTags(tagFilterSqlExpression, options = {}) {
+        // AsyncIterableIterator to iterate over blobs
+        const listSegmentOptions = Object.assign({}, options);
+        const iter = this.findBlobsByTagsItems(tagFilterSqlExpression, listSegmentOptions);
+        return {
+            /**
+             * The next method, part of the iteration protocol
+             */
+            next() {
+                return iter.next();
+            },
+            /**
+             * The connection to the async iterator, part of the iteration protocol
+             */
+            [Symbol.asyncIterator]() {
+                return this;
+            },
+            /**
+             * Return an AsyncIterableIterator that works a page at a time
+             */
+            byPage: (settings = {}) => {
+                return this.findBlobsByTagsSegments(tagFilterSqlExpression, settings.continuationToken, Object.assign({ maxPageSize: settings.maxPageSize }, listSegmentOptions));
+            },
         };
     }
     getContainerNameFromUrl() {
@@ -32120,6 +33591,10 @@ class AccountSASPermissions {
          * Permission to set immutability policy.
          */
         this.setImmutabilityPolicy = false;
+        /**
+         * Specifies that Permanent Delete is permitted.
+         */
+        this.permanentDelete = false;
     }
     /**
      * Parse initializes the AccountSASPermissions fields from a string.
@@ -32165,6 +33640,9 @@ class AccountSASPermissions {
                     break;
                 case "i":
                     accountSASPermissions.setImmutabilityPolicy = true;
+                    break;
+                case "y":
+                    accountSASPermissions.permanentDelete = true;
                     break;
                 default:
                     throw new RangeError(`Invalid permission character: ${c}`);
@@ -32215,6 +33693,9 @@ class AccountSASPermissions {
         }
         if (permissionLike.setImmutabilityPolicy) {
             accountSASPermissions.setImmutabilityPolicy = true;
+        }
+        if (permissionLike.permanentDelete) {
+            accountSASPermissions.permanentDelete = true;
         }
         return accountSASPermissions;
     }
@@ -32268,6 +33749,9 @@ class AccountSASPermissions {
         }
         if (this.setImmutabilityPolicy) {
             permissions.push("i");
+        }
+        if (this.permanentDelete) {
+            permissions.push("y");
         }
         return permissions.join("");
     }
@@ -32452,6 +33936,11 @@ function generateAccountSASQueryParameters(accountSASSignatureValues, sharedKeyC
         throw RangeError("'version' must be >= '2019-10-10' when provided 'x' permission.");
     }
     if (accountSASSignatureValues.permissions &&
+        accountSASSignatureValues.permissions.permanentDelete &&
+        version < "2019-10-10") {
+        throw RangeError("'version' must be >= '2019-10-10' when provided 'y' permission.");
+    }
+    if (accountSASSignatureValues.permissions &&
         accountSASSignatureValues.permissions.tag &&
         version < "2019-12-12") {
         throw RangeError("'version' must be >= '2019-12-12' when provided 't' permission.");
@@ -32461,25 +33950,48 @@ function generateAccountSASQueryParameters(accountSASSignatureValues, sharedKeyC
         version < "2019-12-12") {
         throw RangeError("'version' must be >= '2019-12-12' when provided 'f' permission.");
     }
+    if (accountSASSignatureValues.encryptionScope && version < "2020-12-06") {
+        throw RangeError("'version' must be >= '2020-12-06' when provided 'encryptionScope' in SAS.");
+    }
     const parsedPermissions = AccountSASPermissions.parse(accountSASSignatureValues.permissions.toString());
     const parsedServices = AccountSASServices.parse(accountSASSignatureValues.services).toString();
     const parsedResourceTypes = AccountSASResourceTypes.parse(accountSASSignatureValues.resourceTypes).toString();
-    const stringToSign = [
-        sharedKeyCredential.accountName,
-        parsedPermissions,
-        parsedServices,
-        parsedResourceTypes,
-        accountSASSignatureValues.startsOn
-            ? truncatedISO8061Date(accountSASSignatureValues.startsOn, false)
-            : "",
-        truncatedISO8061Date(accountSASSignatureValues.expiresOn, false),
-        accountSASSignatureValues.ipRange ? ipRangeToString(accountSASSignatureValues.ipRange) : "",
-        accountSASSignatureValues.protocol ? accountSASSignatureValues.protocol : "",
-        version,
-        "" // Account SAS requires an additional newline character
-    ].join("\n");
+    let stringToSign;
+    if (version >= "2020-12-06") {
+        stringToSign = [
+            sharedKeyCredential.accountName,
+            parsedPermissions,
+            parsedServices,
+            parsedResourceTypes,
+            accountSASSignatureValues.startsOn
+                ? truncatedISO8061Date(accountSASSignatureValues.startsOn, false)
+                : "",
+            truncatedISO8061Date(accountSASSignatureValues.expiresOn, false),
+            accountSASSignatureValues.ipRange ? ipRangeToString(accountSASSignatureValues.ipRange) : "",
+            accountSASSignatureValues.protocol ? accountSASSignatureValues.protocol : "",
+            version,
+            accountSASSignatureValues.encryptionScope ? accountSASSignatureValues.encryptionScope : "",
+            "", // Account SAS requires an additional newline character
+        ].join("\n");
+    }
+    else {
+        stringToSign = [
+            sharedKeyCredential.accountName,
+            parsedPermissions,
+            parsedServices,
+            parsedResourceTypes,
+            accountSASSignatureValues.startsOn
+                ? truncatedISO8061Date(accountSASSignatureValues.startsOn, false)
+                : "",
+            truncatedISO8061Date(accountSASSignatureValues.expiresOn, false),
+            accountSASSignatureValues.ipRange ? ipRangeToString(accountSASSignatureValues.ipRange) : "",
+            accountSASSignatureValues.protocol ? accountSASSignatureValues.protocol : "",
+            version,
+            "", // Account SAS requires an additional newline character
+        ].join("\n");
+    }
     const signature = sharedKeyCredential.computeHMACSHA256(stringToSign);
-    return new SASQueryParameters(version, signature, parsedPermissions.toString(), parsedServices, parsedResourceTypes, accountSASSignatureValues.protocol, accountSASSignatureValues.startsOn, accountSASSignatureValues.expiresOn, accountSASSignatureValues.ipRange);
+    return new SASQueryParameters(version, signature, parsedPermissions.toString(), parsedServices, parsedResourceTypes, accountSASSignatureValues.protocol, accountSASSignatureValues.startsOn, accountSASSignatureValues.expiresOn, accountSASSignatureValues.ipRange, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, accountSASSignatureValues.encryptionScope);
 }
 
 /**
@@ -32526,11 +34038,16 @@ class BlobServiceClient extends StorageClient {
         options = options || {};
         const extractedCreds = extractConnectionStringParts(connectionString);
         if (extractedCreds.kind === "AccountConnString") {
-            {
+            if (coreHttp.isNode) {
                 const sharedKeyCredential = new StorageSharedKeyCredential(extractedCreds.accountName, extractedCreds.accountKey);
-                options.proxyOptions = coreHttp.getDefaultProxySettings(extractedCreds.proxyUri);
+                if (!options.proxyOptions) {
+                    options.proxyOptions = coreHttp.getDefaultProxySettings(extractedCreds.proxyUri);
+                }
                 const pipeline = newPipeline(sharedKeyCredential, options);
                 return new BlobServiceClient(extractedCreds.url, pipeline);
+            }
+            else {
+                throw new Error("Account connection string is only supported in Node.js environment");
             }
         }
         else if (extractedCreds.kind === "SASConnString") {
@@ -32570,13 +34087,13 @@ class BlobServiceClient extends StorageClient {
             const containerCreateResponse = await containerClient.create(updatedOptions);
             return {
                 containerClient,
-                containerCreateResponse
+                containerCreateResponse,
             };
         }
         catch (e) {
             span.setStatus({
                 code: coreTracing.SpanStatusCode.ERROR,
-                message: e.message
+                message: e.message,
             });
             throw e;
         }
@@ -32600,7 +34117,7 @@ class BlobServiceClient extends StorageClient {
         catch (e) {
             span.setStatus({
                 code: coreTracing.SpanStatusCode.ERROR,
-                message: e.message
+                message: e.message,
             });
             throw e;
         }
@@ -32630,7 +34147,7 @@ class BlobServiceClient extends StorageClient {
         catch (e) {
             span.setStatus({
                 code: coreTracing.SpanStatusCode.ERROR,
-                message: e.message
+                message: e.message,
             });
             throw e;
         }
@@ -32660,7 +34177,7 @@ class BlobServiceClient extends StorageClient {
         catch (e) {
             span.setStatus({
                 code: coreTracing.SpanStatusCode.ERROR,
-                message: e.message
+                message: e.message,
             });
             throw e;
         }
@@ -32684,7 +34201,7 @@ class BlobServiceClient extends StorageClient {
         catch (e) {
             span.setStatus({
                 code: coreTracing.SpanStatusCode.ERROR,
-                message: e.message
+                message: e.message,
             });
             throw e;
         }
@@ -32709,7 +34226,7 @@ class BlobServiceClient extends StorageClient {
         catch (e) {
             span.setStatus({
                 code: coreTracing.SpanStatusCode.ERROR,
-                message: e.message
+                message: e.message,
             });
             throw e;
         }
@@ -32734,7 +34251,7 @@ class BlobServiceClient extends StorageClient {
         catch (e) {
             span.setStatus({
                 code: coreTracing.SpanStatusCode.ERROR,
-                message: e.message
+                message: e.message,
             });
             throw e;
         }
@@ -32760,7 +34277,7 @@ class BlobServiceClient extends StorageClient {
         catch (e) {
             span.setStatus({
                 code: coreTracing.SpanStatusCode.ERROR,
-                message: e.message
+                message: e.message,
             });
             throw e;
         }
@@ -32790,7 +34307,7 @@ class BlobServiceClient extends StorageClient {
         catch (e) {
             span.setStatus({
                 code: coreTracing.SpanStatusCode.ERROR,
-                message: e.message
+                message: e.message,
             });
             throw e;
         }
@@ -32833,7 +34350,7 @@ class BlobServiceClient extends StorageClient {
         catch (e) {
             span.setStatus({
                 code: coreTracing.SpanStatusCode.ERROR,
-                message: e.message
+                message: e.message,
             });
             throw e;
         }
@@ -32999,7 +34516,7 @@ class BlobServiceClient extends StorageClient {
              */
             byPage: (settings = {}) => {
                 return this.findBlobsByTagsSegments(tagFilterSqlExpression, settings.continuationToken, Object.assign({ maxPageSize: settings.maxPageSize }, listSegmentOptions));
-            }
+            },
         };
     }
     /**
@@ -33137,6 +34654,9 @@ class BlobServiceClient extends StorageClient {
         if (options.includeMetadata) {
             include.push("metadata");
         }
+        if (options.includeSystem) {
+            include.push("system");
+        }
         // AsyncIterableIterator to iterate over containers
         const listSegmentOptions = Object.assign(Object.assign({}, options), (include.length > 0 ? { include } : {}));
         const iter = this.listItems(listSegmentOptions);
@@ -33158,7 +34678,7 @@ class BlobServiceClient extends StorageClient {
              */
             byPage: (settings = {}) => {
                 return this.listSegments(settings.continuationToken, Object.assign({ maxPageSize: settings.maxPageSize }, listSegmentOptions));
-            }
+            },
         };
     }
     /**
@@ -33177,7 +34697,7 @@ class BlobServiceClient extends StorageClient {
         try {
             const response = await this.serviceContext.getUserDelegationKey({
                 startsOn: truncatedISO8061Date(startsOn, false),
-                expiresOn: truncatedISO8061Date(expiresOn, false)
+                expiresOn: truncatedISO8061Date(expiresOn, false),
             }, Object.assign({ abortSignal: options.abortSignal }, convertTracingToRequestOptionsBase(updatedOptions)));
             const userDelegationKey = {
                 signedObjectId: response.signedObjectId,
@@ -33186,7 +34706,7 @@ class BlobServiceClient extends StorageClient {
                 signedExpiresOn: new Date(response.signedExpiresOn),
                 signedService: response.signedService,
                 signedVersion: response.signedVersion,
-                value: response.value
+                value: response.value,
             };
             const res = Object.assign({ _response: response._response, requestId: response.requestId, clientRequestId: response.clientRequestId, version: response.version, date: response.date, errorCode: response.errorCode }, userDelegationKey);
             return res;
@@ -33194,7 +34714,7 @@ class BlobServiceClient extends StorageClient {
         catch (e) {
             span.setStatus({
                 code: coreTracing.SpanStatusCode.ERROR,
-                message: e.message
+                message: e.message,
             });
             throw e;
         }
@@ -33243,39 +34763,27 @@ class BlobServiceClient extends StorageClient {
 
 Object.defineProperty(exports, 'BaseRequestPolicy', {
     enumerable: true,
-    get: function () {
-        return coreHttp.BaseRequestPolicy;
-    }
+    get: function () { return coreHttp.BaseRequestPolicy; }
 });
 Object.defineProperty(exports, 'HttpHeaders', {
     enumerable: true,
-    get: function () {
-        return coreHttp.HttpHeaders;
-    }
+    get: function () { return coreHttp.HttpHeaders; }
 });
 Object.defineProperty(exports, 'RequestPolicyOptions', {
     enumerable: true,
-    get: function () {
-        return coreHttp.RequestPolicyOptions;
-    }
+    get: function () { return coreHttp.RequestPolicyOptions; }
 });
 Object.defineProperty(exports, 'RestError', {
     enumerable: true,
-    get: function () {
-        return coreHttp.RestError;
-    }
+    get: function () { return coreHttp.RestError; }
 });
 Object.defineProperty(exports, 'WebResource', {
     enumerable: true,
-    get: function () {
-        return coreHttp.WebResource;
-    }
+    get: function () { return coreHttp.WebResource; }
 });
 Object.defineProperty(exports, 'deserializationPolicy', {
     enumerable: true,
-    get: function () {
-        return coreHttp.deserializationPolicy;
-    }
+    get: function () { return coreHttp.deserializationPolicy; }
 });
 exports.AccountSASPermissions = AccountSASPermissions;
 exports.AccountSASResourceTypes = AccountSASResourceTypes;
@@ -35263,7 +36771,12 @@ exports.ProxyTracer = ProxyTracer;
 /* 404 */,
 /* 405 */,
 /* 406 */,
-/* 407 */,
+/* 407 */
+/***/ (function(module) {
+
+module.exports = require("buffer");
+
+/***/ }),
 /* 408 */,
 /* 409 */,
 /* 410 */,
@@ -35778,55 +37291,610 @@ function parallel(list, iterator, callback)
 
 "use strict";
 
-/*
- * Copyright The OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      https://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-var __spreadArray = (this && this.__spreadArray) || function (to, from) {
-    for (var i = 0, il = from.length, j = to.length; i < il; i++, j++)
-        to[j] = from[i];
-    return to;
+/* eslint-disable @typescript-eslint/no-explicit-any */
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.NoopContextManager = void 0;
-var context_1 = __webpack_require__(132);
-var NoopContextManager = /** @class */ (function () {
-    function NoopContextManager() {
+exports.HttpClient = exports.isHttps = exports.HttpClientResponse = exports.HttpClientError = exports.getProxyUrl = exports.MediaTypes = exports.Headers = exports.HttpCodes = void 0;
+const http = __importStar(__webpack_require__(605));
+const https = __importStar(__webpack_require__(211));
+const pm = __importStar(__webpack_require__(177));
+const tunnel = __importStar(__webpack_require__(413));
+var HttpCodes;
+(function (HttpCodes) {
+    HttpCodes[HttpCodes["OK"] = 200] = "OK";
+    HttpCodes[HttpCodes["MultipleChoices"] = 300] = "MultipleChoices";
+    HttpCodes[HttpCodes["MovedPermanently"] = 301] = "MovedPermanently";
+    HttpCodes[HttpCodes["ResourceMoved"] = 302] = "ResourceMoved";
+    HttpCodes[HttpCodes["SeeOther"] = 303] = "SeeOther";
+    HttpCodes[HttpCodes["NotModified"] = 304] = "NotModified";
+    HttpCodes[HttpCodes["UseProxy"] = 305] = "UseProxy";
+    HttpCodes[HttpCodes["SwitchProxy"] = 306] = "SwitchProxy";
+    HttpCodes[HttpCodes["TemporaryRedirect"] = 307] = "TemporaryRedirect";
+    HttpCodes[HttpCodes["PermanentRedirect"] = 308] = "PermanentRedirect";
+    HttpCodes[HttpCodes["BadRequest"] = 400] = "BadRequest";
+    HttpCodes[HttpCodes["Unauthorized"] = 401] = "Unauthorized";
+    HttpCodes[HttpCodes["PaymentRequired"] = 402] = "PaymentRequired";
+    HttpCodes[HttpCodes["Forbidden"] = 403] = "Forbidden";
+    HttpCodes[HttpCodes["NotFound"] = 404] = "NotFound";
+    HttpCodes[HttpCodes["MethodNotAllowed"] = 405] = "MethodNotAllowed";
+    HttpCodes[HttpCodes["NotAcceptable"] = 406] = "NotAcceptable";
+    HttpCodes[HttpCodes["ProxyAuthenticationRequired"] = 407] = "ProxyAuthenticationRequired";
+    HttpCodes[HttpCodes["RequestTimeout"] = 408] = "RequestTimeout";
+    HttpCodes[HttpCodes["Conflict"] = 409] = "Conflict";
+    HttpCodes[HttpCodes["Gone"] = 410] = "Gone";
+    HttpCodes[HttpCodes["TooManyRequests"] = 429] = "TooManyRequests";
+    HttpCodes[HttpCodes["InternalServerError"] = 500] = "InternalServerError";
+    HttpCodes[HttpCodes["NotImplemented"] = 501] = "NotImplemented";
+    HttpCodes[HttpCodes["BadGateway"] = 502] = "BadGateway";
+    HttpCodes[HttpCodes["ServiceUnavailable"] = 503] = "ServiceUnavailable";
+    HttpCodes[HttpCodes["GatewayTimeout"] = 504] = "GatewayTimeout";
+})(HttpCodes = exports.HttpCodes || (exports.HttpCodes = {}));
+var Headers;
+(function (Headers) {
+    Headers["Accept"] = "accept";
+    Headers["ContentType"] = "content-type";
+})(Headers = exports.Headers || (exports.Headers = {}));
+var MediaTypes;
+(function (MediaTypes) {
+    MediaTypes["ApplicationJson"] = "application/json";
+})(MediaTypes = exports.MediaTypes || (exports.MediaTypes = {}));
+/**
+ * Returns the proxy URL, depending upon the supplied url and proxy environment variables.
+ * @param serverUrl  The server URL where the request will be sent. For example, https://api.github.com
+ */
+function getProxyUrl(serverUrl) {
+    const proxyUrl = pm.getProxyUrl(new URL(serverUrl));
+    return proxyUrl ? proxyUrl.href : '';
+}
+exports.getProxyUrl = getProxyUrl;
+const HttpRedirectCodes = [
+    HttpCodes.MovedPermanently,
+    HttpCodes.ResourceMoved,
+    HttpCodes.SeeOther,
+    HttpCodes.TemporaryRedirect,
+    HttpCodes.PermanentRedirect
+];
+const HttpResponseRetryCodes = [
+    HttpCodes.BadGateway,
+    HttpCodes.ServiceUnavailable,
+    HttpCodes.GatewayTimeout
+];
+const RetryableHttpVerbs = ['OPTIONS', 'GET', 'DELETE', 'HEAD'];
+const ExponentialBackoffCeiling = 10;
+const ExponentialBackoffTimeSlice = 5;
+class HttpClientError extends Error {
+    constructor(message, statusCode) {
+        super(message);
+        this.name = 'HttpClientError';
+        this.statusCode = statusCode;
+        Object.setPrototypeOf(this, HttpClientError.prototype);
     }
-    NoopContextManager.prototype.active = function () {
-        return context_1.ROOT_CONTEXT;
-    };
-    NoopContextManager.prototype.with = function (_context, fn, thisArg) {
-        var args = [];
-        for (var _i = 3; _i < arguments.length; _i++) {
-            args[_i - 3] = arguments[_i];
+}
+exports.HttpClientError = HttpClientError;
+class HttpClientResponse {
+    constructor(message) {
+        this.message = message;
+    }
+    readBody() {
+        return __awaiter(this, void 0, void 0, function* () {
+            return new Promise((resolve) => __awaiter(this, void 0, void 0, function* () {
+                let output = Buffer.alloc(0);
+                this.message.on('data', (chunk) => {
+                    output = Buffer.concat([output, chunk]);
+                });
+                this.message.on('end', () => {
+                    resolve(output.toString());
+                });
+            }));
+        });
+    }
+}
+exports.HttpClientResponse = HttpClientResponse;
+function isHttps(requestUrl) {
+    const parsedUrl = new URL(requestUrl);
+    return parsedUrl.protocol === 'https:';
+}
+exports.isHttps = isHttps;
+class HttpClient {
+    constructor(userAgent, handlers, requestOptions) {
+        this._ignoreSslError = false;
+        this._allowRedirects = true;
+        this._allowRedirectDowngrade = false;
+        this._maxRedirects = 50;
+        this._allowRetries = false;
+        this._maxRetries = 1;
+        this._keepAlive = false;
+        this._disposed = false;
+        this.userAgent = userAgent;
+        this.handlers = handlers || [];
+        this.requestOptions = requestOptions;
+        if (requestOptions) {
+            if (requestOptions.ignoreSslError != null) {
+                this._ignoreSslError = requestOptions.ignoreSslError;
+            }
+            this._socketTimeout = requestOptions.socketTimeout;
+            if (requestOptions.allowRedirects != null) {
+                this._allowRedirects = requestOptions.allowRedirects;
+            }
+            if (requestOptions.allowRedirectDowngrade != null) {
+                this._allowRedirectDowngrade = requestOptions.allowRedirectDowngrade;
+            }
+            if (requestOptions.maxRedirects != null) {
+                this._maxRedirects = Math.max(requestOptions.maxRedirects, 0);
+            }
+            if (requestOptions.keepAlive != null) {
+                this._keepAlive = requestOptions.keepAlive;
+            }
+            if (requestOptions.allowRetries != null) {
+                this._allowRetries = requestOptions.allowRetries;
+            }
+            if (requestOptions.maxRetries != null) {
+                this._maxRetries = requestOptions.maxRetries;
+            }
         }
-        return fn.call.apply(fn, __spreadArray([thisArg], args));
-    };
-    NoopContextManager.prototype.bind = function (_context, target) {
-        return target;
-    };
-    NoopContextManager.prototype.enable = function () {
-        return this;
-    };
-    NoopContextManager.prototype.disable = function () {
-        return this;
-    };
-    return NoopContextManager;
-}());
-exports.NoopContextManager = NoopContextManager;
-//# sourceMappingURL=NoopContextManager.js.map
+    }
+    options(requestUrl, additionalHeaders) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return this.request('OPTIONS', requestUrl, null, additionalHeaders || {});
+        });
+    }
+    get(requestUrl, additionalHeaders) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return this.request('GET', requestUrl, null, additionalHeaders || {});
+        });
+    }
+    del(requestUrl, additionalHeaders) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return this.request('DELETE', requestUrl, null, additionalHeaders || {});
+        });
+    }
+    post(requestUrl, data, additionalHeaders) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return this.request('POST', requestUrl, data, additionalHeaders || {});
+        });
+    }
+    patch(requestUrl, data, additionalHeaders) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return this.request('PATCH', requestUrl, data, additionalHeaders || {});
+        });
+    }
+    put(requestUrl, data, additionalHeaders) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return this.request('PUT', requestUrl, data, additionalHeaders || {});
+        });
+    }
+    head(requestUrl, additionalHeaders) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return this.request('HEAD', requestUrl, null, additionalHeaders || {});
+        });
+    }
+    sendStream(verb, requestUrl, stream, additionalHeaders) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return this.request(verb, requestUrl, stream, additionalHeaders);
+        });
+    }
+    /**
+     * Gets a typed object from an endpoint
+     * Be aware that not found returns a null.  Other errors (4xx, 5xx) reject the promise
+     */
+    getJson(requestUrl, additionalHeaders = {}) {
+        return __awaiter(this, void 0, void 0, function* () {
+            additionalHeaders[Headers.Accept] = this._getExistingOrDefaultHeader(additionalHeaders, Headers.Accept, MediaTypes.ApplicationJson);
+            const res = yield this.get(requestUrl, additionalHeaders);
+            return this._processResponse(res, this.requestOptions);
+        });
+    }
+    postJson(requestUrl, obj, additionalHeaders = {}) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const data = JSON.stringify(obj, null, 2);
+            additionalHeaders[Headers.Accept] = this._getExistingOrDefaultHeader(additionalHeaders, Headers.Accept, MediaTypes.ApplicationJson);
+            additionalHeaders[Headers.ContentType] = this._getExistingOrDefaultHeader(additionalHeaders, Headers.ContentType, MediaTypes.ApplicationJson);
+            const res = yield this.post(requestUrl, data, additionalHeaders);
+            return this._processResponse(res, this.requestOptions);
+        });
+    }
+    putJson(requestUrl, obj, additionalHeaders = {}) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const data = JSON.stringify(obj, null, 2);
+            additionalHeaders[Headers.Accept] = this._getExistingOrDefaultHeader(additionalHeaders, Headers.Accept, MediaTypes.ApplicationJson);
+            additionalHeaders[Headers.ContentType] = this._getExistingOrDefaultHeader(additionalHeaders, Headers.ContentType, MediaTypes.ApplicationJson);
+            const res = yield this.put(requestUrl, data, additionalHeaders);
+            return this._processResponse(res, this.requestOptions);
+        });
+    }
+    patchJson(requestUrl, obj, additionalHeaders = {}) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const data = JSON.stringify(obj, null, 2);
+            additionalHeaders[Headers.Accept] = this._getExistingOrDefaultHeader(additionalHeaders, Headers.Accept, MediaTypes.ApplicationJson);
+            additionalHeaders[Headers.ContentType] = this._getExistingOrDefaultHeader(additionalHeaders, Headers.ContentType, MediaTypes.ApplicationJson);
+            const res = yield this.patch(requestUrl, data, additionalHeaders);
+            return this._processResponse(res, this.requestOptions);
+        });
+    }
+    /**
+     * Makes a raw http request.
+     * All other methods such as get, post, patch, and request ultimately call this.
+     * Prefer get, del, post and patch
+     */
+    request(verb, requestUrl, data, headers) {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (this._disposed) {
+                throw new Error('Client has already been disposed.');
+            }
+            const parsedUrl = new URL(requestUrl);
+            let info = this._prepareRequest(verb, parsedUrl, headers);
+            // Only perform retries on reads since writes may not be idempotent.
+            const maxTries = this._allowRetries && RetryableHttpVerbs.includes(verb)
+                ? this._maxRetries + 1
+                : 1;
+            let numTries = 0;
+            let response;
+            do {
+                response = yield this.requestRaw(info, data);
+                // Check if it's an authentication challenge
+                if (response &&
+                    response.message &&
+                    response.message.statusCode === HttpCodes.Unauthorized) {
+                    let authenticationHandler;
+                    for (const handler of this.handlers) {
+                        if (handler.canHandleAuthentication(response)) {
+                            authenticationHandler = handler;
+                            break;
+                        }
+                    }
+                    if (authenticationHandler) {
+                        return authenticationHandler.handleAuthentication(this, info, data);
+                    }
+                    else {
+                        // We have received an unauthorized response but have no handlers to handle it.
+                        // Let the response return to the caller.
+                        return response;
+                    }
+                }
+                let redirectsRemaining = this._maxRedirects;
+                while (response.message.statusCode &&
+                    HttpRedirectCodes.includes(response.message.statusCode) &&
+                    this._allowRedirects &&
+                    redirectsRemaining > 0) {
+                    const redirectUrl = response.message.headers['location'];
+                    if (!redirectUrl) {
+                        // if there's no location to redirect to, we won't
+                        break;
+                    }
+                    const parsedRedirectUrl = new URL(redirectUrl);
+                    if (parsedUrl.protocol === 'https:' &&
+                        parsedUrl.protocol !== parsedRedirectUrl.protocol &&
+                        !this._allowRedirectDowngrade) {
+                        throw new Error('Redirect from HTTPS to HTTP protocol. This downgrade is not allowed for security reasons. If you want to allow this behavior, set the allowRedirectDowngrade option to true.');
+                    }
+                    // we need to finish reading the response before reassigning response
+                    // which will leak the open socket.
+                    yield response.readBody();
+                    // strip authorization header if redirected to a different hostname
+                    if (parsedRedirectUrl.hostname !== parsedUrl.hostname) {
+                        for (const header in headers) {
+                            // header names are case insensitive
+                            if (header.toLowerCase() === 'authorization') {
+                                delete headers[header];
+                            }
+                        }
+                    }
+                    // let's make the request with the new redirectUrl
+                    info = this._prepareRequest(verb, parsedRedirectUrl, headers);
+                    response = yield this.requestRaw(info, data);
+                    redirectsRemaining--;
+                }
+                if (!response.message.statusCode ||
+                    !HttpResponseRetryCodes.includes(response.message.statusCode)) {
+                    // If not a retry code, return immediately instead of retrying
+                    return response;
+                }
+                numTries += 1;
+                if (numTries < maxTries) {
+                    yield response.readBody();
+                    yield this._performExponentialBackoff(numTries);
+                }
+            } while (numTries < maxTries);
+            return response;
+        });
+    }
+    /**
+     * Needs to be called if keepAlive is set to true in request options.
+     */
+    dispose() {
+        if (this._agent) {
+            this._agent.destroy();
+        }
+        this._disposed = true;
+    }
+    /**
+     * Raw request.
+     * @param info
+     * @param data
+     */
+    requestRaw(info, data) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return new Promise((resolve, reject) => {
+                function callbackForResult(err, res) {
+                    if (err) {
+                        reject(err);
+                    }
+                    else if (!res) {
+                        // If `err` is not passed, then `res` must be passed.
+                        reject(new Error('Unknown error'));
+                    }
+                    else {
+                        resolve(res);
+                    }
+                }
+                this.requestRawWithCallback(info, data, callbackForResult);
+            });
+        });
+    }
+    /**
+     * Raw request with callback.
+     * @param info
+     * @param data
+     * @param onResult
+     */
+    requestRawWithCallback(info, data, onResult) {
+        if (typeof data === 'string') {
+            if (!info.options.headers) {
+                info.options.headers = {};
+            }
+            info.options.headers['Content-Length'] = Buffer.byteLength(data, 'utf8');
+        }
+        let callbackCalled = false;
+        function handleResult(err, res) {
+            if (!callbackCalled) {
+                callbackCalled = true;
+                onResult(err, res);
+            }
+        }
+        const req = info.httpModule.request(info.options, (msg) => {
+            const res = new HttpClientResponse(msg);
+            handleResult(undefined, res);
+        });
+        let socket;
+        req.on('socket', sock => {
+            socket = sock;
+        });
+        // If we ever get disconnected, we want the socket to timeout eventually
+        req.setTimeout(this._socketTimeout || 3 * 60000, () => {
+            if (socket) {
+                socket.end();
+            }
+            handleResult(new Error(`Request timeout: ${info.options.path}`));
+        });
+        req.on('error', function (err) {
+            // err has statusCode property
+            // res should have headers
+            handleResult(err);
+        });
+        if (data && typeof data === 'string') {
+            req.write(data, 'utf8');
+        }
+        if (data && typeof data !== 'string') {
+            data.on('close', function () {
+                req.end();
+            });
+            data.pipe(req);
+        }
+        else {
+            req.end();
+        }
+    }
+    /**
+     * Gets an http agent. This function is useful when you need an http agent that handles
+     * routing through a proxy server - depending upon the url and proxy environment variables.
+     * @param serverUrl  The server URL where the request will be sent. For example, https://api.github.com
+     */
+    getAgent(serverUrl) {
+        const parsedUrl = new URL(serverUrl);
+        return this._getAgent(parsedUrl);
+    }
+    _prepareRequest(method, requestUrl, headers) {
+        const info = {};
+        info.parsedUrl = requestUrl;
+        const usingSsl = info.parsedUrl.protocol === 'https:';
+        info.httpModule = usingSsl ? https : http;
+        const defaultPort = usingSsl ? 443 : 80;
+        info.options = {};
+        info.options.host = info.parsedUrl.hostname;
+        info.options.port = info.parsedUrl.port
+            ? parseInt(info.parsedUrl.port)
+            : defaultPort;
+        info.options.path =
+            (info.parsedUrl.pathname || '') + (info.parsedUrl.search || '');
+        info.options.method = method;
+        info.options.headers = this._mergeHeaders(headers);
+        if (this.userAgent != null) {
+            info.options.headers['user-agent'] = this.userAgent;
+        }
+        info.options.agent = this._getAgent(info.parsedUrl);
+        // gives handlers an opportunity to participate
+        if (this.handlers) {
+            for (const handler of this.handlers) {
+                handler.prepareRequest(info.options);
+            }
+        }
+        return info;
+    }
+    _mergeHeaders(headers) {
+        if (this.requestOptions && this.requestOptions.headers) {
+            return Object.assign({}, lowercaseKeys(this.requestOptions.headers), lowercaseKeys(headers || {}));
+        }
+        return lowercaseKeys(headers || {});
+    }
+    _getExistingOrDefaultHeader(additionalHeaders, header, _default) {
+        let clientHeader;
+        if (this.requestOptions && this.requestOptions.headers) {
+            clientHeader = lowercaseKeys(this.requestOptions.headers)[header];
+        }
+        return additionalHeaders[header] || clientHeader || _default;
+    }
+    _getAgent(parsedUrl) {
+        let agent;
+        const proxyUrl = pm.getProxyUrl(parsedUrl);
+        const useProxy = proxyUrl && proxyUrl.hostname;
+        if (this._keepAlive && useProxy) {
+            agent = this._proxyAgent;
+        }
+        if (this._keepAlive && !useProxy) {
+            agent = this._agent;
+        }
+        // if agent is already assigned use that agent.
+        if (agent) {
+            return agent;
+        }
+        const usingSsl = parsedUrl.protocol === 'https:';
+        let maxSockets = 100;
+        if (this.requestOptions) {
+            maxSockets = this.requestOptions.maxSockets || http.globalAgent.maxSockets;
+        }
+        // This is `useProxy` again, but we need to check `proxyURl` directly for TypeScripts's flow analysis.
+        if (proxyUrl && proxyUrl.hostname) {
+            const agentOptions = {
+                maxSockets,
+                keepAlive: this._keepAlive,
+                proxy: Object.assign(Object.assign({}, ((proxyUrl.username || proxyUrl.password) && {
+                    proxyAuth: `${proxyUrl.username}:${proxyUrl.password}`
+                })), { host: proxyUrl.hostname, port: proxyUrl.port })
+            };
+            let tunnelAgent;
+            const overHttps = proxyUrl.protocol === 'https:';
+            if (usingSsl) {
+                tunnelAgent = overHttps ? tunnel.httpsOverHttps : tunnel.httpsOverHttp;
+            }
+            else {
+                tunnelAgent = overHttps ? tunnel.httpOverHttps : tunnel.httpOverHttp;
+            }
+            agent = tunnelAgent(agentOptions);
+            this._proxyAgent = agent;
+        }
+        // if reusing agent across request and tunneling agent isn't assigned create a new agent
+        if (this._keepAlive && !agent) {
+            const options = { keepAlive: this._keepAlive, maxSockets };
+            agent = usingSsl ? new https.Agent(options) : new http.Agent(options);
+            this._agent = agent;
+        }
+        // if not using private agent and tunnel agent isn't setup then use global agent
+        if (!agent) {
+            agent = usingSsl ? https.globalAgent : http.globalAgent;
+        }
+        if (usingSsl && this._ignoreSslError) {
+            // we don't want to set NODE_TLS_REJECT_UNAUTHORIZED=0 since that will affect request for entire process
+            // http.RequestOptions doesn't expose a way to modify RequestOptions.agent.options
+            // we have to cast it to any and change it directly
+            agent.options = Object.assign(agent.options || {}, {
+                rejectUnauthorized: false
+            });
+        }
+        return agent;
+    }
+    _performExponentialBackoff(retryNumber) {
+        return __awaiter(this, void 0, void 0, function* () {
+            retryNumber = Math.min(ExponentialBackoffCeiling, retryNumber);
+            const ms = ExponentialBackoffTimeSlice * Math.pow(2, retryNumber);
+            return new Promise(resolve => setTimeout(() => resolve(), ms));
+        });
+    }
+    _processResponse(res, options) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
+                const statusCode = res.message.statusCode || 0;
+                const response = {
+                    statusCode,
+                    result: null,
+                    headers: {}
+                };
+                // not found leads to null obj returned
+                if (statusCode === HttpCodes.NotFound) {
+                    resolve(response);
+                }
+                // get the result from the body
+                function dateTimeDeserializer(key, value) {
+                    if (typeof value === 'string') {
+                        const a = new Date(value);
+                        if (!isNaN(a.valueOf())) {
+                            return a;
+                        }
+                    }
+                    return value;
+                }
+                let obj;
+                let contents;
+                try {
+                    contents = yield res.readBody();
+                    if (contents && contents.length > 0) {
+                        if (options && options.deserializeDates) {
+                            obj = JSON.parse(contents, dateTimeDeserializer);
+                        }
+                        else {
+                            obj = JSON.parse(contents);
+                        }
+                        response.result = obj;
+                    }
+                    response.headers = res.message.headers;
+                }
+                catch (err) {
+                    // Invalid resource (contents not json);  leaving result obj null
+                }
+                // note that 3xx redirects are handled by the http layer.
+                if (statusCode > 299) {
+                    let msg;
+                    // if exception/error in body, attempt to get better error
+                    if (obj && obj.message) {
+                        msg = obj.message;
+                    }
+                    else if (contents && contents.length > 0) {
+                        // it may be the case that the exception is in the body message as string
+                        msg = contents;
+                    }
+                    else {
+                        msg = `Failed request: (${statusCode})`;
+                    }
+                    const err = new HttpClientError(msg, statusCode);
+                    err.result = response.result;
+                    reject(err);
+                }
+                else {
+                    resolve(response);
+                }
+            }));
+        });
+    }
+}
+exports.HttpClient = HttpClient;
+const lowercaseKeys = (obj) => Object.keys(obj).reduce((c, k) => ((c[k.toLowerCase()] = obj[k]), c), {});
+//# sourceMappingURL=index.js.map
 
 /***/ }),
 /* 426 */,
@@ -35962,6 +38030,7 @@ const fs_1 = __webpack_require__(747);
 const path = __importStar(__webpack_require__(622));
 const utils = __importStar(__webpack_require__(15));
 const constants_1 = __webpack_require__(931);
+const IS_WINDOWS = process.platform === 'win32';
 function getTarPath(args, compressionMethod) {
     return __awaiter(this, void 0, void 0, function* () {
         switch (process.platform) {
@@ -36009,26 +38078,43 @@ function getWorkingDirectory() {
     var _a;
     return (_a = process.env['GITHUB_WORKSPACE']) !== null && _a !== void 0 ? _a : process.cwd();
 }
+// Common function for extractTar and listTar to get the compression method
+function getCompressionProgram(compressionMethod) {
+    // -d: Decompress.
+    // unzstd is equivalent to 'zstd -d'
+    // --long=#: Enables long distance matching with # bits. Maximum is 30 (1GB) on 32-bit OS and 31 (2GB) on 64-bit.
+    // Using 30 here because we also support 32-bit self-hosted runners.
+    switch (compressionMethod) {
+        case constants_1.CompressionMethod.Zstd:
+            return [
+                '--use-compress-program',
+                IS_WINDOWS ? 'zstd -d --long=30' : 'unzstd --long=30'
+            ];
+        case constants_1.CompressionMethod.ZstdWithoutLong:
+            return ['--use-compress-program', IS_WINDOWS ? 'zstd -d' : 'unzstd'];
+        default:
+            return ['-z'];
+    }
+}
+function listTar(archivePath, compressionMethod) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const args = [
+            ...getCompressionProgram(compressionMethod),
+            '-tf',
+            archivePath.replace(new RegExp(`\\${path.sep}`, 'g'), '/'),
+            '-P'
+        ];
+        yield execTar(args, compressionMethod);
+    });
+}
+exports.listTar = listTar;
 function extractTar(archivePath, compressionMethod) {
     return __awaiter(this, void 0, void 0, function* () {
         // Create directory to extract tar into
         const workingDirectory = getWorkingDirectory();
         yield io.mkdirP(workingDirectory);
-        // --d: Decompress.
-        // --long=#: Enables long distance matching with # bits. Maximum is 30 (1GB) on 32-bit OS and 31 (2GB) on 64-bit.
-        // Using 30 here because we also support 32-bit self-hosted runners.
-        function getCompressionProgram() {
-            switch (compressionMethod) {
-                case constants_1.CompressionMethod.Zstd:
-                    return ['--use-compress-program', 'zstd -d --long=30'];
-                case constants_1.CompressionMethod.ZstdWithoutLong:
-                    return ['--use-compress-program', 'zstd -d'];
-                default:
-                    return ['-z'];
-            }
-        }
         const args = [
-            ...getCompressionProgram(),
+            ...getCompressionProgram(compressionMethod),
             '-xf',
             archivePath.replace(new RegExp(`\\${path.sep}`, 'g'), '/'),
             '-P',
@@ -36047,15 +38133,19 @@ function createTar(archiveFolder, sourceDirectories, compressionMethod) {
         fs_1.writeFileSync(path.join(archiveFolder, manifestFilename), sourceDirectories.join('\n'));
         const workingDirectory = getWorkingDirectory();
         // -T#: Compress using # working thread. If # is 0, attempt to detect and use the number of physical CPU cores.
+        // zstdmt is equivalent to 'zstd -T0'
         // --long=#: Enables long distance matching with # bits. Maximum is 30 (1GB) on 32-bit OS and 31 (2GB) on 64-bit.
         // Using 30 here because we also support 32-bit self-hosted runners.
         // Long range mode is added to zstd in v1.3.2 release, so we will not use --long in older version of zstd.
         function getCompressionProgram() {
             switch (compressionMethod) {
                 case constants_1.CompressionMethod.Zstd:
-                    return ['--use-compress-program', 'zstd -T0 --long=30'];
+                    return [
+                        '--use-compress-program',
+                        IS_WINDOWS ? 'zstd -T0 --long=30' : 'zstdmt --long=30'
+                    ];
                 case constants_1.CompressionMethod.ZstdWithoutLong:
-                    return ['--use-compress-program', 'zstd -T0'];
+                    return ['--use-compress-program', IS_WINDOWS ? 'zstd -T0' : 'zstdmt'];
                 default:
                     return ['-z'];
             }
@@ -36064,6 +38154,8 @@ function createTar(archiveFolder, sourceDirectories, compressionMethod) {
             '--posix',
             ...getCompressionProgram(),
             '-cf',
+            cacheFileName.replace(new RegExp(`\\${path.sep}`, 'g'), '/'),
+            '--exclude',
             cacheFileName.replace(new RegExp(`\\${path.sep}`, 'g'), '/'),
             '-P',
             '-C',
@@ -36075,32 +38167,6 @@ function createTar(archiveFolder, sourceDirectories, compressionMethod) {
     });
 }
 exports.createTar = createTar;
-function listTar(archivePath, compressionMethod) {
-    return __awaiter(this, void 0, void 0, function* () {
-        // --d: Decompress.
-        // --long=#: Enables long distance matching with # bits.
-        // Maximum is 30 (1GB) on 32-bit OS and 31 (2GB) on 64-bit.
-        // Using 30 here because we also support 32-bit self-hosted runners.
-        function getCompressionProgram() {
-            switch (compressionMethod) {
-                case constants_1.CompressionMethod.Zstd:
-                    return ['--use-compress-program', 'zstd -d --long=30'];
-                case constants_1.CompressionMethod.ZstdWithoutLong:
-                    return ['--use-compress-program', 'zstd -d'];
-                default:
-                    return ['-z'];
-            }
-        }
-        const args = [
-            ...getCompressionProgram(),
-            '-tf',
-            archivePath.replace(new RegExp(`\\${path.sep}`, 'g'), '/'),
-            '-P'
-        ];
-        yield execTar(args, compressionMethod);
-    });
-}
-exports.listTar = listTar;
 //# sourceMappingURL=tar.js.map
 
 /***/ }),
@@ -36310,7 +38376,11 @@ exports.default = {
 
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
 }) : (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     o[k2] = m[k];
@@ -36323,12 +38393,13 @@ var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
     var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
     __setModuleDefault(result, mod);
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getInputAsInt = exports.getInputAsArray = exports.isValidEvent = exports.logWarning = exports.getCacheState = exports.setOutputAndState = exports.setCacheHitOutput = exports.setCacheState = exports.isExactKeyMatch = exports.isGhes = void 0;
+exports.isCacheFeatureAvailable = exports.getInputAsInt = exports.getInputAsArray = exports.isValidEvent = exports.logWarning = exports.getCacheState = exports.setOutputAndState = exports.setCacheHitOutput = exports.setCacheState = exports.isExactKeyMatch = exports.isGhes = void 0;
+const cache = __importStar(__webpack_require__(692));
 const core = __importStar(__webpack_require__(470));
 const constants_1 = __webpack_require__(196);
 function isGhes() {
@@ -36381,7 +38452,7 @@ function getInputAsArray(name, options) {
     return core
         .getInput(name, options)
         .split("\n")
-        .map(s => s.trim())
+        .map(s => s.replace(/^!\s+/, "!").trim())
         .filter(x => x !== "");
 }
 exports.getInputAsArray = getInputAsArray;
@@ -36393,6 +38464,20 @@ function getInputAsInt(name, options) {
     return value;
 }
 exports.getInputAsInt = getInputAsInt;
+function isCacheFeatureAvailable() {
+    if (!cache.isFeatureAvailable()) {
+        if (isGhes()) {
+            logWarning(`Cache action is only supported on GHES version >= 3.5. If you are on version >=3.5 Please check with GHES admin if Actions cache service is enabled or not.
+Otherwise please upgrade to GHES version >= 3.5 and If you are also using Github Connect, please unretire the actions/cache namespace before upgrade (see https://docs.github.com/en/enterprise-server@3.5/admin/github-actions/managing-access-to-actions-from-githubcom/enabling-automatic-access-to-githubcom-actions-using-github-connect#automatic-retirement-of-namespaces-for-actions-accessed-on-githubcom)`);
+        }
+        else {
+            logWarning("An internal error has occurred in cache backend. Please check https://www.githubstatus.com/ for any ongoing issue in actions.");
+        }
+        return false;
+    }
+    return true;
+}
+exports.isCacheFeatureAvailable = isCacheFeatureAvailable;
 
 
 /***/ }),
@@ -37903,9 +39988,17 @@ AbortError.prototype = Object.create(Error.prototype);
 AbortError.prototype.constructor = AbortError;
 AbortError.prototype.name = 'AbortError';
 
+const URL$1 = Url.URL || whatwgUrl.URL;
+
 // fix an issue where "PassThrough", "resolve" aren't a named export for node <10
 const PassThrough$1 = Stream.PassThrough;
-const resolve_url = Url.resolve;
+
+const isDomainOrSubdomain = function isDomainOrSubdomain(destination, original) {
+	const orig = new URL$1(original).hostname;
+	const dest = new URL$1(destination).hostname;
+
+	return orig === dest || orig[orig.length - dest.length - 1] === '.' && orig.endsWith(dest);
+};
 
 /**
  * Fetch function
@@ -37993,7 +40086,19 @@ function fetch(url, opts) {
 				const location = headers.get('Location');
 
 				// HTTP fetch step 5.3
-				const locationURL = location === null ? null : resolve_url(request.url, location);
+				let locationURL = null;
+				try {
+					locationURL = location === null ? null : new URL$1(location, request.url).toString();
+				} catch (err) {
+					// error here can only be invalid URL in Location: header
+					// do not throw when options.redirect == manual
+					// let the user extract the errorneous redirect URL
+					if (request.redirect !== 'manual') {
+						reject(new FetchError(`uri requested responds with an invalid redirect URL: ${location}`, 'invalid-redirect'));
+						finalize();
+						return;
+					}
+				}
 
 				// HTTP fetch step 5.5
 				switch (request.redirect) {
@@ -38040,6 +40145,12 @@ function fetch(url, opts) {
 							timeout: request.timeout,
 							size: request.size
 						};
+
+						if (!isDomainOrSubdomain(request.url, locationURL)) {
+							for (const name of ['authorization', 'www-authenticate', 'cookie', 'cookie2']) {
+								requestOpts.headers.delete(name);
+							}
+						}
 
 						// HTTP-redirect fetch step 9
 						if (res.statusCode !== 303 && request.body && getTotalBytes(request) === null) {
@@ -38485,13 +40596,9 @@ function exportVariable(name, val) {
     process.env[name] = convertedVal;
     const filePath = process.env['GITHUB_ENV'] || '';
     if (filePath) {
-        const delimiter = '_GitHubActionsFileCommandDelimeter_';
-        const commandValue = `${name}<<${delimiter}${os.EOL}${convertedVal}${os.EOL}${delimiter}`;
-        file_command_1.issueCommand('ENV', commandValue);
+        return file_command_1.issueFileCommand('ENV', file_command_1.prepareKeyValueMessage(name, val));
     }
-    else {
-        command_1.issueCommand('set-env', { name }, convertedVal);
-    }
+    command_1.issueCommand('set-env', { name }, convertedVal);
 }
 exports.exportVariable = exportVariable;
 /**
@@ -38509,7 +40616,7 @@ exports.setSecret = setSecret;
 function addPath(inputPath) {
     const filePath = process.env['GITHUB_PATH'] || '';
     if (filePath) {
-        file_command_1.issueCommand('PATH', inputPath);
+        file_command_1.issueFileCommand('PATH', inputPath);
     }
     else {
         command_1.issueCommand('add-path', {}, inputPath);
@@ -38549,7 +40656,10 @@ function getMultilineInput(name, options) {
     const inputs = getInput(name, options)
         .split('\n')
         .filter(x => x !== '');
-    return inputs;
+    if (options && options.trimWhitespace === false) {
+        return inputs;
+    }
+    return inputs.map(input => input.trim());
 }
 exports.getMultilineInput = getMultilineInput;
 /**
@@ -38582,8 +40692,12 @@ exports.getBooleanInput = getBooleanInput;
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function setOutput(name, value) {
+    const filePath = process.env['GITHUB_OUTPUT'] || '';
+    if (filePath) {
+        return file_command_1.issueFileCommand('OUTPUT', file_command_1.prepareKeyValueMessage(name, value));
+    }
     process.stdout.write(os.EOL);
-    command_1.issueCommand('set-output', { name }, value);
+    command_1.issueCommand('set-output', { name }, utils_1.toCommandValue(value));
 }
 exports.setOutput = setOutput;
 /**
@@ -38712,7 +40826,11 @@ exports.group = group;
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function saveState(name, value) {
-    command_1.issueCommand('save-state', { name }, value);
+    const filePath = process.env['GITHUB_STATE'] || '';
+    if (filePath) {
+        return file_command_1.issueFileCommand('STATE', file_command_1.prepareKeyValueMessage(name, value));
+    }
+    command_1.issueCommand('save-state', { name }, utils_1.toCommandValue(value));
 }
 exports.saveState = saveState;
 /**
@@ -38731,6 +40849,23 @@ function getIDToken(aud) {
     });
 }
 exports.getIDToken = getIDToken;
+/**
+ * Summary exports
+ */
+var summary_1 = __webpack_require__(665);
+Object.defineProperty(exports, "summary", { enumerable: true, get: function () { return summary_1.summary; } });
+/**
+ * @deprecated use core.summary
+ */
+var summary_2 = __webpack_require__(665);
+Object.defineProperty(exports, "markdownSummary", { enumerable: true, get: function () { return summary_2.markdownSummary; } });
+/**
+ * Path exports
+ */
+var path_utils_1 = __webpack_require__(573);
+Object.defineProperty(exports, "toPosixPath", { enumerable: true, get: function () { return path_utils_1.toPosixPath; } });
+Object.defineProperty(exports, "toWin32Path", { enumerable: true, get: function () { return path_utils_1.toWin32Path; } });
+Object.defineProperty(exports, "toPlatformPath", { enumerable: true, get: function () { return path_utils_1.toPlatformPath; } });
 //# sourceMappingURL=core.js.map
 
 /***/ }),
@@ -39031,8 +41166,8 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ContextAPI = void 0;
-var NoopContextManager_1 = __webpack_require__(425);
-var global_utils_1 = __webpack_require__(525);
+var NoopContextManager_1 = __webpack_require__(754);
+var global_utils_1 = __webpack_require__(94);
 var diag_1 = __webpack_require__(118);
 var API_NAME = 'context';
 var NOOP_CONTEXT_MANAGER = new NoopContextManager_1.NoopContextManager();
@@ -39147,7 +41282,36 @@ function defer(fn)
 /* 503 */,
 /* 504 */,
 /* 505 */,
-/* 506 */,
+/* 506 */
+/***/ (function(__unusedmodule, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = rng;
+
+var _crypto = _interopRequireDefault(__webpack_require__(417));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+const rnds8Pool = new Uint8Array(256); // # of random values to pre-allocate
+
+let poolPtr = rnds8Pool.length;
+
+function rng() {
+  if (poolPtr > rnds8Pool.length - 16) {
+    _crypto.default.randomFillSync(rnds8Pool);
+
+    poolPtr = 0;
+  }
+
+  return rnds8Pool.slice(poolPtr, poolPtr += 16);
+}
+
+/***/ }),
 /* 507 */,
 /* 508 */,
 /* 509 */,
@@ -39159,7 +41323,7 @@ function defer(fn)
 
 Object.defineProperty(exports, '__esModule', { value: true });
 
-__webpack_require__(71);
+__webpack_require__(97);
 var tslib = __webpack_require__(671);
 
 // Copyright (c) Microsoft Corporation.
@@ -39182,7 +41346,7 @@ function getPagedAsyncIterator(pagedResult) {
         },
         byPage: (_a = pagedResult === null || pagedResult === void 0 ? void 0 : pagedResult.byPage) !== null && _a !== void 0 ? _a : ((settings) => {
             return getPageAsyncIterator(pagedResult, settings === null || settings === void 0 ? void 0 : settings.maxPageSize);
-        })
+        }),
     };
 }
 function getItemAsyncIterator(pagedResult, maxPageSize) {
@@ -39358,74 +41522,17 @@ module.exports = {"application/1d-interleaved-parityfec":{"source":"iana"},"appl
 
 /***/ }),
 /* 525 */
-/***/ (function(__unusedmodule, exports, __webpack_require__) {
+/***/ (function(__unusedmodule, exports) {
 
 "use strict";
 
-/*
- * Copyright The OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      https://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.unregisterGlobal = exports.getGlobal = exports.registerGlobal = void 0;
-var platform_1 = __webpack_require__(910);
-var version_1 = __webpack_require__(830);
-var semver_1 = __webpack_require__(987);
-var major = version_1.VERSION.split('.')[0];
-var GLOBAL_OPENTELEMETRY_API_KEY = Symbol.for("opentelemetry.js.api." + major);
-var _global = platform_1._globalThis;
-function registerGlobal(type, instance, diag, allowOverride) {
-    var _a;
-    if (allowOverride === void 0) { allowOverride = false; }
-    var api = (_global[GLOBAL_OPENTELEMETRY_API_KEY] = (_a = _global[GLOBAL_OPENTELEMETRY_API_KEY]) !== null && _a !== void 0 ? _a : {
-        version: version_1.VERSION,
-    });
-    if (!allowOverride && api[type]) {
-        // already registered an API of this type
-        var err = new Error("@opentelemetry/api: Attempted duplicate registration of API: " + type);
-        diag.error(err.stack || err.message);
-        return false;
-    }
-    if (api.version !== version_1.VERSION) {
-        // All registered APIs must be of the same version exactly
-        var err = new Error('@opentelemetry/api: All API registration versions must match');
-        diag.error(err.stack || err.message);
-        return false;
-    }
-    api[type] = instance;
-    diag.debug("@opentelemetry/api: Registered a global for " + type + " v" + version_1.VERSION + ".");
-    return true;
-}
-exports.registerGlobal = registerGlobal;
-function getGlobal(type) {
-    var _a, _b;
-    var globalVersion = (_a = _global[GLOBAL_OPENTELEMETRY_API_KEY]) === null || _a === void 0 ? void 0 : _a.version;
-    if (!globalVersion || !semver_1.isCompatible(globalVersion)) {
-        return;
-    }
-    return (_b = _global[GLOBAL_OPENTELEMETRY_API_KEY]) === null || _b === void 0 ? void 0 : _b[type];
-}
-exports.getGlobal = getGlobal;
-function unregisterGlobal(type, diag) {
-    diag.debug("@opentelemetry/api: Unregistering a global for " + type + " v" + version_1.VERSION + ".");
-    var api = _global[GLOBAL_OPENTELEMETRY_API_KEY];
-    if (api) {
-        delete api[type];
-    }
-}
-exports.unregisterGlobal = unregisterGlobal;
-//# sourceMappingURL=global-utils.js.map
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+var _default = /^(?:[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}|00000000-0000-0000-0000-000000000000)$/i;
+exports.default = _default;
 
 /***/ }),
 /* 526 */,
@@ -39486,7 +41593,8 @@ function getDownloadOptions(copy) {
     const result = {
         useAzureSdk: true,
         downloadConcurrency: 8,
-        timeoutInMs: 30000
+        timeoutInMs: 30000,
+        segmentTimeoutInMs: 3600000
     };
     if (copy) {
         if (typeof copy.useAzureSdk === 'boolean') {
@@ -39498,560 +41606,28 @@ function getDownloadOptions(copy) {
         if (typeof copy.timeoutInMs === 'number') {
             result.timeoutInMs = copy.timeoutInMs;
         }
+        if (typeof copy.segmentTimeoutInMs === 'number') {
+            result.segmentTimeoutInMs = copy.segmentTimeoutInMs;
+        }
+    }
+    const segmentDownloadTimeoutMins = process.env['SEGMENT_DOWNLOAD_TIMEOUT_MINS'];
+    if (segmentDownloadTimeoutMins &&
+        !isNaN(Number(segmentDownloadTimeoutMins)) &&
+        isFinite(Number(segmentDownloadTimeoutMins))) {
+        result.segmentTimeoutInMs = Number(segmentDownloadTimeoutMins) * 60 * 1000;
     }
     core.debug(`Use Azure SDK: ${result.useAzureSdk}`);
     core.debug(`Download concurrency: ${result.downloadConcurrency}`);
     core.debug(`Request timeout (ms): ${result.timeoutInMs}`);
+    core.debug(`Cache segment download timeout mins env var: ${process.env['SEGMENT_DOWNLOAD_TIMEOUT_MINS']}`);
+    core.debug(`Segment download timeout (ms): ${result.segmentTimeoutInMs}`);
     return result;
 }
 exports.getDownloadOptions = getDownloadOptions;
 //# sourceMappingURL=options.js.map
 
 /***/ }),
-/* 539 */
-/***/ (function(__unusedmodule, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-const http = __webpack_require__(605);
-const https = __webpack_require__(211);
-const pm = __webpack_require__(950);
-let tunnel;
-var HttpCodes;
-(function (HttpCodes) {
-    HttpCodes[HttpCodes["OK"] = 200] = "OK";
-    HttpCodes[HttpCodes["MultipleChoices"] = 300] = "MultipleChoices";
-    HttpCodes[HttpCodes["MovedPermanently"] = 301] = "MovedPermanently";
-    HttpCodes[HttpCodes["ResourceMoved"] = 302] = "ResourceMoved";
-    HttpCodes[HttpCodes["SeeOther"] = 303] = "SeeOther";
-    HttpCodes[HttpCodes["NotModified"] = 304] = "NotModified";
-    HttpCodes[HttpCodes["UseProxy"] = 305] = "UseProxy";
-    HttpCodes[HttpCodes["SwitchProxy"] = 306] = "SwitchProxy";
-    HttpCodes[HttpCodes["TemporaryRedirect"] = 307] = "TemporaryRedirect";
-    HttpCodes[HttpCodes["PermanentRedirect"] = 308] = "PermanentRedirect";
-    HttpCodes[HttpCodes["BadRequest"] = 400] = "BadRequest";
-    HttpCodes[HttpCodes["Unauthorized"] = 401] = "Unauthorized";
-    HttpCodes[HttpCodes["PaymentRequired"] = 402] = "PaymentRequired";
-    HttpCodes[HttpCodes["Forbidden"] = 403] = "Forbidden";
-    HttpCodes[HttpCodes["NotFound"] = 404] = "NotFound";
-    HttpCodes[HttpCodes["MethodNotAllowed"] = 405] = "MethodNotAllowed";
-    HttpCodes[HttpCodes["NotAcceptable"] = 406] = "NotAcceptable";
-    HttpCodes[HttpCodes["ProxyAuthenticationRequired"] = 407] = "ProxyAuthenticationRequired";
-    HttpCodes[HttpCodes["RequestTimeout"] = 408] = "RequestTimeout";
-    HttpCodes[HttpCodes["Conflict"] = 409] = "Conflict";
-    HttpCodes[HttpCodes["Gone"] = 410] = "Gone";
-    HttpCodes[HttpCodes["TooManyRequests"] = 429] = "TooManyRequests";
-    HttpCodes[HttpCodes["InternalServerError"] = 500] = "InternalServerError";
-    HttpCodes[HttpCodes["NotImplemented"] = 501] = "NotImplemented";
-    HttpCodes[HttpCodes["BadGateway"] = 502] = "BadGateway";
-    HttpCodes[HttpCodes["ServiceUnavailable"] = 503] = "ServiceUnavailable";
-    HttpCodes[HttpCodes["GatewayTimeout"] = 504] = "GatewayTimeout";
-})(HttpCodes = exports.HttpCodes || (exports.HttpCodes = {}));
-var Headers;
-(function (Headers) {
-    Headers["Accept"] = "accept";
-    Headers["ContentType"] = "content-type";
-})(Headers = exports.Headers || (exports.Headers = {}));
-var MediaTypes;
-(function (MediaTypes) {
-    MediaTypes["ApplicationJson"] = "application/json";
-})(MediaTypes = exports.MediaTypes || (exports.MediaTypes = {}));
-/**
- * Returns the proxy URL, depending upon the supplied url and proxy environment variables.
- * @param serverUrl  The server URL where the request will be sent. For example, https://api.github.com
- */
-function getProxyUrl(serverUrl) {
-    let proxyUrl = pm.getProxyUrl(new URL(serverUrl));
-    return proxyUrl ? proxyUrl.href : '';
-}
-exports.getProxyUrl = getProxyUrl;
-const HttpRedirectCodes = [
-    HttpCodes.MovedPermanently,
-    HttpCodes.ResourceMoved,
-    HttpCodes.SeeOther,
-    HttpCodes.TemporaryRedirect,
-    HttpCodes.PermanentRedirect
-];
-const HttpResponseRetryCodes = [
-    HttpCodes.BadGateway,
-    HttpCodes.ServiceUnavailable,
-    HttpCodes.GatewayTimeout
-];
-const RetryableHttpVerbs = ['OPTIONS', 'GET', 'DELETE', 'HEAD'];
-const ExponentialBackoffCeiling = 10;
-const ExponentialBackoffTimeSlice = 5;
-class HttpClientError extends Error {
-    constructor(message, statusCode) {
-        super(message);
-        this.name = 'HttpClientError';
-        this.statusCode = statusCode;
-        Object.setPrototypeOf(this, HttpClientError.prototype);
-    }
-}
-exports.HttpClientError = HttpClientError;
-class HttpClientResponse {
-    constructor(message) {
-        this.message = message;
-    }
-    readBody() {
-        return new Promise(async (resolve, reject) => {
-            let output = Buffer.alloc(0);
-            this.message.on('data', (chunk) => {
-                output = Buffer.concat([output, chunk]);
-            });
-            this.message.on('end', () => {
-                resolve(output.toString());
-            });
-        });
-    }
-}
-exports.HttpClientResponse = HttpClientResponse;
-function isHttps(requestUrl) {
-    let parsedUrl = new URL(requestUrl);
-    return parsedUrl.protocol === 'https:';
-}
-exports.isHttps = isHttps;
-class HttpClient {
-    constructor(userAgent, handlers, requestOptions) {
-        this._ignoreSslError = false;
-        this._allowRedirects = true;
-        this._allowRedirectDowngrade = false;
-        this._maxRedirects = 50;
-        this._allowRetries = false;
-        this._maxRetries = 1;
-        this._keepAlive = false;
-        this._disposed = false;
-        this.userAgent = userAgent;
-        this.handlers = handlers || [];
-        this.requestOptions = requestOptions;
-        if (requestOptions) {
-            if (requestOptions.ignoreSslError != null) {
-                this._ignoreSslError = requestOptions.ignoreSslError;
-            }
-            this._socketTimeout = requestOptions.socketTimeout;
-            if (requestOptions.allowRedirects != null) {
-                this._allowRedirects = requestOptions.allowRedirects;
-            }
-            if (requestOptions.allowRedirectDowngrade != null) {
-                this._allowRedirectDowngrade = requestOptions.allowRedirectDowngrade;
-            }
-            if (requestOptions.maxRedirects != null) {
-                this._maxRedirects = Math.max(requestOptions.maxRedirects, 0);
-            }
-            if (requestOptions.keepAlive != null) {
-                this._keepAlive = requestOptions.keepAlive;
-            }
-            if (requestOptions.allowRetries != null) {
-                this._allowRetries = requestOptions.allowRetries;
-            }
-            if (requestOptions.maxRetries != null) {
-                this._maxRetries = requestOptions.maxRetries;
-            }
-        }
-    }
-    options(requestUrl, additionalHeaders) {
-        return this.request('OPTIONS', requestUrl, null, additionalHeaders || {});
-    }
-    get(requestUrl, additionalHeaders) {
-        return this.request('GET', requestUrl, null, additionalHeaders || {});
-    }
-    del(requestUrl, additionalHeaders) {
-        return this.request('DELETE', requestUrl, null, additionalHeaders || {});
-    }
-    post(requestUrl, data, additionalHeaders) {
-        return this.request('POST', requestUrl, data, additionalHeaders || {});
-    }
-    patch(requestUrl, data, additionalHeaders) {
-        return this.request('PATCH', requestUrl, data, additionalHeaders || {});
-    }
-    put(requestUrl, data, additionalHeaders) {
-        return this.request('PUT', requestUrl, data, additionalHeaders || {});
-    }
-    head(requestUrl, additionalHeaders) {
-        return this.request('HEAD', requestUrl, null, additionalHeaders || {});
-    }
-    sendStream(verb, requestUrl, stream, additionalHeaders) {
-        return this.request(verb, requestUrl, stream, additionalHeaders);
-    }
-    /**
-     * Gets a typed object from an endpoint
-     * Be aware that not found returns a null.  Other errors (4xx, 5xx) reject the promise
-     */
-    async getJson(requestUrl, additionalHeaders = {}) {
-        additionalHeaders[Headers.Accept] = this._getExistingOrDefaultHeader(additionalHeaders, Headers.Accept, MediaTypes.ApplicationJson);
-        let res = await this.get(requestUrl, additionalHeaders);
-        return this._processResponse(res, this.requestOptions);
-    }
-    async postJson(requestUrl, obj, additionalHeaders = {}) {
-        let data = JSON.stringify(obj, null, 2);
-        additionalHeaders[Headers.Accept] = this._getExistingOrDefaultHeader(additionalHeaders, Headers.Accept, MediaTypes.ApplicationJson);
-        additionalHeaders[Headers.ContentType] = this._getExistingOrDefaultHeader(additionalHeaders, Headers.ContentType, MediaTypes.ApplicationJson);
-        let res = await this.post(requestUrl, data, additionalHeaders);
-        return this._processResponse(res, this.requestOptions);
-    }
-    async putJson(requestUrl, obj, additionalHeaders = {}) {
-        let data = JSON.stringify(obj, null, 2);
-        additionalHeaders[Headers.Accept] = this._getExistingOrDefaultHeader(additionalHeaders, Headers.Accept, MediaTypes.ApplicationJson);
-        additionalHeaders[Headers.ContentType] = this._getExistingOrDefaultHeader(additionalHeaders, Headers.ContentType, MediaTypes.ApplicationJson);
-        let res = await this.put(requestUrl, data, additionalHeaders);
-        return this._processResponse(res, this.requestOptions);
-    }
-    async patchJson(requestUrl, obj, additionalHeaders = {}) {
-        let data = JSON.stringify(obj, null, 2);
-        additionalHeaders[Headers.Accept] = this._getExistingOrDefaultHeader(additionalHeaders, Headers.Accept, MediaTypes.ApplicationJson);
-        additionalHeaders[Headers.ContentType] = this._getExistingOrDefaultHeader(additionalHeaders, Headers.ContentType, MediaTypes.ApplicationJson);
-        let res = await this.patch(requestUrl, data, additionalHeaders);
-        return this._processResponse(res, this.requestOptions);
-    }
-    /**
-     * Makes a raw http request.
-     * All other methods such as get, post, patch, and request ultimately call this.
-     * Prefer get, del, post and patch
-     */
-    async request(verb, requestUrl, data, headers) {
-        if (this._disposed) {
-            throw new Error('Client has already been disposed.');
-        }
-        let parsedUrl = new URL(requestUrl);
-        let info = this._prepareRequest(verb, parsedUrl, headers);
-        // Only perform retries on reads since writes may not be idempotent.
-        let maxTries = this._allowRetries && RetryableHttpVerbs.indexOf(verb) != -1
-            ? this._maxRetries + 1
-            : 1;
-        let numTries = 0;
-        let response;
-        while (numTries < maxTries) {
-            response = await this.requestRaw(info, data);
-            // Check if it's an authentication challenge
-            if (response &&
-                response.message &&
-                response.message.statusCode === HttpCodes.Unauthorized) {
-                let authenticationHandler;
-                for (let i = 0; i < this.handlers.length; i++) {
-                    if (this.handlers[i].canHandleAuthentication(response)) {
-                        authenticationHandler = this.handlers[i];
-                        break;
-                    }
-                }
-                if (authenticationHandler) {
-                    return authenticationHandler.handleAuthentication(this, info, data);
-                }
-                else {
-                    // We have received an unauthorized response but have no handlers to handle it.
-                    // Let the response return to the caller.
-                    return response;
-                }
-            }
-            let redirectsRemaining = this._maxRedirects;
-            while (HttpRedirectCodes.indexOf(response.message.statusCode) != -1 &&
-                this._allowRedirects &&
-                redirectsRemaining > 0) {
-                const redirectUrl = response.message.headers['location'];
-                if (!redirectUrl) {
-                    // if there's no location to redirect to, we won't
-                    break;
-                }
-                let parsedRedirectUrl = new URL(redirectUrl);
-                if (parsedUrl.protocol == 'https:' &&
-                    parsedUrl.protocol != parsedRedirectUrl.protocol &&
-                    !this._allowRedirectDowngrade) {
-                    throw new Error('Redirect from HTTPS to HTTP protocol. This downgrade is not allowed for security reasons. If you want to allow this behavior, set the allowRedirectDowngrade option to true.');
-                }
-                // we need to finish reading the response before reassigning response
-                // which will leak the open socket.
-                await response.readBody();
-                // strip authorization header if redirected to a different hostname
-                if (parsedRedirectUrl.hostname !== parsedUrl.hostname) {
-                    for (let header in headers) {
-                        // header names are case insensitive
-                        if (header.toLowerCase() === 'authorization') {
-                            delete headers[header];
-                        }
-                    }
-                }
-                // let's make the request with the new redirectUrl
-                info = this._prepareRequest(verb, parsedRedirectUrl, headers);
-                response = await this.requestRaw(info, data);
-                redirectsRemaining--;
-            }
-            if (HttpResponseRetryCodes.indexOf(response.message.statusCode) == -1) {
-                // If not a retry code, return immediately instead of retrying
-                return response;
-            }
-            numTries += 1;
-            if (numTries < maxTries) {
-                await response.readBody();
-                await this._performExponentialBackoff(numTries);
-            }
-        }
-        return response;
-    }
-    /**
-     * Needs to be called if keepAlive is set to true in request options.
-     */
-    dispose() {
-        if (this._agent) {
-            this._agent.destroy();
-        }
-        this._disposed = true;
-    }
-    /**
-     * Raw request.
-     * @param info
-     * @param data
-     */
-    requestRaw(info, data) {
-        return new Promise((resolve, reject) => {
-            let callbackForResult = function (err, res) {
-                if (err) {
-                    reject(err);
-                }
-                resolve(res);
-            };
-            this.requestRawWithCallback(info, data, callbackForResult);
-        });
-    }
-    /**
-     * Raw request with callback.
-     * @param info
-     * @param data
-     * @param onResult
-     */
-    requestRawWithCallback(info, data, onResult) {
-        let socket;
-        if (typeof data === 'string') {
-            info.options.headers['Content-Length'] = Buffer.byteLength(data, 'utf8');
-        }
-        let callbackCalled = false;
-        let handleResult = (err, res) => {
-            if (!callbackCalled) {
-                callbackCalled = true;
-                onResult(err, res);
-            }
-        };
-        let req = info.httpModule.request(info.options, (msg) => {
-            let res = new HttpClientResponse(msg);
-            handleResult(null, res);
-        });
-        req.on('socket', sock => {
-            socket = sock;
-        });
-        // If we ever get disconnected, we want the socket to timeout eventually
-        req.setTimeout(this._socketTimeout || 3 * 60000, () => {
-            if (socket) {
-                socket.end();
-            }
-            handleResult(new Error('Request timeout: ' + info.options.path), null);
-        });
-        req.on('error', function (err) {
-            // err has statusCode property
-            // res should have headers
-            handleResult(err, null);
-        });
-        if (data && typeof data === 'string') {
-            req.write(data, 'utf8');
-        }
-        if (data && typeof data !== 'string') {
-            data.on('close', function () {
-                req.end();
-            });
-            data.pipe(req);
-        }
-        else {
-            req.end();
-        }
-    }
-    /**
-     * Gets an http agent. This function is useful when you need an http agent that handles
-     * routing through a proxy server - depending upon the url and proxy environment variables.
-     * @param serverUrl  The server URL where the request will be sent. For example, https://api.github.com
-     */
-    getAgent(serverUrl) {
-        let parsedUrl = new URL(serverUrl);
-        return this._getAgent(parsedUrl);
-    }
-    _prepareRequest(method, requestUrl, headers) {
-        const info = {};
-        info.parsedUrl = requestUrl;
-        const usingSsl = info.parsedUrl.protocol === 'https:';
-        info.httpModule = usingSsl ? https : http;
-        const defaultPort = usingSsl ? 443 : 80;
-        info.options = {};
-        info.options.host = info.parsedUrl.hostname;
-        info.options.port = info.parsedUrl.port
-            ? parseInt(info.parsedUrl.port)
-            : defaultPort;
-        info.options.path =
-            (info.parsedUrl.pathname || '') + (info.parsedUrl.search || '');
-        info.options.method = method;
-        info.options.headers = this._mergeHeaders(headers);
-        if (this.userAgent != null) {
-            info.options.headers['user-agent'] = this.userAgent;
-        }
-        info.options.agent = this._getAgent(info.parsedUrl);
-        // gives handlers an opportunity to participate
-        if (this.handlers) {
-            this.handlers.forEach(handler => {
-                handler.prepareRequest(info.options);
-            });
-        }
-        return info;
-    }
-    _mergeHeaders(headers) {
-        const lowercaseKeys = obj => Object.keys(obj).reduce((c, k) => ((c[k.toLowerCase()] = obj[k]), c), {});
-        if (this.requestOptions && this.requestOptions.headers) {
-            return Object.assign({}, lowercaseKeys(this.requestOptions.headers), lowercaseKeys(headers));
-        }
-        return lowercaseKeys(headers || {});
-    }
-    _getExistingOrDefaultHeader(additionalHeaders, header, _default) {
-        const lowercaseKeys = obj => Object.keys(obj).reduce((c, k) => ((c[k.toLowerCase()] = obj[k]), c), {});
-        let clientHeader;
-        if (this.requestOptions && this.requestOptions.headers) {
-            clientHeader = lowercaseKeys(this.requestOptions.headers)[header];
-        }
-        return additionalHeaders[header] || clientHeader || _default;
-    }
-    _getAgent(parsedUrl) {
-        let agent;
-        let proxyUrl = pm.getProxyUrl(parsedUrl);
-        let useProxy = proxyUrl && proxyUrl.hostname;
-        if (this._keepAlive && useProxy) {
-            agent = this._proxyAgent;
-        }
-        if (this._keepAlive && !useProxy) {
-            agent = this._agent;
-        }
-        // if agent is already assigned use that agent.
-        if (!!agent) {
-            return agent;
-        }
-        const usingSsl = parsedUrl.protocol === 'https:';
-        let maxSockets = 100;
-        if (!!this.requestOptions) {
-            maxSockets = this.requestOptions.maxSockets || http.globalAgent.maxSockets;
-        }
-        if (useProxy) {
-            // If using proxy, need tunnel
-            if (!tunnel) {
-                tunnel = __webpack_require__(413);
-            }
-            const agentOptions = {
-                maxSockets: maxSockets,
-                keepAlive: this._keepAlive,
-                proxy: {
-                    ...((proxyUrl.username || proxyUrl.password) && {
-                        proxyAuth: `${proxyUrl.username}:${proxyUrl.password}`
-                    }),
-                    host: proxyUrl.hostname,
-                    port: proxyUrl.port
-                }
-            };
-            let tunnelAgent;
-            const overHttps = proxyUrl.protocol === 'https:';
-            if (usingSsl) {
-                tunnelAgent = overHttps ? tunnel.httpsOverHttps : tunnel.httpsOverHttp;
-            }
-            else {
-                tunnelAgent = overHttps ? tunnel.httpOverHttps : tunnel.httpOverHttp;
-            }
-            agent = tunnelAgent(agentOptions);
-            this._proxyAgent = agent;
-        }
-        // if reusing agent across request and tunneling agent isn't assigned create a new agent
-        if (this._keepAlive && !agent) {
-            const options = { keepAlive: this._keepAlive, maxSockets: maxSockets };
-            agent = usingSsl ? new https.Agent(options) : new http.Agent(options);
-            this._agent = agent;
-        }
-        // if not using private agent and tunnel agent isn't setup then use global agent
-        if (!agent) {
-            agent = usingSsl ? https.globalAgent : http.globalAgent;
-        }
-        if (usingSsl && this._ignoreSslError) {
-            // we don't want to set NODE_TLS_REJECT_UNAUTHORIZED=0 since that will affect request for entire process
-            // http.RequestOptions doesn't expose a way to modify RequestOptions.agent.options
-            // we have to cast it to any and change it directly
-            agent.options = Object.assign(agent.options || {}, {
-                rejectUnauthorized: false
-            });
-        }
-        return agent;
-    }
-    _performExponentialBackoff(retryNumber) {
-        retryNumber = Math.min(ExponentialBackoffCeiling, retryNumber);
-        const ms = ExponentialBackoffTimeSlice * Math.pow(2, retryNumber);
-        return new Promise(resolve => setTimeout(() => resolve(), ms));
-    }
-    static dateTimeDeserializer(key, value) {
-        if (typeof value === 'string') {
-            let a = new Date(value);
-            if (!isNaN(a.valueOf())) {
-                return a;
-            }
-        }
-        return value;
-    }
-    async _processResponse(res, options) {
-        return new Promise(async (resolve, reject) => {
-            const statusCode = res.message.statusCode;
-            const response = {
-                statusCode: statusCode,
-                result: null,
-                headers: {}
-            };
-            // not found leads to null obj returned
-            if (statusCode == HttpCodes.NotFound) {
-                resolve(response);
-            }
-            let obj;
-            let contents;
-            // get the result from the body
-            try {
-                contents = await res.readBody();
-                if (contents && contents.length > 0) {
-                    if (options && options.deserializeDates) {
-                        obj = JSON.parse(contents, HttpClient.dateTimeDeserializer);
-                    }
-                    else {
-                        obj = JSON.parse(contents);
-                    }
-                    response.result = obj;
-                }
-                response.headers = res.message.headers;
-            }
-            catch (err) {
-                // Invalid resource (contents not json);  leaving result obj null
-            }
-            // note that 3xx redirects are handled by the http layer.
-            if (statusCode > 299) {
-                let msg;
-                // if exception/error in body, attempt to get better error
-                if (obj && obj.message) {
-                    msg = obj.message;
-                }
-                else if (contents && contents.length > 0) {
-                    // it may be the case that the exception is in the body message as string
-                    msg = contents;
-                }
-                else {
-                    msg = 'Failed request: (' + statusCode + ')';
-                }
-                let err = new HttpClientError(msg, statusCode);
-                err.result = response.result;
-                reject(err);
-            }
-            else {
-                resolve(response);
-            }
-        });
-    }
-}
-exports.HttpClient = HttpClient;
-
-
-/***/ }),
+/* 539 */,
 /* 540 */,
 /* 541 */
 /***/ (function(module) {
@@ -40343,7 +41919,93 @@ CombinedStream.prototype._emitError = function(err) {
 /* 551 */,
 /* 552 */,
 /* 553 */,
-/* 554 */,
+/* 554 */
+/***/ (function(__unusedmodule, exports) {
+
+"use strict";
+
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.PersonalAccessTokenCredentialHandler = exports.BearerCredentialHandler = exports.BasicCredentialHandler = void 0;
+class BasicCredentialHandler {
+    constructor(username, password) {
+        this.username = username;
+        this.password = password;
+    }
+    prepareRequest(options) {
+        if (!options.headers) {
+            throw Error('The request has no headers');
+        }
+        options.headers['Authorization'] = `Basic ${Buffer.from(`${this.username}:${this.password}`).toString('base64')}`;
+    }
+    // This handler cannot handle 401
+    canHandleAuthentication() {
+        return false;
+    }
+    handleAuthentication() {
+        return __awaiter(this, void 0, void 0, function* () {
+            throw new Error('not implemented');
+        });
+    }
+}
+exports.BasicCredentialHandler = BasicCredentialHandler;
+class BearerCredentialHandler {
+    constructor(token) {
+        this.token = token;
+    }
+    // currently implements pre-authorization
+    // TODO: support preAuth = false where it hooks on 401
+    prepareRequest(options) {
+        if (!options.headers) {
+            throw Error('The request has no headers');
+        }
+        options.headers['Authorization'] = `Bearer ${this.token}`;
+    }
+    // This handler cannot handle 401
+    canHandleAuthentication() {
+        return false;
+    }
+    handleAuthentication() {
+        return __awaiter(this, void 0, void 0, function* () {
+            throw new Error('not implemented');
+        });
+    }
+}
+exports.BearerCredentialHandler = BearerCredentialHandler;
+class PersonalAccessTokenCredentialHandler {
+    constructor(token) {
+        this.token = token;
+    }
+    // currently implements pre-authorization
+    // TODO: support preAuth = false where it hooks on 401
+    prepareRequest(options) {
+        if (!options.headers) {
+            throw Error('The request has no headers');
+        }
+        options.headers['Authorization'] = `Basic ${Buffer.from(`PAT:${this.token}`).toString('base64')}`;
+    }
+    // This handler cannot handle 401
+    canHandleAuthentication() {
+        return false;
+    }
+    handleAuthentication() {
+        return __awaiter(this, void 0, void 0, function* () {
+            throw new Error('not implemented');
+        });
+    }
+}
+exports.PersonalAccessTokenCredentialHandler = PersonalAccessTokenCredentialHandler;
+//# sourceMappingURL=auth.js.map
+
+/***/ }),
 /* 555 */,
 /* 556 */
 /***/ (function(module) {
@@ -40402,7 +42064,7 @@ CombinedStream.prototype._emitError = function(err) {
 
   XMLStringifier = __webpack_require__(602);
 
-  XMLStringWriter = __webpack_require__(347);
+  XMLStringWriter = __webpack_require__(750);
 
   module.exports = XMLDocument = (function(superClass) {
     extend(XMLDocument, superClass);
@@ -40694,7 +42356,7 @@ exports.baggageEntryMetadataSymbol = Symbol('BaggageEntryMetadata');
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-const psl = __webpack_require__(750);
+const psl = __webpack_require__(632);
 
 function getPublicSuffix(domain) {
   return psl.get(domain);
@@ -40747,8 +42409,92 @@ function clean(key)
 /* 569 */,
 /* 570 */,
 /* 571 */,
-/* 572 */,
-/* 573 */,
+/* 572 */
+/***/ (function(__unusedmodule, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var _v = _interopRequireDefault(__webpack_require__(136));
+
+var _md = _interopRequireDefault(__webpack_require__(659));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+const v3 = (0, _v.default)('v3', 0x30, _md.default);
+var _default = v3;
+exports.default = _default;
+
+/***/ }),
+/* 573 */
+/***/ (function(__unusedmodule, exports, __webpack_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.toPlatformPath = exports.toWin32Path = exports.toPosixPath = void 0;
+const path = __importStar(__webpack_require__(622));
+/**
+ * toPosixPath converts the given path to the posix form. On Windows, \\ will be
+ * replaced with /.
+ *
+ * @param pth. Path to transform.
+ * @return string Posix path.
+ */
+function toPosixPath(pth) {
+    return pth.replace(/[\\]/g, '/');
+}
+exports.toPosixPath = toPosixPath;
+/**
+ * toWin32Path converts the given path to the win32 form. On Linux, / will be
+ * replaced with \\.
+ *
+ * @param pth. Path to transform.
+ * @return string Win32 path.
+ */
+function toWin32Path(pth) {
+    return pth.replace(/[/]/g, '\\');
+}
+exports.toWin32Path = toWin32Path;
+/**
+ * toPlatformPath converts the given path to a platform-specific path. It does
+ * this by replacing instances of / and \ with the platform-specific path
+ * separator.
+ *
+ * @param pth The path to platformize.
+ * @return string The platform-specific path.
+ */
+function toPlatformPath(pth) {
+    return pth.replace(/[/\\]/g, path.sep);
+}
+exports.toPlatformPath = toPlatformPath;
+//# sourceMappingURL=path-utils.js.map
+
+/***/ }),
 /* 574 */,
 /* 575 */,
 /* 576 */,
@@ -41947,13 +43693,331 @@ exports.wrapSpanContext = wrapSpanContext;
 module.exports = require("net");
 
 /***/ }),
-/* 632 */,
+/* 632 */
+/***/ (function(__unusedmodule, exports, __webpack_require__) {
+
+"use strict";
+/*eslint no-var:0, prefer-arrow-callback: 0, object-shorthand: 0 */
+
+
+
+var Punycode = __webpack_require__(815);
+
+
+var internals = {};
+
+
+//
+// Read rules from file.
+//
+internals.rules = __webpack_require__(50).map(function (rule) {
+
+  return {
+    rule: rule,
+    suffix: rule.replace(/^(\*\.|\!)/, ''),
+    punySuffix: -1,
+    wildcard: rule.charAt(0) === '*',
+    exception: rule.charAt(0) === '!'
+  };
+});
+
+
+//
+// Check is given string ends with `suffix`.
+//
+internals.endsWith = function (str, suffix) {
+
+  return str.indexOf(suffix, str.length - suffix.length) !== -1;
+};
+
+
+//
+// Find rule for a given domain.
+//
+internals.findRule = function (domain) {
+
+  var punyDomain = Punycode.toASCII(domain);
+  return internals.rules.reduce(function (memo, rule) {
+
+    if (rule.punySuffix === -1){
+      rule.punySuffix = Punycode.toASCII(rule.suffix);
+    }
+    if (!internals.endsWith(punyDomain, '.' + rule.punySuffix) && punyDomain !== rule.punySuffix) {
+      return memo;
+    }
+    // This has been commented out as it never seems to run. This is because
+    // sub tlds always appear after their parents and we never find a shorter
+    // match.
+    //if (memo) {
+    //  var memoSuffix = Punycode.toASCII(memo.suffix);
+    //  if (memoSuffix.length >= punySuffix.length) {
+    //    return memo;
+    //  }
+    //}
+    return rule;
+  }, null);
+};
+
+
+//
+// Error codes and messages.
+//
+exports.errorCodes = {
+  DOMAIN_TOO_SHORT: 'Domain name too short.',
+  DOMAIN_TOO_LONG: 'Domain name too long. It should be no more than 255 chars.',
+  LABEL_STARTS_WITH_DASH: 'Domain name label can not start with a dash.',
+  LABEL_ENDS_WITH_DASH: 'Domain name label can not end with a dash.',
+  LABEL_TOO_LONG: 'Domain name label should be at most 63 chars long.',
+  LABEL_TOO_SHORT: 'Domain name label should be at least 1 character long.',
+  LABEL_INVALID_CHARS: 'Domain name label can only contain alphanumeric characters or dashes.'
+};
+
+
+//
+// Validate domain name and throw if not valid.
+//
+// From wikipedia:
+//
+// Hostnames are composed of series of labels concatenated with dots, as are all
+// domain names. Each label must be between 1 and 63 characters long, and the
+// entire hostname (including the delimiting dots) has a maximum of 255 chars.
+//
+// Allowed chars:
+//
+// * `a-z`
+// * `0-9`
+// * `-` but not as a starting or ending character
+// * `.` as a separator for the textual portions of a domain name
+//
+// * http://en.wikipedia.org/wiki/Domain_name
+// * http://en.wikipedia.org/wiki/Hostname
+//
+internals.validate = function (input) {
+
+  // Before we can validate we need to take care of IDNs with unicode chars.
+  var ascii = Punycode.toASCII(input);
+
+  if (ascii.length < 1) {
+    return 'DOMAIN_TOO_SHORT';
+  }
+  if (ascii.length > 255) {
+    return 'DOMAIN_TOO_LONG';
+  }
+
+  // Check each part's length and allowed chars.
+  var labels = ascii.split('.');
+  var label;
+
+  for (var i = 0; i < labels.length; ++i) {
+    label = labels[i];
+    if (!label.length) {
+      return 'LABEL_TOO_SHORT';
+    }
+    if (label.length > 63) {
+      return 'LABEL_TOO_LONG';
+    }
+    if (label.charAt(0) === '-') {
+      return 'LABEL_STARTS_WITH_DASH';
+    }
+    if (label.charAt(label.length - 1) === '-') {
+      return 'LABEL_ENDS_WITH_DASH';
+    }
+    if (!/^[a-z0-9\-]+$/.test(label)) {
+      return 'LABEL_INVALID_CHARS';
+    }
+  }
+};
+
+
+//
+// Public API
+//
+
+
+//
+// Parse domain.
+//
+exports.parse = function (input) {
+
+  if (typeof input !== 'string') {
+    throw new TypeError('Domain name must be a string.');
+  }
+
+  // Force domain to lowercase.
+  var domain = input.slice(0).toLowerCase();
+
+  // Handle FQDN.
+  // TODO: Simply remove trailing dot?
+  if (domain.charAt(domain.length - 1) === '.') {
+    domain = domain.slice(0, domain.length - 1);
+  }
+
+  // Validate and sanitise input.
+  var error = internals.validate(domain);
+  if (error) {
+    return {
+      input: input,
+      error: {
+        message: exports.errorCodes[error],
+        code: error
+      }
+    };
+  }
+
+  var parsed = {
+    input: input,
+    tld: null,
+    sld: null,
+    domain: null,
+    subdomain: null,
+    listed: false
+  };
+
+  var domainParts = domain.split('.');
+
+  // Non-Internet TLD
+  if (domainParts[domainParts.length - 1] === 'local') {
+    return parsed;
+  }
+
+  var handlePunycode = function () {
+
+    if (!/xn--/.test(domain)) {
+      return parsed;
+    }
+    if (parsed.domain) {
+      parsed.domain = Punycode.toASCII(parsed.domain);
+    }
+    if (parsed.subdomain) {
+      parsed.subdomain = Punycode.toASCII(parsed.subdomain);
+    }
+    return parsed;
+  };
+
+  var rule = internals.findRule(domain);
+
+  // Unlisted tld.
+  if (!rule) {
+    if (domainParts.length < 2) {
+      return parsed;
+    }
+    parsed.tld = domainParts.pop();
+    parsed.sld = domainParts.pop();
+    parsed.domain = [parsed.sld, parsed.tld].join('.');
+    if (domainParts.length) {
+      parsed.subdomain = domainParts.pop();
+    }
+    return handlePunycode();
+  }
+
+  // At this point we know the public suffix is listed.
+  parsed.listed = true;
+
+  var tldParts = rule.suffix.split('.');
+  var privateParts = domainParts.slice(0, domainParts.length - tldParts.length);
+
+  if (rule.exception) {
+    privateParts.push(tldParts.shift());
+  }
+
+  parsed.tld = tldParts.join('.');
+
+  if (!privateParts.length) {
+    return handlePunycode();
+  }
+
+  if (rule.wildcard) {
+    tldParts.unshift(privateParts.pop());
+    parsed.tld = tldParts.join('.');
+  }
+
+  if (!privateParts.length) {
+    return handlePunycode();
+  }
+
+  parsed.sld = privateParts.pop();
+  parsed.domain = [parsed.sld,  parsed.tld].join('.');
+
+  if (privateParts.length) {
+    parsed.subdomain = privateParts.join('.');
+  }
+
+  return handlePunycode();
+};
+
+
+//
+// Get domain.
+//
+exports.get = function (domain) {
+
+  if (!domain) {
+    return null;
+  }
+  return exports.parse(domain).domain || null;
+};
+
+
+//
+// Check whether domain belongs to a known public suffix.
+//
+exports.isValid = function (domain) {
+
+  var parsed = exports.parse(domain);
+  return Boolean(parsed.domain && parsed.listed);
+};
+
+
+/***/ }),
 /* 633 */,
-/* 634 */,
+/* 634 */
+/***/ (function(__unusedmodule, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var _regex = _interopRequireDefault(__webpack_require__(525));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function validate(uuid) {
+  return typeof uuid === 'string' && _regex.default.test(uuid);
+}
+
+var _default = validate;
+exports.default = _default;
+
+/***/ }),
 /* 635 */,
 /* 636 */,
 /* 637 */,
-/* 638 */,
+/* 638 */
+/***/ (function(__unusedmodule, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var _v = _interopRequireDefault(__webpack_require__(136));
+
+var _sha = _interopRequireDefault(__webpack_require__(329));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+const v5 = (0, _v.default)('v5', 0x50, _sha.default);
+var _default = v5;
+exports.default = _default;
+
+/***/ }),
 /* 639 */
 /***/ (function(module, __unusedexports, __webpack_require__) {
 
@@ -44006,7 +46070,35 @@ module.exports.implForWrapper = function (wrapper) {
 
 /***/ }),
 /* 658 */,
-/* 659 */,
+/* 659 */
+/***/ (function(__unusedmodule, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var _crypto = _interopRequireDefault(__webpack_require__(417));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function md5(bytes) {
+  if (Array.isArray(bytes)) {
+    bytes = Buffer.from(bytes);
+  } else if (typeof bytes === 'string') {
+    bytes = Buffer.from(bytes, 'utf8');
+  }
+
+  return _crypto.default.createHash('md5').update(bytes).digest();
+}
+
+var _default = md5;
+exports.default = _default;
+
+/***/ }),
 /* 660 */
 /***/ (function(module, __unusedexports, __webpack_require__) {
 
@@ -44154,7 +46246,295 @@ module.exports.implForWrapper = function (wrapper) {
 /* 662 */,
 /* 663 */,
 /* 664 */,
-/* 665 */,
+/* 665 */
+/***/ (function(__unusedmodule, exports, __webpack_require__) {
+
+"use strict";
+
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.summary = exports.markdownSummary = exports.SUMMARY_DOCS_URL = exports.SUMMARY_ENV_VAR = void 0;
+const os_1 = __webpack_require__(87);
+const fs_1 = __webpack_require__(747);
+const { access, appendFile, writeFile } = fs_1.promises;
+exports.SUMMARY_ENV_VAR = 'GITHUB_STEP_SUMMARY';
+exports.SUMMARY_DOCS_URL = 'https://docs.github.com/actions/using-workflows/workflow-commands-for-github-actions#adding-a-job-summary';
+class Summary {
+    constructor() {
+        this._buffer = '';
+    }
+    /**
+     * Finds the summary file path from the environment, rejects if env var is not found or file does not exist
+     * Also checks r/w permissions.
+     *
+     * @returns step summary file path
+     */
+    filePath() {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (this._filePath) {
+                return this._filePath;
+            }
+            const pathFromEnv = process.env[exports.SUMMARY_ENV_VAR];
+            if (!pathFromEnv) {
+                throw new Error(`Unable to find environment variable for $${exports.SUMMARY_ENV_VAR}. Check if your runtime environment supports job summaries.`);
+            }
+            try {
+                yield access(pathFromEnv, fs_1.constants.R_OK | fs_1.constants.W_OK);
+            }
+            catch (_a) {
+                throw new Error(`Unable to access summary file: '${pathFromEnv}'. Check if the file has correct read/write permissions.`);
+            }
+            this._filePath = pathFromEnv;
+            return this._filePath;
+        });
+    }
+    /**
+     * Wraps content in an HTML tag, adding any HTML attributes
+     *
+     * @param {string} tag HTML tag to wrap
+     * @param {string | null} content content within the tag
+     * @param {[attribute: string]: string} attrs key-value list of HTML attributes to add
+     *
+     * @returns {string} content wrapped in HTML element
+     */
+    wrap(tag, content, attrs = {}) {
+        const htmlAttrs = Object.entries(attrs)
+            .map(([key, value]) => ` ${key}="${value}"`)
+            .join('');
+        if (!content) {
+            return `<${tag}${htmlAttrs}>`;
+        }
+        return `<${tag}${htmlAttrs}>${content}</${tag}>`;
+    }
+    /**
+     * Writes text in the buffer to the summary buffer file and empties buffer. Will append by default.
+     *
+     * @param {SummaryWriteOptions} [options] (optional) options for write operation
+     *
+     * @returns {Promise<Summary>} summary instance
+     */
+    write(options) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const overwrite = !!(options === null || options === void 0 ? void 0 : options.overwrite);
+            const filePath = yield this.filePath();
+            const writeFunc = overwrite ? writeFile : appendFile;
+            yield writeFunc(filePath, this._buffer, { encoding: 'utf8' });
+            return this.emptyBuffer();
+        });
+    }
+    /**
+     * Clears the summary buffer and wipes the summary file
+     *
+     * @returns {Summary} summary instance
+     */
+    clear() {
+        return __awaiter(this, void 0, void 0, function* () {
+            return this.emptyBuffer().write({ overwrite: true });
+        });
+    }
+    /**
+     * Returns the current summary buffer as a string
+     *
+     * @returns {string} string of summary buffer
+     */
+    stringify() {
+        return this._buffer;
+    }
+    /**
+     * If the summary buffer is empty
+     *
+     * @returns {boolen} true if the buffer is empty
+     */
+    isEmptyBuffer() {
+        return this._buffer.length === 0;
+    }
+    /**
+     * Resets the summary buffer without writing to summary file
+     *
+     * @returns {Summary} summary instance
+     */
+    emptyBuffer() {
+        this._buffer = '';
+        return this;
+    }
+    /**
+     * Adds raw text to the summary buffer
+     *
+     * @param {string} text content to add
+     * @param {boolean} [addEOL=false] (optional) append an EOL to the raw text (default: false)
+     *
+     * @returns {Summary} summary instance
+     */
+    addRaw(text, addEOL = false) {
+        this._buffer += text;
+        return addEOL ? this.addEOL() : this;
+    }
+    /**
+     * Adds the operating system-specific end-of-line marker to the buffer
+     *
+     * @returns {Summary} summary instance
+     */
+    addEOL() {
+        return this.addRaw(os_1.EOL);
+    }
+    /**
+     * Adds an HTML codeblock to the summary buffer
+     *
+     * @param {string} code content to render within fenced code block
+     * @param {string} lang (optional) language to syntax highlight code
+     *
+     * @returns {Summary} summary instance
+     */
+    addCodeBlock(code, lang) {
+        const attrs = Object.assign({}, (lang && { lang }));
+        const element = this.wrap('pre', this.wrap('code', code), attrs);
+        return this.addRaw(element).addEOL();
+    }
+    /**
+     * Adds an HTML list to the summary buffer
+     *
+     * @param {string[]} items list of items to render
+     * @param {boolean} [ordered=false] (optional) if the rendered list should be ordered or not (default: false)
+     *
+     * @returns {Summary} summary instance
+     */
+    addList(items, ordered = false) {
+        const tag = ordered ? 'ol' : 'ul';
+        const listItems = items.map(item => this.wrap('li', item)).join('');
+        const element = this.wrap(tag, listItems);
+        return this.addRaw(element).addEOL();
+    }
+    /**
+     * Adds an HTML table to the summary buffer
+     *
+     * @param {SummaryTableCell[]} rows table rows
+     *
+     * @returns {Summary} summary instance
+     */
+    addTable(rows) {
+        const tableBody = rows
+            .map(row => {
+            const cells = row
+                .map(cell => {
+                if (typeof cell === 'string') {
+                    return this.wrap('td', cell);
+                }
+                const { header, data, colspan, rowspan } = cell;
+                const tag = header ? 'th' : 'td';
+                const attrs = Object.assign(Object.assign({}, (colspan && { colspan })), (rowspan && { rowspan }));
+                return this.wrap(tag, data, attrs);
+            })
+                .join('');
+            return this.wrap('tr', cells);
+        })
+            .join('');
+        const element = this.wrap('table', tableBody);
+        return this.addRaw(element).addEOL();
+    }
+    /**
+     * Adds a collapsable HTML details element to the summary buffer
+     *
+     * @param {string} label text for the closed state
+     * @param {string} content collapsable content
+     *
+     * @returns {Summary} summary instance
+     */
+    addDetails(label, content) {
+        const element = this.wrap('details', this.wrap('summary', label) + content);
+        return this.addRaw(element).addEOL();
+    }
+    /**
+     * Adds an HTML image tag to the summary buffer
+     *
+     * @param {string} src path to the image you to embed
+     * @param {string} alt text description of the image
+     * @param {SummaryImageOptions} options (optional) addition image attributes
+     *
+     * @returns {Summary} summary instance
+     */
+    addImage(src, alt, options) {
+        const { width, height } = options || {};
+        const attrs = Object.assign(Object.assign({}, (width && { width })), (height && { height }));
+        const element = this.wrap('img', null, Object.assign({ src, alt }, attrs));
+        return this.addRaw(element).addEOL();
+    }
+    /**
+     * Adds an HTML section heading element
+     *
+     * @param {string} text heading text
+     * @param {number | string} [level=1] (optional) the heading level, default: 1
+     *
+     * @returns {Summary} summary instance
+     */
+    addHeading(text, level) {
+        const tag = `h${level}`;
+        const allowedTag = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'].includes(tag)
+            ? tag
+            : 'h1';
+        const element = this.wrap(allowedTag, text);
+        return this.addRaw(element).addEOL();
+    }
+    /**
+     * Adds an HTML thematic break (<hr>) to the summary buffer
+     *
+     * @returns {Summary} summary instance
+     */
+    addSeparator() {
+        const element = this.wrap('hr', null);
+        return this.addRaw(element).addEOL();
+    }
+    /**
+     * Adds an HTML line break (<br>) to the summary buffer
+     *
+     * @returns {Summary} summary instance
+     */
+    addBreak() {
+        const element = this.wrap('br', null);
+        return this.addRaw(element).addEOL();
+    }
+    /**
+     * Adds an HTML blockquote to the summary buffer
+     *
+     * @param {string} text quote text
+     * @param {string} cite (optional) citation url
+     *
+     * @returns {Summary} summary instance
+     */
+    addQuote(text, cite) {
+        const attrs = Object.assign({}, (cite && { cite }));
+        const element = this.wrap('blockquote', text, attrs);
+        return this.addRaw(element).addEOL();
+    }
+    /**
+     * Adds an HTML anchor tag to the summary buffer
+     *
+     * @param {string} text link text/content
+     * @param {string} href hyperlink
+     *
+     * @returns {Summary} summary instance
+     */
+    addLink(text, href) {
+        const element = this.wrap('a', text, { href });
+        return this.addRaw(element).addEOL();
+    }
+}
+const _summary = new Summary();
+/**
+ * @deprecated use `core.summary`
+ */
+exports.markdownSummary = _summary;
+exports.summary = _summary;
+//# sourceMappingURL=summary.js.map
+
+/***/ }),
 /* 666 */
 /***/ (function(__unusedmodule, exports) {
 
@@ -44957,6 +47337,15 @@ function checkKey(key) {
     }
 }
 /**
+ * isFeatureAvailable to check the presence of Actions cache service
+ *
+ * @returns boolean return true if Actions cache service feature is available, otherwise false
+ */
+function isFeatureAvailable() {
+    return !!process.env['ACTIONS_CACHE_URL'];
+}
+exports.isFeatureAvailable = isFeatureAvailable;
+/**
  * Restores cache from keys
  *
  * @param paths a list of file paths to restore from the cache
@@ -44979,17 +47368,18 @@ function restoreCache(paths, primaryKey, restoreKeys, options) {
             checkKey(key);
         }
         const compressionMethod = yield utils.getCompressionMethod();
-        // path are needed to compute version
-        const cacheEntry = yield cacheHttpClient.getCacheEntry(keys, paths, {
-            compressionMethod
-        });
-        if (!(cacheEntry === null || cacheEntry === void 0 ? void 0 : cacheEntry.archiveLocation)) {
-            // Cache not found
-            return undefined;
-        }
-        const archivePath = path.join(yield utils.createTempDirectory(), utils.getCacheFileName(compressionMethod));
-        core.debug(`Archive Path: ${archivePath}`);
+        let archivePath = '';
         try {
+            // path are needed to compute version
+            const cacheEntry = yield cacheHttpClient.getCacheEntry(keys, paths, {
+                compressionMethod
+            });
+            if (!(cacheEntry === null || cacheEntry === void 0 ? void 0 : cacheEntry.archiveLocation)) {
+                // Cache not found
+                return undefined;
+            }
+            archivePath = path.join(yield utils.createTempDirectory(), utils.getCacheFileName(compressionMethod));
+            core.debug(`Archive Path: ${archivePath}`);
             // Download the cache from the cache entry
             yield cacheHttpClient.downloadCache(cacheEntry.archiveLocation, archivePath, options);
             if (core.isDebug()) {
@@ -44999,6 +47389,17 @@ function restoreCache(paths, primaryKey, restoreKeys, options) {
             core.info(`Cache Size: ~${Math.round(archiveFileSize / (1024 * 1024))} MB (${archiveFileSize} B)`);
             yield tar_1.extractTar(archivePath, compressionMethod);
             core.info('Cache restored successfully');
+            return cacheEntry.cacheKey;
+        }
+        catch (error) {
+            const typedError = error;
+            if (typedError.name === ValidationError.name) {
+                throw error;
+            }
+            else {
+                // Supress all non-validation cache related errors because caching should be optional
+                core.warning(`Failed to restore: ${error.message}`);
+            }
         }
         finally {
             // Try to delete the archive to save space
@@ -45009,7 +47410,7 @@ function restoreCache(paths, primaryKey, restoreKeys, options) {
                 core.debug(`Failed to delete archive: ${error}`);
             }
         }
-        return cacheEntry.cacheKey;
+        return undefined;
     });
 }
 exports.restoreCache = restoreCache;
@@ -45022,21 +47423,18 @@ exports.restoreCache = restoreCache;
  * @returns number returns cacheId if the cache was saved successfully and throws an error if save fails
  */
 function saveCache(paths, key, options) {
+    var _a, _b, _c, _d, _e;
     return __awaiter(this, void 0, void 0, function* () {
         checkPaths(paths);
         checkKey(key);
         const compressionMethod = yield utils.getCompressionMethod();
-        core.debug('Reserving Cache');
-        const cacheId = yield cacheHttpClient.reserveCache(key, paths, {
-            compressionMethod
-        });
-        if (cacheId === -1) {
-            throw new ReserveCacheError(`Unable to reserve cache with key ${key}, another job may be creating this cache.`);
-        }
-        core.debug(`Cache ID: ${cacheId}`);
+        let cacheId = -1;
         const cachePaths = yield utils.resolvePaths(paths);
         core.debug('Cache Paths:');
         core.debug(`${JSON.stringify(cachePaths)}`);
+        if (cachePaths.length === 0) {
+            throw new Error(`Path Validation Error: Path(s) specified in the action for caching do(es) not exist, hence no cache is being saved.`);
+        }
         const archiveFolder = yield utils.createTempDirectory();
         const archivePath = path.join(archiveFolder, utils.getCacheFileName(compressionMethod));
         core.debug(`Archive Path: ${archivePath}`);
@@ -45048,11 +47446,38 @@ function saveCache(paths, key, options) {
             const fileSizeLimit = 10 * 1024 * 1024 * 1024; // 10GB per repo limit
             const archiveFileSize = utils.getArchiveFileSizeInBytes(archivePath);
             core.debug(`File Size: ${archiveFileSize}`);
-            if (archiveFileSize > fileSizeLimit) {
+            // For GHES, this check will take place in ReserveCache API with enterprise file size limit
+            if (archiveFileSize > fileSizeLimit && !utils.isGhes()) {
                 throw new Error(`Cache size of ~${Math.round(archiveFileSize / (1024 * 1024))} MB (${archiveFileSize} B) is over the 10GB limit, not saving cache.`);
+            }
+            core.debug('Reserving Cache');
+            const reserveCacheResponse = yield cacheHttpClient.reserveCache(key, paths, {
+                compressionMethod,
+                cacheSize: archiveFileSize
+            });
+            if ((_a = reserveCacheResponse === null || reserveCacheResponse === void 0 ? void 0 : reserveCacheResponse.result) === null || _a === void 0 ? void 0 : _a.cacheId) {
+                cacheId = (_b = reserveCacheResponse === null || reserveCacheResponse === void 0 ? void 0 : reserveCacheResponse.result) === null || _b === void 0 ? void 0 : _b.cacheId;
+            }
+            else if ((reserveCacheResponse === null || reserveCacheResponse === void 0 ? void 0 : reserveCacheResponse.statusCode) === 400) {
+                throw new Error((_d = (_c = reserveCacheResponse === null || reserveCacheResponse === void 0 ? void 0 : reserveCacheResponse.error) === null || _c === void 0 ? void 0 : _c.message) !== null && _d !== void 0 ? _d : `Cache size of ~${Math.round(archiveFileSize / (1024 * 1024))} MB (${archiveFileSize} B) is over the data cap limit, not saving cache.`);
+            }
+            else {
+                throw new ReserveCacheError(`Unable to reserve cache with key ${key}, another job may be creating this cache. More details: ${(_e = reserveCacheResponse === null || reserveCacheResponse === void 0 ? void 0 : reserveCacheResponse.error) === null || _e === void 0 ? void 0 : _e.message}`);
             }
             core.debug(`Saving Cache (ID: ${cacheId})`);
             yield cacheHttpClient.saveCache(cacheId, archivePath, options);
+        }
+        catch (error) {
+            const typedError = error;
+            if (typedError.name === ValidationError.name) {
+                throw error;
+            }
+            else if (typedError.name === ReserveCacheError.name) {
+                core.info(`Failed to save: ${typedError.message}`);
+            }
+            else {
+                core.warning(`Failed to save: ${typedError.message}`);
+            }
         }
         finally {
             // Try to delete the archive to save space
@@ -45670,8 +48095,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.OidcClient = void 0;
-const http_client_1 = __webpack_require__(539);
-const auth_1 = __webpack_require__(226);
+const http_client_1 = __webpack_require__(425);
+const auth_1 = __webpack_require__(554);
 const core_1 = __webpack_require__(470);
 class OidcClient {
     static createHttpClient(allowRetry = true, maxRetry = 10) {
@@ -45750,278 +48175,43 @@ module.exports = require("fs");
 /* 748 */,
 /* 749 */,
 /* 750 */
-/***/ (function(__unusedmodule, exports, __webpack_require__) {
+/***/ (function(module, __unusedexports, __webpack_require__) {
 
-"use strict";
-/*eslint no-var:0, prefer-arrow-callback: 0, object-shorthand: 0 */
+// Generated by CoffeeScript 1.12.7
+(function() {
+  var XMLStringWriter, XMLWriterBase,
+    extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+    hasProp = {}.hasOwnProperty;
 
+  XMLWriterBase = __webpack_require__(423);
 
+  module.exports = XMLStringWriter = (function(superClass) {
+    extend(XMLStringWriter, superClass);
 
-var Punycode = __webpack_require__(815);
-
-
-var internals = {};
-
-
-//
-// Read rules from file.
-//
-internals.rules = __webpack_require__(50).map(function (rule) {
-
-  return {
-    rule: rule,
-    suffix: rule.replace(/^(\*\.|\!)/, ''),
-    punySuffix: -1,
-    wildcard: rule.charAt(0) === '*',
-    exception: rule.charAt(0) === '!'
-  };
-});
-
-
-//
-// Check is given string ends with `suffix`.
-//
-internals.endsWith = function (str, suffix) {
-
-  return str.indexOf(suffix, str.length - suffix.length) !== -1;
-};
-
-
-//
-// Find rule for a given domain.
-//
-internals.findRule = function (domain) {
-
-  var punyDomain = Punycode.toASCII(domain);
-  return internals.rules.reduce(function (memo, rule) {
-
-    if (rule.punySuffix === -1){
-      rule.punySuffix = Punycode.toASCII(rule.suffix);
+    function XMLStringWriter(options) {
+      XMLStringWriter.__super__.constructor.call(this, options);
     }
-    if (!internals.endsWith(punyDomain, '.' + rule.punySuffix) && punyDomain !== rule.punySuffix) {
-      return memo;
-    }
-    // This has been commented out as it never seems to run. This is because
-    // sub tlds always appear after their parents and we never find a shorter
-    // match.
-    //if (memo) {
-    //  var memoSuffix = Punycode.toASCII(memo.suffix);
-    //  if (memoSuffix.length >= punySuffix.length) {
-    //    return memo;
-    //  }
-    //}
-    return rule;
-  }, null);
-};
 
-
-//
-// Error codes and messages.
-//
-exports.errorCodes = {
-  DOMAIN_TOO_SHORT: 'Domain name too short.',
-  DOMAIN_TOO_LONG: 'Domain name too long. It should be no more than 255 chars.',
-  LABEL_STARTS_WITH_DASH: 'Domain name label can not start with a dash.',
-  LABEL_ENDS_WITH_DASH: 'Domain name label can not end with a dash.',
-  LABEL_TOO_LONG: 'Domain name label should be at most 63 chars long.',
-  LABEL_TOO_SHORT: 'Domain name label should be at least 1 character long.',
-  LABEL_INVALID_CHARS: 'Domain name label can only contain alphanumeric characters or dashes.'
-};
-
-
-//
-// Validate domain name and throw if not valid.
-//
-// From wikipedia:
-//
-// Hostnames are composed of series of labels concatenated with dots, as are all
-// domain names. Each label must be between 1 and 63 characters long, and the
-// entire hostname (including the delimiting dots) has a maximum of 255 chars.
-//
-// Allowed chars:
-//
-// * `a-z`
-// * `0-9`
-// * `-` but not as a starting or ending character
-// * `.` as a separator for the textual portions of a domain name
-//
-// * http://en.wikipedia.org/wiki/Domain_name
-// * http://en.wikipedia.org/wiki/Hostname
-//
-internals.validate = function (input) {
-
-  // Before we can validate we need to take care of IDNs with unicode chars.
-  var ascii = Punycode.toASCII(input);
-
-  if (ascii.length < 1) {
-    return 'DOMAIN_TOO_SHORT';
-  }
-  if (ascii.length > 255) {
-    return 'DOMAIN_TOO_LONG';
-  }
-
-  // Check each part's length and allowed chars.
-  var labels = ascii.split('.');
-  var label;
-
-  for (var i = 0; i < labels.length; ++i) {
-    label = labels[i];
-    if (!label.length) {
-      return 'LABEL_TOO_SHORT';
-    }
-    if (label.length > 63) {
-      return 'LABEL_TOO_LONG';
-    }
-    if (label.charAt(0) === '-') {
-      return 'LABEL_STARTS_WITH_DASH';
-    }
-    if (label.charAt(label.length - 1) === '-') {
-      return 'LABEL_ENDS_WITH_DASH';
-    }
-    if (!/^[a-z0-9\-]+$/.test(label)) {
-      return 'LABEL_INVALID_CHARS';
-    }
-  }
-};
-
-
-//
-// Public API
-//
-
-
-//
-// Parse domain.
-//
-exports.parse = function (input) {
-
-  if (typeof input !== 'string') {
-    throw new TypeError('Domain name must be a string.');
-  }
-
-  // Force domain to lowercase.
-  var domain = input.slice(0).toLowerCase();
-
-  // Handle FQDN.
-  // TODO: Simply remove trailing dot?
-  if (domain.charAt(domain.length - 1) === '.') {
-    domain = domain.slice(0, domain.length - 1);
-  }
-
-  // Validate and sanitise input.
-  var error = internals.validate(domain);
-  if (error) {
-    return {
-      input: input,
-      error: {
-        message: exports.errorCodes[error],
-        code: error
+    XMLStringWriter.prototype.document = function(doc, options) {
+      var child, i, len, r, ref;
+      options = this.filterOptions(options);
+      r = '';
+      ref = doc.children;
+      for (i = 0, len = ref.length; i < len; i++) {
+        child = ref[i];
+        r += this.writeChildNode(child, options, 0);
       }
+      if (options.pretty && r.slice(-options.newline.length) === options.newline) {
+        r = r.slice(0, -options.newline.length);
+      }
+      return r;
     };
-  }
 
-  var parsed = {
-    input: input,
-    tld: null,
-    sld: null,
-    domain: null,
-    subdomain: null,
-    listed: false
-  };
+    return XMLStringWriter;
 
-  var domainParts = domain.split('.');
+  })(XMLWriterBase);
 
-  // Non-Internet TLD
-  if (domainParts[domainParts.length - 1] === 'local') {
-    return parsed;
-  }
-
-  var handlePunycode = function () {
-
-    if (!/xn--/.test(domain)) {
-      return parsed;
-    }
-    if (parsed.domain) {
-      parsed.domain = Punycode.toASCII(parsed.domain);
-    }
-    if (parsed.subdomain) {
-      parsed.subdomain = Punycode.toASCII(parsed.subdomain);
-    }
-    return parsed;
-  };
-
-  var rule = internals.findRule(domain);
-
-  // Unlisted tld.
-  if (!rule) {
-    if (domainParts.length < 2) {
-      return parsed;
-    }
-    parsed.tld = domainParts.pop();
-    parsed.sld = domainParts.pop();
-    parsed.domain = [parsed.sld, parsed.tld].join('.');
-    if (domainParts.length) {
-      parsed.subdomain = domainParts.pop();
-    }
-    return handlePunycode();
-  }
-
-  // At this point we know the public suffix is listed.
-  parsed.listed = true;
-
-  var tldParts = rule.suffix.split('.');
-  var privateParts = domainParts.slice(0, domainParts.length - tldParts.length);
-
-  if (rule.exception) {
-    privateParts.push(tldParts.shift());
-  }
-
-  parsed.tld = tldParts.join('.');
-
-  if (!privateParts.length) {
-    return handlePunycode();
-  }
-
-  if (rule.wildcard) {
-    tldParts.unshift(privateParts.pop());
-    parsed.tld = tldParts.join('.');
-  }
-
-  if (!privateParts.length) {
-    return handlePunycode();
-  }
-
-  parsed.sld = privateParts.pop();
-  parsed.domain = [parsed.sld,  parsed.tld].join('.');
-
-  if (privateParts.length) {
-    parsed.subdomain = privateParts.join('.');
-  }
-
-  return handlePunycode();
-};
-
-
-//
-// Get domain.
-//
-exports.get = function (domain) {
-
-  if (!domain) {
-    return null;
-  }
-  return exports.parse(domain).domain || null;
-};
-
-
-//
-// Check whether domain belongs to a known public suffix.
-//
-exports.isValid = function (domain) {
-
-  var parsed = exports.parse(domain);
-  return Boolean(parsed.domain && parsed.listed);
-};
+}).call(this);
 
 
 /***/ }),
@@ -46067,7 +48257,62 @@ function async(callback)
 /***/ }),
 /* 752 */,
 /* 753 */,
-/* 754 */,
+/* 754 */
+/***/ (function(__unusedmodule, exports, __webpack_require__) {
+
+"use strict";
+
+/*
+ * Copyright The OpenTelemetry Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+var __spreadArray = (this && this.__spreadArray) || function (to, from) {
+    for (var i = 0, il = from.length, j = to.length; i < il; i++, j++)
+        to[j] = from[i];
+    return to;
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.NoopContextManager = void 0;
+var context_1 = __webpack_require__(132);
+var NoopContextManager = /** @class */ (function () {
+    function NoopContextManager() {
+    }
+    NoopContextManager.prototype.active = function () {
+        return context_1.ROOT_CONTEXT;
+    };
+    NoopContextManager.prototype.with = function (_context, fn, thisArg) {
+        var args = [];
+        for (var _i = 3; _i < arguments.length; _i++) {
+            args[_i - 3] = arguments[_i];
+        }
+        return fn.call.apply(fn, __spreadArray([thisArg], args));
+    };
+    NoopContextManager.prototype.bind = function (_context, target) {
+        return target;
+    };
+    NoopContextManager.prototype.enable = function () {
+        return this;
+    };
+    NoopContextManager.prototype.disable = function () {
+        return this;
+    };
+    return NoopContextManager;
+}());
+exports.NoopContextManager = NoopContextManager;
+//# sourceMappingURL=NoopContextManager.js.map
+
+/***/ }),
 /* 755 */,
 /* 756 */,
 /* 757 */,
@@ -46113,7 +48358,7 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
     for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-__exportStar(__webpack_require__(145), exports);
+__exportStar(__webpack_require__(950), exports);
 //# sourceMappingURL=index.js.map
 
 /***/ }),
@@ -46177,7 +48422,7 @@ module.exports = function(dst, src) {
 
   XMLStringifier = __webpack_require__(602);
 
-  XMLStringWriter = __webpack_require__(347);
+  XMLStringWriter = __webpack_require__(750);
 
   WriterState = __webpack_require__(541);
 
@@ -46685,7 +48930,11 @@ module.exports = function(dst, src) {
 
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
 }) : (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     o[k2] = m[k];
@@ -46698,7 +48947,7 @@ var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
     var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
     __setModuleDefault(result, mod);
     return result;
 };
@@ -46719,8 +48968,7 @@ const utils = __importStar(__webpack_require__(443));
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            if (utils.isGhes()) {
-                utils.logWarning("Cache action is not supported on GHES. See https://github.com/actions/cache/issues/505 for more details");
+            if (!utils.isCacheFeatureAvailable()) {
                 utils.setCacheHitOutput(false);
                 return;
             }
@@ -46735,30 +48983,19 @@ function run() {
             const cachePaths = utils.getInputAsArray(constants_1.Inputs.Path, {
                 required: true
             });
-            try {
-                const cacheKey = yield cache.restoreCache(cachePaths, primaryKey, restoreKeys);
-                if (!cacheKey) {
-                    core.info(`Cache not found for input keys: ${[
-                        primaryKey,
-                        ...restoreKeys
-                    ].join(", ")}`);
-                    return;
-                }
-                // Store the matched cache key
-                utils.setCacheState(cacheKey);
-                const isExactKeyMatch = utils.isExactKeyMatch(primaryKey, cacheKey);
-                utils.setCacheHitOutput(isExactKeyMatch);
-                core.info(`Cache restored from key: ${cacheKey}`);
+            const cacheKey = yield cache.restoreCache(cachePaths, primaryKey, restoreKeys);
+            if (!cacheKey) {
+                core.info(`Cache not found for input keys: ${[
+                    primaryKey,
+                    ...restoreKeys
+                ].join(", ")}`);
+                return;
             }
-            catch (error) {
-                if (error.name === cache.ValidationError.name) {
-                    throw error;
-                }
-                else {
-                    utils.logWarning(error.message);
-                    utils.setCacheHitOutput(false);
-                }
-            }
+            // Store the matched cache key
+            utils.setCacheState(cacheKey);
+            const isExactKeyMatch = utils.isExactKeyMatch(primaryKey, cacheKey);
+            utils.setCacheHitOutput(isExactKeyMatch);
+            core.info(`Cache restored from key: ${cacheKey}`);
         }
         catch (error) {
             core.setFailed(error.message);
@@ -48171,7 +50408,119 @@ module.exports = require("stream");
 /* 807 */,
 /* 808 */,
 /* 809 */,
-/* 810 */,
+/* 810 */
+/***/ (function(__unusedmodule, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var _rng = _interopRequireDefault(__webpack_require__(506));
+
+var _stringify = _interopRequireDefault(__webpack_require__(960));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+// **`v1()` - Generate time-based UUID**
+//
+// Inspired by https://github.com/LiosK/UUID.js
+// and http://docs.python.org/library/uuid.html
+let _nodeId;
+
+let _clockseq; // Previous uuid creation time
+
+
+let _lastMSecs = 0;
+let _lastNSecs = 0; // See https://github.com/uuidjs/uuid for API details
+
+function v1(options, buf, offset) {
+  let i = buf && offset || 0;
+  const b = buf || new Array(16);
+  options = options || {};
+  let node = options.node || _nodeId;
+  let clockseq = options.clockseq !== undefined ? options.clockseq : _clockseq; // node and clockseq need to be initialized to random values if they're not
+  // specified.  We do this lazily to minimize issues related to insufficient
+  // system entropy.  See #189
+
+  if (node == null || clockseq == null) {
+    const seedBytes = options.random || (options.rng || _rng.default)();
+
+    if (node == null) {
+      // Per 4.5, create and 48-bit node id, (47 random bits + multicast bit = 1)
+      node = _nodeId = [seedBytes[0] | 0x01, seedBytes[1], seedBytes[2], seedBytes[3], seedBytes[4], seedBytes[5]];
+    }
+
+    if (clockseq == null) {
+      // Per 4.2.2, randomize (14 bit) clockseq
+      clockseq = _clockseq = (seedBytes[6] << 8 | seedBytes[7]) & 0x3fff;
+    }
+  } // UUID timestamps are 100 nano-second units since the Gregorian epoch,
+  // (1582-10-15 00:00).  JSNumbers aren't precise enough for this, so
+  // time is handled internally as 'msecs' (integer milliseconds) and 'nsecs'
+  // (100-nanoseconds offset from msecs) since unix epoch, 1970-01-01 00:00.
+
+
+  let msecs = options.msecs !== undefined ? options.msecs : Date.now(); // Per 4.2.1.2, use count of uuid's generated during the current clock
+  // cycle to simulate higher resolution clock
+
+  let nsecs = options.nsecs !== undefined ? options.nsecs : _lastNSecs + 1; // Time since last uuid creation (in msecs)
+
+  const dt = msecs - _lastMSecs + (nsecs - _lastNSecs) / 10000; // Per 4.2.1.2, Bump clockseq on clock regression
+
+  if (dt < 0 && options.clockseq === undefined) {
+    clockseq = clockseq + 1 & 0x3fff;
+  } // Reset nsecs if clock regresses (new clockseq) or we've moved onto a new
+  // time interval
+
+
+  if ((dt < 0 || msecs > _lastMSecs) && options.nsecs === undefined) {
+    nsecs = 0;
+  } // Per 4.2.1.2 Throw error if too many uuids are requested
+
+
+  if (nsecs >= 10000) {
+    throw new Error("uuid.v1(): Can't create more than 10M uuids/sec");
+  }
+
+  _lastMSecs = msecs;
+  _lastNSecs = nsecs;
+  _clockseq = clockseq; // Per 4.1.4 - Convert from unix epoch to Gregorian epoch
+
+  msecs += 12219292800000; // `time_low`
+
+  const tl = ((msecs & 0xfffffff) * 10000 + nsecs) % 0x100000000;
+  b[i++] = tl >>> 24 & 0xff;
+  b[i++] = tl >>> 16 & 0xff;
+  b[i++] = tl >>> 8 & 0xff;
+  b[i++] = tl & 0xff; // `time_mid`
+
+  const tmh = msecs / 0x100000000 * 10000 & 0xfffffff;
+  b[i++] = tmh >>> 8 & 0xff;
+  b[i++] = tmh & 0xff; // `time_high_and_version`
+
+  b[i++] = tmh >>> 24 & 0xf | 0x10; // include version
+
+  b[i++] = tmh >>> 16 & 0xff; // `clock_seq_hi_and_reserved` (Per 4.2.2 - include variant)
+
+  b[i++] = clockseq >>> 8 | 0x80; // `clock_seq_low`
+
+  b[i++] = clockseq & 0xff; // `node`
+
+  for (let n = 0; n < 6; ++n) {
+    b[i + n] = node[n];
+  }
+
+  return buf || (0, _stringify.default)(b);
+}
+
+var _default = v1;
+exports.default = _default;
+
+/***/ }),
 /* 811 */,
 /* 812 */,
 /* 813 */,
@@ -48253,7 +50602,7 @@ module.exports = v4;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.VERSION = void 0;
 // this is autogenerated file, see scripts/version-update.js
-exports.VERSION = '1.0.3';
+exports.VERSION = '1.0.4';
 //# sourceMappingURL=version.js.map
 
 /***/ }),
@@ -48722,7 +51071,7 @@ var __createBinding;
  */
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TraceAPI = void 0;
-var global_utils_1 = __webpack_require__(525);
+var global_utils_1 = __webpack_require__(94);
 var ProxyTracerProvider_1 = __webpack_require__(394);
 var spancontext_utils_1 = __webpack_require__(629);
 var context_utils_1 = __webpack_require__(720);
@@ -49544,7 +51893,6 @@ class Poller {
         });
     }
     /**
-     * @internal
      * Starts a loop that will break only if the poller is done
      * or if the poller is stopped.
      */
@@ -49558,7 +51906,6 @@ class Poller {
         }
     }
     /**
-     * @internal
      * pollOnce does one polling, by calling to the update method of the underlying
      * poll operation to make any relevant change effective.
      *
@@ -49571,7 +51918,7 @@ class Poller {
             if (!this.isDone()) {
                 this.operation = await this.operation.update({
                     abortSignal: options.abortSignal,
-                    fireProgress: this.fireProgress.bind(this)
+                    fireProgress: this.fireProgress.bind(this),
                 });
                 if (this.isDone() && this.resolve) {
                     // If the poller has finished polling, this means we now have a result.
@@ -49592,7 +51939,6 @@ class Poller {
         }
     }
     /**
-     * @internal
      * fireProgress calls the functions passed in via onProgress the method of the poller.
      *
      * It loops over all of the callbacks received from onProgress, and executes them, sending them
@@ -49606,7 +51952,6 @@ class Poller {
         }
     }
     /**
-     * @internal
      * Invokes the underlying operation's cancel method, and rejects the
      * pollUntilDone promise.
      */
@@ -49771,13 +52116,6 @@ class Poller {
 }
 
 // Copyright (c) Microsoft Corporation.
-/**
- * The `@azure/logger` configuration for this package.
- * @internal
- */
-const logger = logger$1.createClientLogger("core-lro");
-
-// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 /**
  * Detects where the continuation token is and returns it. Notice that azure-asyncoperation
@@ -49787,7 +52125,7 @@ const logger = logger$1.createClientLogger("core-lro");
  */
 function getPollingUrl(rawResponse, defaultPath) {
     var _a, _b, _c;
-    return ((_c = (_b = (_a = getAzureAsyncOperation(rawResponse)) !== null && _a !== void 0 ? _a : getLocation(rawResponse)) !== null && _b !== void 0 ? _b : getOperationLocation(rawResponse)) !== null && _c !== void 0 ? _c : defaultPath);
+    return ((_c = (_b = (_a = getAzureAsyncOperation(rawResponse)) !== null && _a !== void 0 ? _a : getOperationLocation(rawResponse)) !== null && _b !== void 0 ? _b : getLocation(rawResponse)) !== null && _c !== void 0 ? _c : defaultPath);
 }
 function getLocation(rawResponse) {
     return rawResponse.headers["location"];
@@ -49798,26 +52136,36 @@ function getOperationLocation(rawResponse) {
 function getAzureAsyncOperation(rawResponse) {
     return rawResponse.headers["azure-asyncoperation"];
 }
-function inferLroMode(requestPath, requestMethod, rawResponse) {
-    if (getAzureAsyncOperation(rawResponse) !== undefined) {
-        return {
-            mode: "AzureAsync",
-            resourceLocation: requestMethod === "PUT"
-                ? requestPath
-                : requestMethod === "POST"
-                    ? getLocation(rawResponse)
-                    : undefined
-        };
+function findResourceLocation(requestMethod, rawResponse, requestPath) {
+    switch (requestMethod) {
+        case "PUT": {
+            return requestPath;
+        }
+        case "POST":
+        case "PATCH": {
+            return getLocation(rawResponse);
+        }
+        default: {
+            return undefined;
+        }
     }
-    else if (getLocation(rawResponse) !== undefined ||
+}
+function inferLroMode(requestPath, requestMethod, rawResponse) {
+    if (getAzureAsyncOperation(rawResponse) !== undefined ||
         getOperationLocation(rawResponse) !== undefined) {
         return {
-            mode: "Location"
+            mode: "Location",
+            resourceLocation: findResourceLocation(requestMethod, rawResponse, requestPath),
+        };
+    }
+    else if (getLocation(rawResponse) !== undefined) {
+        return {
+            mode: "Location",
         };
     }
     else if (["PUT", "PATCH"].includes(requestMethod)) {
         return {
-            mode: "Body"
+            mode: "Body",
         };
     }
     return {};
@@ -49851,50 +52199,6 @@ const successStates = ["succeeded"];
 const failureStates = ["failed", "canceled", "cancelled"];
 
 // Copyright (c) Microsoft Corporation.
-function getResponseStatus(rawResponse) {
-    var _a;
-    const { status } = (_a = rawResponse.body) !== null && _a !== void 0 ? _a : {};
-    return typeof status === "string" ? status.toLowerCase() : "succeeded";
-}
-function isAzureAsyncPollingDone(rawResponse) {
-    const state = getResponseStatus(rawResponse);
-    if (isUnexpectedPollingResponse(rawResponse) || failureStates.includes(state)) {
-        throw new Error(`The long running operation has failed. The provisioning state: ${state}.`);
-    }
-    return successStates.includes(state);
-}
-/**
- * Sends a request to the URI of the provisioned resource if needed.
- */
-async function sendFinalRequest(lro, resourceLocation, lroResourceLocationConfig) {
-    switch (lroResourceLocationConfig) {
-        case "original-uri":
-            return lro.sendPollRequest(lro.requestPath);
-        case "azure-async-operation":
-            return undefined;
-        case "location":
-        default:
-            return lro.sendPollRequest(resourceLocation !== null && resourceLocation !== void 0 ? resourceLocation : lro.requestPath);
-    }
-}
-function processAzureAsyncOperationResult(lro, resourceLocation, lroResourceLocationConfig) {
-    return (response) => {
-        if (isAzureAsyncPollingDone(response.rawResponse)) {
-            if (resourceLocation === undefined) {
-                return Object.assign(Object.assign({}, response), { done: true });
-            }
-            else {
-                return Object.assign(Object.assign({}, response), { done: false, next: async () => {
-                        const finalResponse = await sendFinalRequest(lro, resourceLocation, lroResourceLocationConfig);
-                        return Object.assign(Object.assign({}, (finalResponse !== null && finalResponse !== void 0 ? finalResponse : response)), { done: true });
-                    } });
-            }
-        }
-        return Object.assign(Object.assign({}, response), { done: false });
-    };
-}
-
-// Copyright (c) Microsoft Corporation.
 function getProvisioningState(rawResponse) {
     var _a, _b;
     const { properties, provisioningState } = (_a = rawResponse.body) !== null && _a !== void 0 ? _a : {};
@@ -49917,11 +52221,54 @@ function processBodyPollingOperationResult(response) {
 }
 
 // Copyright (c) Microsoft Corporation.
-function isLocationPollingDone(rawResponse) {
-    return !isUnexpectedPollingResponse(rawResponse) && rawResponse.statusCode !== 202;
+/**
+ * The `@azure/logger` configuration for this package.
+ * @internal
+ */
+const logger = logger$1.createClientLogger("core-lro");
+
+// Copyright (c) Microsoft Corporation.
+function isPollingDone(rawResponse) {
+    var _a;
+    if (isUnexpectedPollingResponse(rawResponse) || rawResponse.statusCode === 202) {
+        return false;
+    }
+    const { status } = (_a = rawResponse.body) !== null && _a !== void 0 ? _a : {};
+    const state = typeof status === "string" ? status.toLowerCase() : "succeeded";
+    if (isUnexpectedPollingResponse(rawResponse) || failureStates.includes(state)) {
+        throw new Error(`The long running operation has failed. The provisioning state: ${state}.`);
+    }
+    return successStates.includes(state);
 }
-function processLocationPollingOperationResult(response) {
-    return Object.assign(Object.assign({}, response), { done: isLocationPollingDone(response.rawResponse) });
+/**
+ * Sends a request to the URI of the provisioned resource if needed.
+ */
+async function sendFinalRequest(lro, resourceLocation, lroResourceLocationConfig) {
+    switch (lroResourceLocationConfig) {
+        case "original-uri":
+            return lro.sendPollRequest(lro.requestPath);
+        case "azure-async-operation":
+            return undefined;
+        case "location":
+        default:
+            return lro.sendPollRequest(resourceLocation !== null && resourceLocation !== void 0 ? resourceLocation : lro.requestPath);
+    }
+}
+function processLocationPollingOperationResult(lro, resourceLocation, lroResourceLocationConfig) {
+    return (response) => {
+        if (isPollingDone(response.rawResponse)) {
+            if (resourceLocation === undefined) {
+                return Object.assign(Object.assign({}, response), { done: true });
+            }
+            else {
+                return Object.assign(Object.assign({}, response), { done: false, next: async () => {
+                        const finalResponse = await sendFinalRequest(lro, resourceLocation, lroResourceLocationConfig);
+                        return Object.assign(Object.assign({}, (finalResponse !== null && finalResponse !== void 0 ? finalResponse : response)), { done: true });
+                    } });
+            }
+        }
+        return Object.assign(Object.assign({}, response), { done: false });
+    };
 }
 
 // Copyright (c) Microsoft Corporation.
@@ -49936,11 +52283,8 @@ function processPassthroughOperationResult(response) {
  */
 function createGetLroStatusFromResponse(lroPrimitives, config, lroResourceLocationConfig) {
     switch (config.mode) {
-        case "AzureAsync": {
-            return processAzureAsyncOperationResult(lroPrimitives, config.resourceLocation, lroResourceLocationConfig);
-        }
         case "Location": {
-            return processLocationPollingOperationResult;
+            return processLocationPollingOperationResult(lroPrimitives, config.resourceLocation, lroResourceLocationConfig);
         }
         case "Body": {
             return processBodyPollingOperationResult;
@@ -49958,10 +52302,11 @@ function createPoll(lroPrimitives) {
         const response = await lroPrimitives.sendPollRequest(path);
         const retryAfter = response.rawResponse.headers["retry-after"];
         if (retryAfter !== undefined) {
-            const retryAfterInMs = parseInt(retryAfter);
-            pollerConfig.intervalInMs = isNaN(retryAfterInMs)
+            // Retry-After header value is either in HTTP date format, or in seconds
+            const retryAfterInSeconds = parseInt(retryAfter);
+            pollerConfig.intervalInMs = isNaN(retryAfterInSeconds)
                 ? calculatePollingIntervalFromDate(new Date(retryAfter), pollerConfig.intervalInMs)
-                : retryAfterInMs;
+                : retryAfterInSeconds * 1000;
         }
         return getLroStatusFromResponse(response);
     };
@@ -50084,7 +52429,7 @@ class GenericPollOperation {
      */
     toString() {
         return JSON.stringify({
-            state: this.state
+            state: this.state,
         });
     }
 }
@@ -50306,7 +52651,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const core = __importStar(__webpack_require__(470));
-const http_client_1 = __webpack_require__(539);
+const http_client_1 = __webpack_require__(425);
 const constants_1 = __webpack_require__(931);
 function isSuccessStatusCode(statusCode) {
     if (!statusCode) {
@@ -50383,13 +52728,14 @@ function retryTypedResponse(name, method, maxAttempts = constants_1.DefaultRetry
     return __awaiter(this, void 0, void 0, function* () {
         return yield retry(name, method, (response) => response.statusCode, maxAttempts, delay, 
         // If the error object contains the statusCode property, extract it and return
-        // an ITypedResponse<T> so it can be processed by the retry logic.
+        // an TypedResponse<T> so it can be processed by the retry logic.
         (error) => {
             if (error instanceof http_client_1.HttpClientError) {
                 return {
                     statusCode: error.statusCode,
                     result: null,
-                    headers: {}
+                    headers: {},
+                    error
                 };
             }
             else {
@@ -52515,63 +54861,27 @@ function terminator(callback)
 
 "use strict";
 
+/*
+ * Copyright The OpenTelemetry Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 Object.defineProperty(exports, "__esModule", { value: true });
-function getProxyUrl(reqUrl) {
-    let usingSsl = reqUrl.protocol === 'https:';
-    let proxyUrl;
-    if (checkBypass(reqUrl)) {
-        return proxyUrl;
-    }
-    let proxyVar;
-    if (usingSsl) {
-        proxyVar = process.env['https_proxy'] || process.env['HTTPS_PROXY'];
-    }
-    else {
-        proxyVar = process.env['http_proxy'] || process.env['HTTP_PROXY'];
-    }
-    if (proxyVar) {
-        proxyUrl = new URL(proxyVar);
-    }
-    return proxyUrl;
-}
-exports.getProxyUrl = getProxyUrl;
-function checkBypass(reqUrl) {
-    if (!reqUrl.hostname) {
-        return false;
-    }
-    let noProxy = process.env['no_proxy'] || process.env['NO_PROXY'] || '';
-    if (!noProxy) {
-        return false;
-    }
-    // Determine the request port
-    let reqPort;
-    if (reqUrl.port) {
-        reqPort = Number(reqUrl.port);
-    }
-    else if (reqUrl.protocol === 'http:') {
-        reqPort = 80;
-    }
-    else if (reqUrl.protocol === 'https:') {
-        reqPort = 443;
-    }
-    // Format the request hostname and hostname with port
-    let upperReqHosts = [reqUrl.hostname.toUpperCase()];
-    if (typeof reqPort === 'number') {
-        upperReqHosts.push(`${upperReqHosts[0]}:${reqPort}`);
-    }
-    // Compare request host against noproxy
-    for (let upperNoProxyItem of noProxy
-        .split(',')
-        .map(x => x.trim().toUpperCase())
-        .filter(x => x)) {
-        if (upperReqHosts.some(x => x === upperNoProxyItem)) {
-            return true;
-        }
-    }
-    return false;
-}
-exports.checkBypass = checkBypass;
-
+exports._globalThis = void 0;
+/** only globals that common to node and browsers are allowed */
+// eslint-disable-next-line node/no-unsupported-features/es-builtins
+exports._globalThis = typeof globalThis === 'object' ? globalThis : global;
+//# sourceMappingURL=globalThis.js.map
 
 /***/ }),
 /* 951 */,
@@ -52619,7 +54929,51 @@ exports.checkBypass = checkBypass;
 /* 957 */,
 /* 958 */,
 /* 959 */,
-/* 960 */,
+/* 960 */
+/***/ (function(__unusedmodule, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var _validate = _interopRequireDefault(__webpack_require__(634));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+/**
+ * Convert array of 16 byte values to UUID string format of the form:
+ * XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX
+ */
+const byteToHex = [];
+
+for (let i = 0; i < 256; ++i) {
+  byteToHex.push((i + 0x100).toString(16).substr(1));
+}
+
+function stringify(arr, offset = 0) {
+  // Note: Be careful editing this code!  It's been tuned for performance
+  // and works in ways you may not expect. See https://github.com/uuidjs/uuid/pull/434
+  const uuid = (byteToHex[arr[offset + 0]] + byteToHex[arr[offset + 1]] + byteToHex[arr[offset + 2]] + byteToHex[arr[offset + 3]] + '-' + byteToHex[arr[offset + 4]] + byteToHex[arr[offset + 5]] + '-' + byteToHex[arr[offset + 6]] + byteToHex[arr[offset + 7]] + '-' + byteToHex[arr[offset + 8]] + byteToHex[arr[offset + 9]] + '-' + byteToHex[arr[offset + 10]] + byteToHex[arr[offset + 11]] + byteToHex[arr[offset + 12]] + byteToHex[arr[offset + 13]] + byteToHex[arr[offset + 14]] + byteToHex[arr[offset + 15]]).toLowerCase(); // Consistency check for valid UUID.  If this throws, it's likely due to one
+  // of the following:
+  // - One or more input array values don't map to a hex octet (leading to
+  // "undefined" in the uuid)
+  // - Invalid input values for the RFC `version` or `variant` fields
+
+  if (!(0, _validate.default)(uuid)) {
+    throw TypeError('Stringified UUID is invalid');
+  }
+
+  return uuid;
+}
+
+var _default = stringify;
+exports.default = _default;
+
+/***/ }),
 /* 961 */,
 /* 962 */,
 /* 963 */,
@@ -53378,26 +55732,53 @@ exports.isCompatible = _makeCompatibilityCheck(version_1.VERSION);
 
 Object.defineProperty(exports, '__esModule', { value: true });
 
-function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'default' in ex) ? ex['default'] : ex; }
-
 var uuid = __webpack_require__(585);
-var tough = __webpack_require__(393);
+var util = __webpack_require__(669);
+var tslib = __webpack_require__(865);
+var xml2js = __webpack_require__(992);
+var abortController = __webpack_require__(106);
+var logger$1 = __webpack_require__(928);
+var coreAuth = __webpack_require__(229);
+var os = __webpack_require__(87);
 var http = __webpack_require__(605);
 var https = __webpack_require__(211);
-var node_fetch = _interopDefault(__webpack_require__(454));
-var abortController = __webpack_require__(106);
-var FormData = _interopDefault(__webpack_require__(790));
-var util = __webpack_require__(669);
-var url = __webpack_require__(835);
-var stream = __webpack_require__(794);
-var logger$1 = __webpack_require__(928);
+var tough = __webpack_require__(393);
 var tunnel = __webpack_require__(413);
-var tslib = __webpack_require__(865);
-var coreAuth = __webpack_require__(229);
-var xml2js = __webpack_require__(992);
-var os = __webpack_require__(87);
+var stream = __webpack_require__(794);
+var FormData = __webpack_require__(790);
+var node_fetch = __webpack_require__(454);
 var coreTracing = __webpack_require__(263);
-__webpack_require__(71);
+var url = __webpack_require__(835);
+__webpack_require__(97);
+
+function _interopDefaultLegacy (e) { return e && typeof e === 'object' && 'default' in e ? e : { 'default': e }; }
+
+function _interopNamespace(e) {
+    if (e && e.__esModule) return e;
+    var n = Object.create(null);
+    if (e) {
+        Object.keys(e).forEach(function (k) {
+            if (k !== 'default') {
+                var d = Object.getOwnPropertyDescriptor(e, k);
+                Object.defineProperty(n, k, d.get ? d : {
+                    enumerable: true,
+                    get: function () { return e[k]; }
+                });
+            }
+        });
+    }
+    n["default"] = e;
+    return Object.freeze(n);
+}
+
+var xml2js__namespace = /*#__PURE__*/_interopNamespace(xml2js);
+var os__namespace = /*#__PURE__*/_interopNamespace(os);
+var http__namespace = /*#__PURE__*/_interopNamespace(http);
+var https__namespace = /*#__PURE__*/_interopNamespace(https);
+var tough__namespace = /*#__PURE__*/_interopNamespace(tough);
+var tunnel__namespace = /*#__PURE__*/_interopNamespace(tunnel);
+var FormData__default = /*#__PURE__*/_interopDefaultLegacy(FormData);
+var node_fetch__default = /*#__PURE__*/_interopDefaultLegacy(node_fetch);
 
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
@@ -53446,7 +55827,7 @@ class HttpHeaders {
     set(headerName, headerValue) {
         this._headersMap[getHeaderKey(headerName)] = {
             name: headerName,
-            value: headerValue.toString()
+            value: headerValue.toString(),
         };
     }
     /**
@@ -53478,12 +55859,7 @@ class HttpHeaders {
      * Get the headers that are contained this collection as an object.
      */
     rawHeaders() {
-        const result = {};
-        for (const headerKey in this._headersMap) {
-            const header = this._headersMap[headerKey];
-            result[header.name.toLowerCase()] = header.value;
-        }
-        return result;
+        return this.toJson({ preserveCase: true });
     }
     /**
      * Get the headers that are contained in this collection as an array.
@@ -53520,14 +55896,27 @@ class HttpHeaders {
     /**
      * Get the JSON object representation of this HTTP header collection.
      */
-    toJson() {
-        return this.rawHeaders();
+    toJson(options = {}) {
+        const result = {};
+        if (options.preserveCase) {
+            for (const headerKey in this._headersMap) {
+                const header = this._headersMap[headerKey];
+                result[header.name] = header.value;
+            }
+        }
+        else {
+            for (const headerKey in this._headersMap) {
+                const header = this._headersMap[headerKey];
+                result[getHeaderKey(header.name)] = header.value;
+            }
+        }
+        return result;
     }
     /**
      * Get the string representation of this HTTP header collection.
      */
     toString() {
-        return JSON.stringify(this.toJson());
+        return JSON.stringify(this.toJson({ preserveCase: true }));
     }
     /**
      * Create a deep clone/copy of this HttpHeaders collection.
@@ -53571,11 +55960,14 @@ function decodeString(value) {
 
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
+/**
+ * A set of constants used internally when processing requests.
+ */
 const Constants = {
     /**
      * The core-http version
      */
-    coreHttpVersion: "2.2.2",
+    coreHttpVersion: "2.2.4",
     /**
      * Specifies HTTP.
      */
@@ -53611,12 +56003,12 @@ const Constants = {
             POST: "POST",
             MERGE: "MERGE",
             HEAD: "HEAD",
-            PATCH: "PATCH"
+            PATCH: "PATCH",
         },
         StatusCodes: {
             TooManyRequests: 429,
-            ServiceUnavailable: 503
-        }
+            ServiceUnavailable: 503,
+        },
     },
     /**
      * Defines constants for use with HTTP headers.
@@ -53636,8 +56028,8 @@ const Constants = {
         /**
          * The UserAgent header.
          */
-        USER_AGENT: "User-Agent"
-    }
+        USER_AGENT: "User-Agent",
+    },
 };
 
 // Copyright (c) Microsoft Corporation.
@@ -53852,18 +56244,38 @@ function isObject(input) {
 }
 
 // Copyright (c) Microsoft Corporation.
+// This file contains utility code to serialize and deserialize network operations according to `OperationSpec` objects generated by AutoRest.TypeScript from OpenAPI specifications.
+/**
+ * Used to map raw response objects to final shapes.
+ * Helps packing and unpacking Dates and other encoded types that are not intrinsic to JSON.
+ * Also allows pulling values from headers, as well as inserting default values and constants.
+ */
 class Serializer {
-    constructor(modelMappers = {}, isXML) {
+    constructor(
+    /**
+     * The provided model mapper.
+     */
+    modelMappers = {}, 
+    /**
+     * Whether the contents are XML or not.
+     */
+    isXML) {
         this.modelMappers = modelMappers;
         this.isXML = isXML;
     }
+    /**
+     * Validates constraints, if any. This function will throw if the provided value does not respect those constraints.
+     * @param mapper - The definition of data models.
+     * @param value - The value.
+     * @param objectName - Name of the object. Used in the error messages.
+     */
     validateConstraints(mapper, value, objectName) {
         const failValidation = (constraintName, constraintValue) => {
             throw new Error(`"${objectName}" with value "${value}" should satisfy the constraint "${constraintName}": ${constraintValue}.`);
         };
         if (mapper.constraints && value != undefined) {
             const valueAsNumber = value;
-            const { ExclusiveMaximum, ExclusiveMinimum, InclusiveMaximum, InclusiveMinimum, MaxItems, MaxLength, MinItems, MinLength, MultipleOf, Pattern, UniqueItems } = mapper.constraints;
+            const { ExclusiveMaximum, ExclusiveMinimum, InclusiveMaximum, InclusiveMinimum, MaxItems, MaxLength, MinItems, MinLength, MultipleOf, Pattern, UniqueItems, } = mapper.constraints;
             if (ExclusiveMaximum != undefined && valueAsNumber >= ExclusiveMaximum) {
                 failValidation("ExclusiveMaximum", ExclusiveMaximum);
             }
@@ -53905,20 +56317,20 @@ class Serializer {
         }
     }
     /**
-     * Serialize the given object based on its metadata defined in the mapper
+     * Serialize the given object based on its metadata defined in the mapper.
      *
-     * @param mapper - The mapper which defines the metadata of the serializable object
-     * @param object - A valid Javascript object to be serialized
-     * @param objectName - Name of the serialized object
-     * @param options - additional options to deserialization
-     * @returns A valid serialized Javascript object
+     * @param mapper - The mapper which defines the metadata of the serializable object.
+     * @param object - A valid Javascript object to be serialized.
+     * @param objectName - Name of the serialized object.
+     * @param options - additional options to deserialization.
+     * @returns A valid serialized Javascript object.
      */
     serialize(mapper, object, objectName, options = {}) {
         var _a, _b, _c;
         const updatedOptions = {
             rootName: (_a = options.rootName) !== null && _a !== void 0 ? _a : "",
             includeRoot: (_b = options.includeRoot) !== null && _b !== void 0 ? _b : false,
-            xmlCharKey: (_c = options.xmlCharKey) !== null && _c !== void 0 ? _c : XML_CHARKEY
+            xmlCharKey: (_c = options.xmlCharKey) !== null && _c !== void 0 ? _c : XML_CHARKEY,
         };
         let payload = {};
         const mapperType = mapper.type.name;
@@ -53988,20 +56400,20 @@ class Serializer {
         return payload;
     }
     /**
-     * Deserialize the given object based on its metadata defined in the mapper
+     * Deserialize the given object based on its metadata defined in the mapper.
      *
-     * @param mapper - The mapper which defines the metadata of the serializable object
-     * @param responseBody - A valid Javascript entity to be deserialized
-     * @param objectName - Name of the deserialized object
+     * @param mapper - The mapper which defines the metadata of the serializable object.
+     * @param responseBody - A valid Javascript entity to be deserialized.
+     * @param objectName - Name of the deserialized object.
      * @param options - Controls behavior of XML parser and builder.
-     * @returns A valid deserialized Javascript object
+     * @returns A valid deserialized Javascript object.
      */
     deserialize(mapper, responseBody, objectName, options = {}) {
         var _a, _b, _c;
         const updatedOptions = {
             rootName: (_a = options.rootName) !== null && _a !== void 0 ? _a : "",
             includeRoot: (_b = options.includeRoot) !== null && _b !== void 0 ? _b : false,
-            xmlCharKey: (_c = options.xmlCharKey) !== null && _c !== void 0 ? _c : XML_CHARKEY
+            xmlCharKey: (_c = options.xmlCharKey) !== null && _c !== void 0 ? _c : XML_CHARKEY,
         };
         if (responseBody == undefined) {
             if (this.isXML && mapper.type.name === "Sequence" && !mapper.xmlIsWrapped) {
@@ -54100,9 +56512,7 @@ function bufferToBase64Url(buffer) {
     // Uint8Array to Base64.
     const str = encodeByteArray(buffer);
     // Base64 to Base64Url.
-    return trimEnd(str, "=")
-        .replace(/\+/g, "-")
-        .replace(/\//g, "_");
+    return trimEnd(str, "=").replace(/\+/g, "-").replace(/\//g, "_");
 }
 function base64UrlToByteArray(str) {
     if (!str) {
@@ -54318,10 +56728,10 @@ function serializeDictionaryType(serializer, mapper, object, objectName, isXml, 
     return tempDictionary;
 }
 /**
- * Resolves the additionalProperties property from a referenced mapper
- * @param serializer - The serializer containing the entire set of mappers
- * @param mapper - The composite mapper to resolve
- * @param objectName - Name of the object being serialized
+ * Resolves the additionalProperties property from a referenced mapper.
+ * @param serializer - The serializer containing the entire set of mappers.
+ * @param mapper - The composite mapper to resolve.
+ * @param objectName - Name of the object being serialized.
  */
 function resolveAdditionalProperties(serializer, mapper, objectName) {
     const additionalProperties = mapper.type.additionalProperties;
@@ -54332,7 +56742,7 @@ function resolveAdditionalProperties(serializer, mapper, objectName) {
     return additionalProperties;
 }
 /**
- * Finds the mapper referenced by className
+ * Finds the mapper referenced by `className`.
  * @param serializer - The serializer containing the entire set of mappers
  * @param mapper - The composite mapper to resolve
  * @param objectName - Name of the object being serialized
@@ -54671,7 +57081,9 @@ function getPolymorphicDiscriminatorSafely(serializer, typeName) {
         serializer.modelMappers[typeName] &&
         serializer.modelMappers[typeName].type.polymorphicDiscriminator);
 }
-// TODO: why is this here?
+/**
+ * Utility function that serializes an object that might contain binary information into a plain object, array or a string.
+ */
 function serializeObject(toSerialize) {
     const castToSerialize = toSerialize;
     if (toSerialize == undefined)
@@ -54709,6 +57121,9 @@ function strEnum(o) {
     }
     return result;
 }
+/**
+ * String enum containing the string types of property mappers.
+ */
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 const MapperType = strEnum([
     "Base64Url",
@@ -54726,7 +57141,7 @@ const MapperType = strEnum([
     "String",
     "Stream",
     "TimeSpan",
-    "UnixTime"
+    "UnixTime",
 ]);
 
 // Copyright (c) Microsoft Corporation.
@@ -54988,9 +57403,6 @@ class WebResource {
         return result;
     }
 }
-
-// Copyright (c) Microsoft Corporation.
-const custom = util.inspect.custom;
 
 // Copyright (c) Microsoft Corporation.
 /**
@@ -55289,6 +57701,10 @@ class URLBuilder {
             }
         }
     }
+    /**
+     * Serializes the URL as a string.
+     * @returns the URL as a string.
+     */
     toString() {
         let result = "";
         if (this._scheme) {
@@ -55324,6 +57740,9 @@ class URLBuilder {
             this.setQuery(replaceAll(this.getQuery(), searchValue, replaceValue));
         }
     }
+    /**
+     * Parses a given string URL into a new {@link URLBuilder}.
+     */
     static parse(text) {
         const result = new URLBuilder();
         result.set(text, "SCHEME_OR_HOST");
@@ -55581,6 +58000,60 @@ function nextQuery(tokenizer) {
 }
 
 // Copyright (c) Microsoft Corporation.
+function createProxyAgent(requestUrl, proxySettings, headers) {
+    const host = URLBuilder.parse(proxySettings.host).getHost();
+    if (!host) {
+        throw new Error("Expecting a non-empty host in proxy settings.");
+    }
+    if (!isValidPort(proxySettings.port)) {
+        throw new Error("Expecting a valid port number in the range of [0, 65535] in proxy settings.");
+    }
+    const tunnelOptions = {
+        proxy: {
+            host: host,
+            port: proxySettings.port,
+            headers: (headers && headers.rawHeaders()) || {},
+        },
+    };
+    if (proxySettings.username && proxySettings.password) {
+        tunnelOptions.proxy.proxyAuth = `${proxySettings.username}:${proxySettings.password}`;
+    }
+    else if (proxySettings.username) {
+        tunnelOptions.proxy.proxyAuth = `${proxySettings.username}`;
+    }
+    const isRequestHttps = isUrlHttps(requestUrl);
+    const isProxyHttps = isUrlHttps(proxySettings.host);
+    const proxyAgent = {
+        isHttps: isRequestHttps,
+        agent: createTunnel(isRequestHttps, isProxyHttps, tunnelOptions),
+    };
+    return proxyAgent;
+}
+function isUrlHttps(url) {
+    const urlScheme = URLBuilder.parse(url).getScheme() || "";
+    return urlScheme.toLowerCase() === "https";
+}
+function createTunnel(isRequestHttps, isProxyHttps, tunnelOptions) {
+    if (isRequestHttps && isProxyHttps) {
+        return tunnel__namespace.httpsOverHttps(tunnelOptions);
+    }
+    else if (isRequestHttps && !isProxyHttps) {
+        return tunnel__namespace.httpsOverHttp(tunnelOptions);
+    }
+    else if (!isRequestHttps && isProxyHttps) {
+        return tunnel__namespace.httpOverHttps(tunnelOptions);
+    }
+    else {
+        return tunnel__namespace.httpOverHttp(tunnelOptions);
+    }
+}
+function isValidPort(port) {
+    // any port in 0-65535 range is valid (RFC 793) even though almost all implementations
+    // will reserve 0 for a specific purpose, and a range of numbers for ephemeral ports
+    return 0 <= port && port <= 65535;
+}
+
+// Copyright (c) Microsoft Corporation.
 const RedactedString = "REDACTED";
 const defaultAllowedHeaderNames = [
     "x-ms-client-request-id",
@@ -55620,7 +58093,7 @@ const defaultAllowedHeaderNames = [
     "Retry-After",
     "Server",
     "Transfer-Encoding",
-    "User-Agent"
+    "User-Agent",
 ];
 const defaultAllowedQueryParameters = ["api-version"];
 class Sanitizer {
@@ -55714,7 +58187,13 @@ class Sanitizer {
 }
 
 // Copyright (c) Microsoft Corporation.
+const custom = util.inspect.custom;
+
+// Copyright (c) Microsoft Corporation.
 const errorSanitizer = new Sanitizer();
+/**
+ * An error resulting from an HTTP request to a service endpoint.
+ */
 class RestError extends Error {
     constructor(message, code, statusCode, request, response) {
         super(message);
@@ -55732,13 +58211,22 @@ class RestError extends Error {
         return `RestError: ${this.message} \n ${errorSanitizer.sanitize(this)}`;
     }
 }
+/**
+ * A constant string to identify errors that may arise when making an HTTP request that indicates an issue with the transport layer (e.g. the hostname of the URL cannot be resolved via DNS.)
+ */
 RestError.REQUEST_SEND_ERROR = "REQUEST_SEND_ERROR";
+/**
+ * A constant string to identify errors that may arise from parsing an incoming HTTP response. Usually indicates a malformed HTTP body, such as an encoded JSON payload that is incomplete.
+ */
 RestError.PARSE_ERROR = "PARSE_ERROR";
 
 // Copyright (c) Microsoft Corporation.
 const logger = logger$1.createClientLogger("core-http");
 
 // Copyright (c) Microsoft Corporation.
+function getCachedAgent(isHttps, agentCache) {
+    return isHttps ? agentCache.httpsAgent : agentCache.httpAgent;
+}
 class ReportTransform extends stream.Transform {
     constructor(progressCallback) {
         super();
@@ -55752,7 +58240,44 @@ class ReportTransform extends stream.Transform {
         callback(undefined);
     }
 }
-class FetchHttpClient {
+function isReadableStream(body) {
+    return body && typeof body.pipe === "function";
+}
+function isStreamComplete(stream, aborter) {
+    return new Promise((resolve) => {
+        stream.once("close", () => {
+            aborter === null || aborter === void 0 ? void 0 : aborter.abort();
+            resolve();
+        });
+        stream.once("end", resolve);
+        stream.once("error", resolve);
+    });
+}
+/**
+ * Transforms a set of headers into the key/value pair defined by {@link HttpHeadersLike}
+ */
+function parseHeaders(headers) {
+    const httpHeaders = new HttpHeaders();
+    headers.forEach((value, key) => {
+        httpHeaders.set(key, value);
+    });
+    return httpHeaders;
+}
+/**
+ * An HTTP client that uses `node-fetch`.
+ */
+class NodeFetchHttpClient {
+    constructor() {
+        // a mapping of proxy settings string `${host}:${port}:${username}:${password}` to agent
+        this.proxyAgentMap = new Map();
+        this.keepAliveAgents = {};
+        this.cookieJar = new tough__namespace.CookieJar(undefined, { looseMode: true });
+    }
+    /**
+     * Provides minimum viable error handling and the logic that executes the abstract methods.
+     * @param httpRequest - Object representing the outgoing HTTP request.
+     * @returns An object representing the incoming HTTP response.
+     */
     async sendRequest(httpRequest) {
         var _a;
         if (!httpRequest && typeof httpRequest !== "object") {
@@ -55778,7 +58303,7 @@ class FetchHttpClient {
         }
         if (httpRequest.formData) {
             const formData = httpRequest.formData;
-            const requestForm = new FormData();
+            const requestForm = new FormData__default["default"]();
             const appendFormValue = (key, value) => {
                 // value function probably returns a stream so we can provide a fresh stream on each retry
                 if (typeof value === "function") {
@@ -55848,7 +58373,7 @@ class FetchHttpClient {
                 readableStreamBody: streaming
                     ? response.body
                     : undefined,
-                bodyAsText: !streaming ? await response.text() : undefined
+                bodyAsText: !streaming ? await response.text() : undefined,
             };
             const onDownloadProgress = httpRequest.onDownloadProgress;
             if (onDownloadProgress) {
@@ -55902,94 +58427,6 @@ class FetchHttpClient {
             }
         }
     }
-}
-function isReadableStream(body) {
-    return body && typeof body.pipe === "function";
-}
-function isStreamComplete(stream, aborter) {
-    return new Promise((resolve) => {
-        stream.once("close", () => {
-            aborter === null || aborter === void 0 ? void 0 : aborter.abort();
-            resolve();
-        });
-        stream.once("end", resolve);
-        stream.once("error", resolve);
-    });
-}
-function parseHeaders(headers) {
-    const httpHeaders = new HttpHeaders();
-    headers.forEach((value, key) => {
-        httpHeaders.set(key, value);
-    });
-    return httpHeaders;
-}
-
-// Copyright (c) Microsoft Corporation.
-function createProxyAgent(requestUrl, proxySettings, headers) {
-    const host = URLBuilder.parse(proxySettings.host).getHost();
-    if (!host) {
-        throw new Error("Expecting a non-empty host in proxy settings.");
-    }
-    if (!isValidPort(proxySettings.port)) {
-        throw new Error("Expecting a valid port number in the range of [0, 65535] in proxy settings.");
-    }
-    const tunnelOptions = {
-        proxy: {
-            host: host,
-            port: proxySettings.port,
-            headers: (headers && headers.rawHeaders()) || {}
-        }
-    };
-    if (proxySettings.username && proxySettings.password) {
-        tunnelOptions.proxy.proxyAuth = `${proxySettings.username}:${proxySettings.password}`;
-    }
-    else if (proxySettings.username) {
-        tunnelOptions.proxy.proxyAuth = `${proxySettings.username}`;
-    }
-    const isRequestHttps = isUrlHttps(requestUrl);
-    const isProxyHttps = isUrlHttps(proxySettings.host);
-    const proxyAgent = {
-        isHttps: isRequestHttps,
-        agent: createTunnel(isRequestHttps, isProxyHttps, tunnelOptions)
-    };
-    return proxyAgent;
-}
-function isUrlHttps(url) {
-    const urlScheme = URLBuilder.parse(url).getScheme() || "";
-    return urlScheme.toLowerCase() === "https";
-}
-function createTunnel(isRequestHttps, isProxyHttps, tunnelOptions) {
-    if (isRequestHttps && isProxyHttps) {
-        return tunnel.httpsOverHttps(tunnelOptions);
-    }
-    else if (isRequestHttps && !isProxyHttps) {
-        return tunnel.httpsOverHttp(tunnelOptions);
-    }
-    else if (!isRequestHttps && isProxyHttps) {
-        return tunnel.httpOverHttps(tunnelOptions);
-    }
-    else {
-        return tunnel.httpOverHttp(tunnelOptions);
-    }
-}
-function isValidPort(port) {
-    // any port in 0-65535 range is valid (RFC 793) even though almost all implementations
-    // will reserve 0 for a specific purpose, and a range of numbers for ephemeral ports
-    return 0 <= port && port <= 65535;
-}
-
-// Copyright (c) Microsoft Corporation.
-function getCachedAgent(isHttps, agentCache) {
-    return isHttps ? agentCache.httpsAgent : agentCache.httpAgent;
-}
-class NodeFetchHttpClient extends FetchHttpClient {
-    constructor() {
-        super(...arguments);
-        // a mapping of proxy settings string `${host}:${port}:${username}:${password}` to agent
-        this.proxyAgentMap = new Map();
-        this.keepAliveAgents = {};
-        this.cookieJar = new tough.CookieJar(undefined, { looseMode: true });
-    }
     getOrCreateAgent(httpRequest) {
         var _a;
         const isHttps = isUrlHttps(httpRequest.url);
@@ -56021,24 +58458,30 @@ class NodeFetchHttpClient extends FetchHttpClient {
                 return agent;
             }
             const agentOptions = {
-                keepAlive: httpRequest.keepAlive
+                keepAlive: httpRequest.keepAlive,
             };
             if (isHttps) {
-                agent = this.keepAliveAgents.httpsAgent = new https.Agent(agentOptions);
+                agent = this.keepAliveAgents.httpsAgent = new https__namespace.Agent(agentOptions);
             }
             else {
-                agent = this.keepAliveAgents.httpAgent = new http.Agent(agentOptions);
+                agent = this.keepAliveAgents.httpAgent = new http__namespace.Agent(agentOptions);
             }
             return agent;
         }
         else {
-            return isHttps ? https.globalAgent : http.globalAgent;
+            return isHttps ? https__namespace.globalAgent : http__namespace.globalAgent;
         }
     }
+    /**
+     * Uses `node-fetch` to perform the request.
+     */
     // eslint-disable-next-line @azure/azure-sdk/ts-apisurface-standardized-verbs
     async fetch(input, init) {
-        return node_fetch(input, init);
+        return node_fetch__default["default"](input, init);
     }
+    /**
+     * Prepares a request based on the provided web resource.
+     */
     async prepareRequest(httpRequest) {
         const requestInit = {};
         if (this.cookieJar && !httpRequest.headers.get("Cookie")) {
@@ -56059,6 +58502,9 @@ class NodeFetchHttpClient extends FetchHttpClient {
         requestInit.compress = httpRequest.decompressResponse;
         return requestInit;
     }
+    /**
+     * Process an HTTP response. Handles persisting a cookie for subsequent requests if the response has a "Set-Cookie" header.
+     */
     async processRequest(operationResponse) {
         if (this.cookieJar) {
             const setCookieHeader = operationResponse.headers.get("Set-Cookie");
@@ -56079,6 +58525,11 @@ class NodeFetchHttpClient extends FetchHttpClient {
 }
 
 // Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+/**
+ * The different levels of logs that can be used with the HttpPipelineLogger.
+ */
+exports.HttpPipelineLogLevel = void 0;
 (function (HttpPipelineLogLevel) {
     /**
      * A log level that indicates that no logs will be logged.
@@ -56098,6 +58549,7 @@ class NodeFetchHttpClient extends FetchHttpClient {
     HttpPipelineLogLevel[HttpPipelineLogLevel["INFO"] = 3] = "INFO";
 })(exports.HttpPipelineLogLevel || (exports.HttpPipelineLogLevel = {}));
 
+// Copyright (c) Microsoft Corporation.
 /**
  * Converts an OperationOptions to a RequestOptionsBase
  *
@@ -56119,8 +58571,22 @@ function operationOptionsToRequestOptionsBase(opts) {
 }
 
 // Copyright (c) Microsoft Corporation.
+/**
+ * The base class from which all request policies derive.
+ */
 class BaseRequestPolicy {
-    constructor(_nextPolicy, _options) {
+    /**
+     * The main method to implement that manipulates a request/response.
+     */
+    constructor(
+    /**
+     * The next policy in the pipeline. Each policy is responsible for executing the next one if the request is to continue through the pipeline.
+     */
+    _nextPolicy, 
+    /**
+     * The options that can be passed to a given request policy.
+     */
+    _options) {
         this._nextPolicy = _nextPolicy;
         this._options = _options;
     }
@@ -56173,113 +58639,6 @@ class RequestPolicyOptions {
 }
 
 // Copyright (c) Microsoft Corporation.
-function logPolicy(loggingOptions = {}) {
-    return {
-        create: (nextPolicy, options) => {
-            return new LogPolicy(nextPolicy, options, loggingOptions);
-        }
-    };
-}
-class LogPolicy extends BaseRequestPolicy {
-    constructor(nextPolicy, options, { logger: logger$1 = logger.info, allowedHeaderNames = [], allowedQueryParameters = [] } = {}) {
-        super(nextPolicy, options);
-        this.logger = logger$1;
-        this.sanitizer = new Sanitizer({ allowedHeaderNames, allowedQueryParameters });
-    }
-    /**
-     * Header names whose values will be logged when logging is enabled. Defaults to
-     * Date, traceparent, x-ms-client-request-id, and x-ms-request id.  Any headers
-     * specified in this field will be added to that list.  Any other values will
-     * be written to logs as "REDACTED".
-     * @deprecated Pass these into the constructor instead.
-     */
-    get allowedHeaderNames() {
-        return this.sanitizer.allowedHeaderNames;
-    }
-    /**
-     * Header names whose values will be logged when logging is enabled. Defaults to
-     * Date, traceparent, x-ms-client-request-id, and x-ms-request id.  Any headers
-     * specified in this field will be added to that list.  Any other values will
-     * be written to logs as "REDACTED".
-     * @deprecated Pass these into the constructor instead.
-     */
-    set allowedHeaderNames(allowedHeaderNames) {
-        this.sanitizer.allowedHeaderNames = allowedHeaderNames;
-    }
-    /**
-     * Query string names whose values will be logged when logging is enabled. By default no
-     * query string values are logged.
-     * @deprecated Pass these into the constructor instead.
-     */
-    get allowedQueryParameters() {
-        return this.sanitizer.allowedQueryParameters;
-    }
-    /**
-     * Query string names whose values will be logged when logging is enabled. By default no
-     * query string values are logged.
-     * @deprecated Pass these into the constructor instead.
-     */
-    set allowedQueryParameters(allowedQueryParameters) {
-        this.sanitizer.allowedQueryParameters = allowedQueryParameters;
-    }
-    sendRequest(request) {
-        if (!this.logger.enabled)
-            return this._nextPolicy.sendRequest(request);
-        this.logRequest(request);
-        return this._nextPolicy.sendRequest(request).then((response) => this.logResponse(response));
-    }
-    logRequest(request) {
-        this.logger(`Request: ${this.sanitizer.sanitize(request)}`);
-    }
-    logResponse(response) {
-        this.logger(`Response status code: ${response.status}`);
-        this.logger(`Headers: ${this.sanitizer.sanitize(response.headers)}`);
-        return response;
-    }
-}
-
-// Copyright (c) Microsoft Corporation.
-// Licensed under the MIT license.
-/**
- * Get the path to this parameter's value as a dotted string (a.b.c).
- * @param parameter - The parameter to get the path string for.
- * @returns The path to this parameter's value as a dotted string.
- */
-function getPathStringFromParameter(parameter) {
-    return getPathStringFromParameterPath(parameter.parameterPath, parameter.mapper);
-}
-function getPathStringFromParameterPath(parameterPath, mapper) {
-    let result;
-    if (typeof parameterPath === "string") {
-        result = parameterPath;
-    }
-    else if (Array.isArray(parameterPath)) {
-        result = parameterPath.join(".");
-    }
-    else {
-        result = mapper.serializedName;
-    }
-    return result;
-}
-
-// Copyright (c) Microsoft Corporation.
-/**
- * Gets the list of status codes for streaming responses.
- * @internal
- */
-function getStreamResponseStatusCodes(operationSpec) {
-    const result = new Set();
-    for (const statusCode in operationSpec.responses) {
-        const operationResponse = operationSpec.responses[statusCode];
-        if (operationResponse.bodyMapper &&
-            operationResponse.bodyMapper.type.name === MapperType.Stream) {
-            result.add(Number(statusCode));
-        }
-    }
-    return result;
-}
-
-// Copyright (c) Microsoft Corporation.
 // Note: The reason we re-define all of the xml2js default settings (version 2.0) here is because the default settings object exposed
 // by the xm2js library is mutable. See https://github.com/Leonidas-from-XIV/node-xml2js/issues/536
 // By creating a new copy of the settings each time we instantiate the parser,
@@ -56311,18 +58670,18 @@ const xml2jsDefaultOptionsV2 = {
     xmldec: {
         version: "1.0",
         encoding: "UTF-8",
-        standalone: true
+        standalone: true,
     },
     doctype: undefined,
     renderOpts: {
         pretty: true,
         indent: "  ",
-        newline: "\n"
+        newline: "\n",
     },
     headless: false,
     chunkSize: 10000,
     emptyTag: "",
-    cdata: false
+    cdata: false,
 };
 // The xml2js settings for general XML parsing operations.
 const xml2jsParserSettings = Object.assign({}, xml2jsDefaultOptionsV2);
@@ -56331,7 +58690,7 @@ xml2jsParserSettings.explicitArray = false;
 const xml2jsBuilderSettings = Object.assign({}, xml2jsDefaultOptionsV2);
 xml2jsBuilderSettings.explicitArray = false;
 xml2jsBuilderSettings.renderOpts = {
-    pretty: false
+    pretty: false,
 };
 /**
  * Converts given JSON object to XML string
@@ -56342,7 +58701,7 @@ function stringifyXML(obj, opts = {}) {
     var _a;
     xml2jsBuilderSettings.rootName = opts.rootName;
     xml2jsBuilderSettings.charkey = (_a = opts.xmlCharKey) !== null && _a !== void 0 ? _a : XML_CHARKEY;
-    const builder = new xml2js.Builder(xml2jsBuilderSettings);
+    const builder = new xml2js__namespace.Builder(xml2jsBuilderSettings);
     return builder.buildObject(obj);
 }
 /**
@@ -56354,7 +58713,7 @@ function parseXML(str, opts = {}) {
     var _a;
     xml2jsParserSettings.explicitRoot = !!opts.includeRoot;
     xml2jsParserSettings.charkey = (_a = opts.xmlCharKey) !== null && _a !== void 0 ? _a : XML_CHARKEY;
-    const xmlParser = new xml2js.Parser(xml2jsParserSettings);
+    const xmlParser = new xml2js__namespace.Parser(xml2jsParserSettings);
     return new Promise((resolve, reject) => {
         if (!str) {
             reject(new Error("Document is empty"));
@@ -56381,7 +58740,7 @@ function deserializationPolicy(deserializationContentTypes, parsingOptions) {
     return {
         create: (nextPolicy, options) => {
             return new DeserializationPolicy(nextPolicy, options, deserializationContentTypes, parsingOptions);
-        }
+        },
     };
 }
 const defaultJsonContentTypes = ["application/json", "text/json"];
@@ -56389,8 +58748,8 @@ const defaultXmlContentTypes = ["application/xml", "application/atom+xml"];
 const DefaultDeserializationOptions = {
     expectedContentTypes: {
         json: defaultJsonContentTypes,
-        xml: defaultXmlContentTypes
-    }
+        xml: defaultXmlContentTypes,
+    },
 };
 /**
  * A RequestPolicy that will deserialize HTTP response bodies and headers as they pass through the
@@ -56408,7 +58767,7 @@ class DeserializationPolicy extends BaseRequestPolicy {
     }
     async sendRequest(request) {
         return this._nextPolicy.sendRequest(request).then((response) => deserializeResponseBody(this.jsonContentTypes, this.xmlContentTypes, response, {
-            xmlCharKey: this.xmlCharKey
+            xmlCharKey: this.xmlCharKey,
         }));
     }
 }
@@ -56441,12 +58800,20 @@ function shouldDeserializeResponse(parsedResponse) {
     }
     return result;
 }
+/**
+ * Given a particular set of content types to parse as either JSON or XML, consumes the HTTP response to produce the result object defined by the request's {@link OperationSpec}.
+ * @param jsonContentTypes - Response content types to parse the body as JSON.
+ * @param xmlContentTypes  - Response content types to parse the body as XML.
+ * @param response - HTTP Response from the pipeline.
+ * @param options  - Options to the serializer, mostly for configuring the XML parser if needed.
+ * @returns A parsed {@link HttpOperationResponse} object that can be returned by the {@link ServiceClient}.
+ */
 function deserializeResponseBody(jsonContentTypes, xmlContentTypes, response, options = {}) {
     var _a, _b, _c;
     const updatedOptions = {
         rootName: (_a = options.rootName) !== null && _a !== void 0 ? _a : "",
         includeRoot: (_b = options.includeRoot) !== null && _b !== void 0 ? _b : false,
-        xmlCharKey: (_c = options.xmlCharKey) !== null && _c !== void 0 ? _c : XML_CHARKEY
+        xmlCharKey: (_c = options.xmlCharKey) !== null && _c !== void 0 ? _c : XML_CHARKEY,
     };
     return parse(jsonContentTypes, xmlContentTypes, response, updatedOptions).then((parsedResponse) => {
         if (!shouldDeserializeResponse(parsedResponse)) {
@@ -56598,6 +58965,113 @@ function parse(jsonContentTypes, xmlContentTypes, operationResponse, opts) {
 }
 
 // Copyright (c) Microsoft Corporation.
+/**
+ * By default, HTTP connections are maintained for future requests.
+ */
+const DefaultKeepAliveOptions = {
+    enable: true,
+};
+/**
+ * Creates a policy that controls whether HTTP connections are maintained on future requests.
+ * @param keepAliveOptions - Keep alive options. By default, HTTP connections are maintained for future requests.
+ * @returns An instance of the {@link KeepAlivePolicy}
+ */
+function keepAlivePolicy(keepAliveOptions) {
+    return {
+        create: (nextPolicy, options) => {
+            return new KeepAlivePolicy(nextPolicy, options, keepAliveOptions || DefaultKeepAliveOptions);
+        },
+    };
+}
+/**
+ * KeepAlivePolicy is a policy used to control keep alive settings for every request.
+ */
+class KeepAlivePolicy extends BaseRequestPolicy {
+    /**
+     * Creates an instance of KeepAlivePolicy.
+     *
+     * @param nextPolicy -
+     * @param options -
+     * @param keepAliveOptions -
+     */
+    constructor(nextPolicy, options, keepAliveOptions) {
+        super(nextPolicy, options);
+        this.keepAliveOptions = keepAliveOptions;
+    }
+    /**
+     * Sends out request.
+     *
+     * @param request -
+     * @returns
+     */
+    async sendRequest(request) {
+        request.keepAlive = this.keepAliveOptions.enable;
+        return this._nextPolicy.sendRequest(request);
+    }
+}
+
+// Copyright (c) Microsoft Corporation.
+/**
+ * Methods that are allowed to follow redirects 301 and 302
+ */
+const allowedRedirect = ["GET", "HEAD"];
+const DefaultRedirectOptions = {
+    handleRedirects: true,
+    maxRetries: 20,
+};
+/**
+ * Creates a redirect policy, which sends a repeats the request to a new destination if a response arrives with a "location" header, and a status code between 300 and 307.
+ * @param maximumRetries - Maximum number of redirects to follow.
+ * @returns An instance of the {@link RedirectPolicy}
+ */
+function redirectPolicy(maximumRetries = 20) {
+    return {
+        create: (nextPolicy, options) => {
+            return new RedirectPolicy(nextPolicy, options, maximumRetries);
+        },
+    };
+}
+/**
+ * Resends the request to a new destination if a response arrives with a "location" header, and a status code between 300 and 307.
+ */
+class RedirectPolicy extends BaseRequestPolicy {
+    constructor(nextPolicy, options, maxRetries = 20) {
+        super(nextPolicy, options);
+        this.maxRetries = maxRetries;
+    }
+    sendRequest(request) {
+        return this._nextPolicy
+            .sendRequest(request)
+            .then((response) => handleRedirect(this, response, 0));
+    }
+}
+function handleRedirect(policy, response, currentRetries) {
+    const { request, status } = response;
+    const locationHeader = response.headers.get("location");
+    if (locationHeader &&
+        (status === 300 ||
+            (status === 301 && allowedRedirect.includes(request.method)) ||
+            (status === 302 && allowedRedirect.includes(request.method)) ||
+            (status === 303 && request.method === "POST") ||
+            status === 307) &&
+        (!policy.maxRetries || currentRetries < policy.maxRetries)) {
+        const builder = URLBuilder.parse(request.url);
+        builder.setPath(locationHeader);
+        request.url = builder.toString();
+        // POST request with Status code 303 should be converted into a
+        // redirected GET request if the redirect url is present in the location header
+        if (status === 303) {
+            request.method = "GET";
+            delete request.body;
+        }
+        return policy._nextPolicy
+            .sendRequest(request)
+            .then((res) => handleRedirect(policy, res, currentRetries + 1));
+    }
+    return Promise.resolve(response);
+}
+
+// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 const DEFAULT_CLIENT_RETRY_COUNT = 3;
 // intervals are in ms
@@ -56660,7 +59134,7 @@ function isDefined(thing) {
 }
 
 // Copyright (c) Microsoft Corporation.
-const StandardAbortMessage = "The operation was aborted.";
+const StandardAbortMessage$1 = "The operation was aborted.";
 /**
  * A wrapper for setTimeout that resolves a promise after delayInMs milliseconds.
  * @param delayInMs - The number of milliseconds to be delayed.
@@ -56675,7 +59149,7 @@ function delay(delayInMs, value, options) {
         let timer = undefined;
         let onAborted = undefined;
         const rejectOnAbort = () => {
-            return reject(new abortController.AbortError((options === null || options === void 0 ? void 0 : options.abortErrorMsg) ? options === null || options === void 0 ? void 0 : options.abortErrorMsg : StandardAbortMessage));
+            return reject(new abortController.AbortError((options === null || options === void 0 ? void 0 : options.abortErrorMsg) ? options === null || options === void 0 ? void 0 : options.abortErrorMsg : StandardAbortMessage$1));
         };
         const removeListeners = () => {
             if ((options === null || options === void 0 ? void 0 : options.abortSignal) && onAborted) {
@@ -56703,20 +59177,34 @@ function delay(delayInMs, value, options) {
 }
 
 // Copyright (c) Microsoft Corporation.
+/**
+ * Policy that retries the request as many times as configured for as long as the max retry time interval specified, each retry waiting longer to begin than the last time.
+ * @param retryCount - Maximum number of retries.
+ * @param retryInterval - Base time between retries.
+ * @param maxRetryInterval - Maximum time to wait between retries.
+ */
 function exponentialRetryPolicy(retryCount, retryInterval, maxRetryInterval) {
     return {
         create: (nextPolicy, options) => {
             return new ExponentialRetryPolicy(nextPolicy, options, retryCount, retryInterval, maxRetryInterval);
-        }
+        },
     };
 }
+/**
+ * Describes the Retry Mode type. Currently supporting only Exponential.
+ */
+exports.RetryMode = void 0;
 (function (RetryMode) {
+    /**
+     * Currently supported retry mode.
+     * Each time a retry happens, it will take exponentially more time than the last time.
+     */
     RetryMode[RetryMode["Exponential"] = 0] = "Exponential";
 })(exports.RetryMode || (exports.RetryMode = {}));
 const DefaultRetryOptions = {
     maxRetries: DEFAULT_CLIENT_RETRY_COUNT,
     retryDelayInMs: DEFAULT_CLIENT_RETRY_INTERVAL,
-    maxRetryDelayInMs: DEFAULT_CLIENT_MAX_RETRY_INTERVAL
+    maxRetryDelayInMs: DEFAULT_CLIENT_MAX_RETRY_INTERVAL,
 };
 /**
  * Instantiates a new "ExponentialRetryPolicyFilter" instance.
@@ -56741,11 +59229,11 @@ class ExponentialRetryPolicy extends BaseRequestPolicy {
     sendRequest(request) {
         return this._nextPolicy
             .sendRequest(request.clone())
-            .then((response) => retry(this, request, response))
-            .catch((error) => retry(this, request, error.response, undefined, error));
+            .then((response) => retry$1(this, request, response))
+            .catch((error) => retry$1(this, request, error.response, undefined, error));
     }
 }
-async function retry(policy, request, response, retryData, requestError) {
+async function retry$1(policy, request, response, retryData, requestError) {
     function shouldPolicyRetry(responseParam) {
         const statusCode = responseParam === null || responseParam === void 0 ? void 0 : responseParam.status;
         if (statusCode === 503 && (response === null || response === void 0 ? void 0 : response.headers.get(Constants.HeaderConstants.RETRY_AFTER))) {
@@ -56762,7 +59250,7 @@ async function retry(policy, request, response, retryData, requestError) {
     retryData = updateRetryData({
         retryInterval: policy.retryInterval,
         minRetryInterval: 0,
-        maxRetryInterval: policy.maxRetryInterval
+        maxRetryInterval: policy.maxRetryInterval,
     }, retryData, requestError);
     const isAborted = request.abortSignal && request.abortSignal.aborted;
     if (!isAborted && shouldRetry(policy.retryCount, shouldPolicyRetry, retryData, response)) {
@@ -56770,10 +59258,10 @@ async function retry(policy, request, response, retryData, requestError) {
         try {
             await delay(retryData.retryInterval);
             const res = await policy._nextPolicy.sendRequest(request.clone());
-            return retry(policy, request, res, retryData);
+            return retry$1(policy, request, res, retryData);
         }
         catch (err) {
-            return retry(policy, request, response, retryData, err);
+            return retry$1(policy, request, response, retryData, err);
         }
     }
     else if (isAborted || requestError || !response) {
@@ -56788,11 +59276,467 @@ async function retry(policy, request, response, retryData, requestError) {
 }
 
 // Copyright (c) Microsoft Corporation.
+/**
+ * Creates a policy that logs information about the outgoing request and the incoming responses.
+ * @param loggingOptions - Logging options.
+ * @returns An instance of the {@link LogPolicy}
+ */
+function logPolicy(loggingOptions = {}) {
+    return {
+        create: (nextPolicy, options) => {
+            return new LogPolicy(nextPolicy, options, loggingOptions);
+        },
+    };
+}
+/**
+ * A policy that logs information about the outgoing request and the incoming responses.
+ */
+class LogPolicy extends BaseRequestPolicy {
+    constructor(nextPolicy, options, { logger: logger$1 = logger.info, allowedHeaderNames = [], allowedQueryParameters = [], } = {}) {
+        super(nextPolicy, options);
+        this.logger = logger$1;
+        this.sanitizer = new Sanitizer({ allowedHeaderNames, allowedQueryParameters });
+    }
+    /**
+     * Header names whose values will be logged when logging is enabled. Defaults to
+     * Date, traceparent, x-ms-client-request-id, and x-ms-request id.  Any headers
+     * specified in this field will be added to that list.  Any other values will
+     * be written to logs as "REDACTED".
+     * @deprecated Pass these into the constructor instead.
+     */
+    get allowedHeaderNames() {
+        return this.sanitizer.allowedHeaderNames;
+    }
+    /**
+     * Header names whose values will be logged when logging is enabled. Defaults to
+     * Date, traceparent, x-ms-client-request-id, and x-ms-request id.  Any headers
+     * specified in this field will be added to that list.  Any other values will
+     * be written to logs as "REDACTED".
+     * @deprecated Pass these into the constructor instead.
+     */
+    set allowedHeaderNames(allowedHeaderNames) {
+        this.sanitizer.allowedHeaderNames = allowedHeaderNames;
+    }
+    /**
+     * Query string names whose values will be logged when logging is enabled. By default no
+     * query string values are logged.
+     * @deprecated Pass these into the constructor instead.
+     */
+    get allowedQueryParameters() {
+        return this.sanitizer.allowedQueryParameters;
+    }
+    /**
+     * Query string names whose values will be logged when logging is enabled. By default no
+     * query string values are logged.
+     * @deprecated Pass these into the constructor instead.
+     */
+    set allowedQueryParameters(allowedQueryParameters) {
+        this.sanitizer.allowedQueryParameters = allowedQueryParameters;
+    }
+    sendRequest(request) {
+        if (!this.logger.enabled)
+            return this._nextPolicy.sendRequest(request);
+        this.logRequest(request);
+        return this._nextPolicy.sendRequest(request).then((response) => this.logResponse(response));
+    }
+    logRequest(request) {
+        this.logger(`Request: ${this.sanitizer.sanitize(request)}`);
+    }
+    logResponse(response) {
+        this.logger(`Response status code: ${response.status}`);
+        this.logger(`Headers: ${this.sanitizer.sanitize(response.headers)}`);
+        return response;
+    }
+}
+
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+/**
+ * Get the path to this parameter's value as a dotted string (a.b.c).
+ * @param parameter - The parameter to get the path string for.
+ * @returns The path to this parameter's value as a dotted string.
+ */
+function getPathStringFromParameter(parameter) {
+    return getPathStringFromParameterPath(parameter.parameterPath, parameter.mapper);
+}
+function getPathStringFromParameterPath(parameterPath, mapper) {
+    let result;
+    if (typeof parameterPath === "string") {
+        result = parameterPath;
+    }
+    else if (Array.isArray(parameterPath)) {
+        result = parameterPath.join(".");
+    }
+    else {
+        result = mapper.serializedName;
+    }
+    return result;
+}
+
+// Copyright (c) Microsoft Corporation.
+/**
+ * Gets the list of status codes for streaming responses.
+ * @internal
+ */
+function getStreamResponseStatusCodes(operationSpec) {
+    const result = new Set();
+    for (const statusCode in operationSpec.responses) {
+        const operationResponse = operationSpec.responses[statusCode];
+        if (operationResponse.bodyMapper &&
+            operationResponse.bodyMapper.type.name === MapperType.Stream) {
+            result.add(Number(statusCode));
+        }
+    }
+    return result;
+}
+
+// Copyright (c) Microsoft Corporation.
+function getDefaultUserAgentKey() {
+    return Constants.HeaderConstants.USER_AGENT;
+}
+function getPlatformSpecificData() {
+    const runtimeInfo = {
+        key: "Node",
+        value: process.version,
+    };
+    const osInfo = {
+        key: "OS",
+        value: `(${os__namespace.arch()}-${os__namespace.type()}-${os__namespace.release()})`,
+    };
+    return [runtimeInfo, osInfo];
+}
+
+// Copyright (c) Microsoft Corporation.
+function getRuntimeInfo() {
+    const msRestRuntime = {
+        key: "core-http",
+        value: Constants.coreHttpVersion,
+    };
+    return [msRestRuntime];
+}
+function getUserAgentString(telemetryInfo, keySeparator = " ", valueSeparator = "/") {
+    return telemetryInfo
+        .map((info) => {
+        const value = info.value ? `${valueSeparator}${info.value}` : "";
+        return `${info.key}${value}`;
+    })
+        .join(keySeparator);
+}
+const getDefaultUserAgentHeaderName = getDefaultUserAgentKey;
+/**
+ * The default approach to generate user agents.
+ * Uses static information from this package, plus system information available from the runtime.
+ */
+function getDefaultUserAgentValue() {
+    const runtimeInfo = getRuntimeInfo();
+    const platformSpecificData = getPlatformSpecificData();
+    const userAgent = getUserAgentString(runtimeInfo.concat(platformSpecificData));
+    return userAgent;
+}
+/**
+ * Returns a policy that adds the user agent header to outgoing requests based on the given {@link TelemetryInfo}.
+ * @param userAgentData - Telemetry information.
+ * @returns A new {@link UserAgentPolicy}.
+ */
+function userAgentPolicy(userAgentData) {
+    const key = !userAgentData || userAgentData.key === undefined || userAgentData.key === null
+        ? getDefaultUserAgentKey()
+        : userAgentData.key;
+    const value = !userAgentData || userAgentData.value === undefined || userAgentData.value === null
+        ? getDefaultUserAgentValue()
+        : userAgentData.value;
+    return {
+        create: (nextPolicy, options) => {
+            return new UserAgentPolicy(nextPolicy, options, key, value);
+        },
+    };
+}
+/**
+ * A policy that adds the user agent header to outgoing requests based on the given {@link TelemetryInfo}.
+ */
+class UserAgentPolicy extends BaseRequestPolicy {
+    constructor(_nextPolicy, _options, headerKey, headerValue) {
+        super(_nextPolicy, _options);
+        this._nextPolicy = _nextPolicy;
+        this._options = _options;
+        this.headerKey = headerKey;
+        this.headerValue = headerValue;
+    }
+    sendRequest(request) {
+        this.addUserAgentHeader(request);
+        return this._nextPolicy.sendRequest(request);
+    }
+    /**
+     * Adds the user agent header to the outgoing request.
+     */
+    addUserAgentHeader(request) {
+        if (!request.headers) {
+            request.headers = new HttpHeaders();
+        }
+        if (!request.headers.get(this.headerKey) && this.headerValue) {
+            request.headers.set(this.headerKey, this.headerValue);
+        }
+    }
+}
+
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+/**
+ * The format that will be used to join an array of values together for a query parameter value.
+ */
+exports.QueryCollectionFormat = void 0;
+(function (QueryCollectionFormat) {
+    /**
+     * CSV: Each pair of segments joined by a single comma.
+     */
+    QueryCollectionFormat["Csv"] = ",";
+    /**
+     * SSV: Each pair of segments joined by a single space character.
+     */
+    QueryCollectionFormat["Ssv"] = " ";
+    /**
+     * TSV: Each pair of segments joined by a single tab character.
+     */
+    QueryCollectionFormat["Tsv"] = "\t";
+    /**
+     * Pipes: Each pair of segments joined by a single pipe character.
+     */
+    QueryCollectionFormat["Pipes"] = "|";
+    /**
+     * Denotes this is an array of values that should be passed to the server in multiple key/value pairs, e.g. `?queryParam=value1&queryParam=value2`
+     */
+    QueryCollectionFormat["Multi"] = "Multi";
+})(exports.QueryCollectionFormat || (exports.QueryCollectionFormat = {}));
+
+// Copyright (c) Microsoft Corporation.
+// Default options for the cycler if none are provided
+const DEFAULT_CYCLER_OPTIONS = {
+    forcedRefreshWindowInMs: 1000,
+    retryIntervalInMs: 3000,
+    refreshWindowInMs: 1000 * 60 * 2, // Start refreshing 2m before expiry
+};
+/**
+ * Converts an an unreliable access token getter (which may resolve with null)
+ * into an AccessTokenGetter by retrying the unreliable getter in a regular
+ * interval.
+ *
+ * @param getAccessToken - a function that produces a promise of an access
+ * token that may fail by returning null
+ * @param retryIntervalInMs - the time (in milliseconds) to wait between retry
+ * attempts
+ * @param timeoutInMs - the timestamp after which the refresh attempt will fail,
+ * throwing an exception
+ * @returns - a promise that, if it resolves, will resolve with an access token
+ */
+async function beginRefresh(getAccessToken, retryIntervalInMs, timeoutInMs) {
+    // This wrapper handles exceptions gracefully as long as we haven't exceeded
+    // the timeout.
+    async function tryGetAccessToken() {
+        if (Date.now() < timeoutInMs) {
+            try {
+                return await getAccessToken();
+            }
+            catch (_a) {
+                return null;
+            }
+        }
+        else {
+            const finalToken = await getAccessToken();
+            // Timeout is up, so throw if it's still null
+            if (finalToken === null) {
+                throw new Error("Failed to refresh access token.");
+            }
+            return finalToken;
+        }
+    }
+    let token = await tryGetAccessToken();
+    while (token === null) {
+        await delay(retryIntervalInMs);
+        token = await tryGetAccessToken();
+    }
+    return token;
+}
+/**
+ * Creates a token cycler from a credential, scopes, and optional settings.
+ *
+ * A token cycler represents a way to reliably retrieve a valid access token
+ * from a TokenCredential. It will handle initializing the token, refreshing it
+ * when it nears expiration, and synchronizes refresh attempts to avoid
+ * concurrency hazards.
+ *
+ * @param credential - the underlying TokenCredential that provides the access
+ * token
+ * @param scopes - the scopes to request authorization for
+ * @param tokenCyclerOptions - optionally override default settings for the cycler
+ *
+ * @returns - a function that reliably produces a valid access token
+ */
+function createTokenCycler(credential, scopes, tokenCyclerOptions) {
+    let refreshWorker = null;
+    let token = null;
+    const options = Object.assign(Object.assign({}, DEFAULT_CYCLER_OPTIONS), tokenCyclerOptions);
+    /**
+     * This little holder defines several predicates that we use to construct
+     * the rules of refreshing the token.
+     */
+    const cycler = {
+        /**
+         * Produces true if a refresh job is currently in progress.
+         */
+        get isRefreshing() {
+            return refreshWorker !== null;
+        },
+        /**
+         * Produces true if the cycler SHOULD refresh (we are within the refresh
+         * window and not already refreshing)
+         */
+        get shouldRefresh() {
+            var _a;
+            return (!cycler.isRefreshing &&
+                ((_a = token === null || token === void 0 ? void 0 : token.expiresOnTimestamp) !== null && _a !== void 0 ? _a : 0) - options.refreshWindowInMs < Date.now());
+        },
+        /**
+         * Produces true if the cycler MUST refresh (null or nearly-expired
+         * token).
+         */
+        get mustRefresh() {
+            return (token === null || token.expiresOnTimestamp - options.forcedRefreshWindowInMs < Date.now());
+        },
+    };
+    /**
+     * Starts a refresh job or returns the existing job if one is already
+     * running.
+     */
+    function refresh(getTokenOptions) {
+        var _a;
+        if (!cycler.isRefreshing) {
+            // We bind `scopes` here to avoid passing it around a lot
+            const tryGetAccessToken = () => credential.getToken(scopes, getTokenOptions);
+            // Take advantage of promise chaining to insert an assignment to `token`
+            // before the refresh can be considered done.
+            refreshWorker = beginRefresh(tryGetAccessToken, options.retryIntervalInMs, 
+            // If we don't have a token, then we should timeout immediately
+            (_a = token === null || token === void 0 ? void 0 : token.expiresOnTimestamp) !== null && _a !== void 0 ? _a : Date.now())
+                .then((_token) => {
+                refreshWorker = null;
+                token = _token;
+                return token;
+            })
+                .catch((reason) => {
+                // We also should reset the refresher if we enter a failed state.  All
+                // existing awaiters will throw, but subsequent requests will start a
+                // new retry chain.
+                refreshWorker = null;
+                token = null;
+                throw reason;
+            });
+        }
+        return refreshWorker;
+    }
+    return async (tokenOptions) => {
+        //
+        // Simple rules:
+        // - If we MUST refresh, then return the refresh task, blocking
+        //   the pipeline until a token is available.
+        // - If we SHOULD refresh, then run refresh but don't return it
+        //   (we can still use the cached token).
+        // - Return the token, since it's fine if we didn't return in
+        //   step 1.
+        //
+        if (cycler.mustRefresh)
+            return refresh(tokenOptions);
+        if (cycler.shouldRefresh) {
+            refresh(tokenOptions);
+        }
+        return token;
+    };
+}
+// #endregion
+/**
+ * Creates a new factory for a RequestPolicy that applies a bearer token to
+ * the requests' `Authorization` headers.
+ *
+ * @param credential - The TokenCredential implementation that can supply the bearer token.
+ * @param scopes - The scopes for which the bearer token applies.
+ */
+function bearerTokenAuthenticationPolicy(credential, scopes) {
+    // This simple function encapsulates the entire process of reliably retrieving the token
+    const getToken = createTokenCycler(credential, scopes /* , options */);
+    class BearerTokenAuthenticationPolicy extends BaseRequestPolicy {
+        constructor(nextPolicy, options) {
+            super(nextPolicy, options);
+        }
+        async sendRequest(webResource) {
+            if (!webResource.url.toLowerCase().startsWith("https://")) {
+                throw new Error("Bearer token authentication is not permitted for non-TLS protected (non-https) URLs.");
+            }
+            const { token } = await getToken({
+                abortSignal: webResource.abortSignal,
+                tracingOptions: {
+                    tracingContext: webResource.tracingContext,
+                },
+            });
+            webResource.headers.set(Constants.HeaderConstants.AUTHORIZATION, `Bearer ${token}`);
+            return this._nextPolicy.sendRequest(webResource);
+        }
+    }
+    return {
+        create: (nextPolicy, options) => {
+            return new BearerTokenAuthenticationPolicy(nextPolicy, options);
+        },
+    };
+}
+
+// Copyright (c) Microsoft Corporation.
+/**
+ * Returns a request policy factory that can be used to create an instance of
+ * {@link DisableResponseDecompressionPolicy}.
+ */
+function disableResponseDecompressionPolicy() {
+    return {
+        create: (nextPolicy, options) => {
+            return new DisableResponseDecompressionPolicy(nextPolicy, options);
+        },
+    };
+}
+/**
+ * A policy to disable response decompression according to Accept-Encoding header
+ * https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Accept-Encoding
+ */
+class DisableResponseDecompressionPolicy extends BaseRequestPolicy {
+    /**
+     * Creates an instance of DisableResponseDecompressionPolicy.
+     *
+     * @param nextPolicy -
+     * @param options -
+     */
+    // The parent constructor is protected.
+    /* eslint-disable-next-line @typescript-eslint/no-useless-constructor */
+    constructor(nextPolicy, options) {
+        super(nextPolicy, options);
+    }
+    /**
+     * Sends out request.
+     *
+     * @param request -
+     * @returns
+     */
+    async sendRequest(request) {
+        request.decompressResponse = false;
+        return this._nextPolicy.sendRequest(request);
+    }
+}
+
+// Copyright (c) Microsoft Corporation.
+/**
+ * Creates a policy that assigns a unique request id to outgoing requests.
+ * @param requestIdHeaderName - The name of the header to use when assigning the unique id to the request.
+ */
 function generateClientRequestIdPolicy(requestIdHeaderName = "x-ms-client-request-id") {
     return {
         create: (nextPolicy, options) => {
             return new GenerateClientRequestIdPolicy(nextPolicy, options, requestIdHeaderName);
-        }
+        },
     };
 }
 class GenerateClientRequestIdPolicy extends BaseRequestPolicy {
@@ -56809,130 +59753,190 @@ class GenerateClientRequestIdPolicy extends BaseRequestPolicy {
 }
 
 // Copyright (c) Microsoft Corporation.
-function getDefaultUserAgentKey() {
-    return Constants.HeaderConstants.USER_AGENT;
-}
-function getPlatformSpecificData() {
-    const runtimeInfo = {
-        key: "Node",
-        value: process.version
-    };
-    const osInfo = {
-        key: "OS",
-        value: `(${os.arch()}-${os.type()}-${os.release()})`
-    };
-    return [runtimeInfo, osInfo];
+let cachedHttpClient;
+function getCachedDefaultHttpClient() {
+    if (!cachedHttpClient) {
+        cachedHttpClient = new NodeFetchHttpClient();
+    }
+    return cachedHttpClient;
 }
 
 // Copyright (c) Microsoft Corporation.
-function getRuntimeInfo() {
-    const msRestRuntime = {
-        key: "core-http",
-        value: Constants.coreHttpVersion
-    };
-    return [msRestRuntime];
-}
-function getUserAgentString(telemetryInfo, keySeparator = " ", valueSeparator = "/") {
-    return telemetryInfo
-        .map((info) => {
-        const value = info.value ? `${valueSeparator}${info.value}` : "";
-        return `${info.key}${value}`;
-    })
-        .join(keySeparator);
-}
-const getDefaultUserAgentHeaderName = getDefaultUserAgentKey;
-function getDefaultUserAgentValue() {
-    const runtimeInfo = getRuntimeInfo();
-    const platformSpecificData = getPlatformSpecificData();
-    const userAgent = getUserAgentString(runtimeInfo.concat(platformSpecificData));
-    return userAgent;
-}
-function userAgentPolicy(userAgentData) {
-    const key = !userAgentData || userAgentData.key === undefined || userAgentData.key === null
-        ? getDefaultUserAgentKey()
-        : userAgentData.key;
-    const value = !userAgentData || userAgentData.value === undefined || userAgentData.value === null
-        ? getDefaultUserAgentValue()
-        : userAgentData.value;
+function ndJsonPolicy() {
     return {
         create: (nextPolicy, options) => {
-            return new UserAgentPolicy(nextPolicy, options, key, value);
-        }
+            return new NdJsonPolicy(nextPolicy, options);
+        },
     };
 }
-class UserAgentPolicy extends BaseRequestPolicy {
-    constructor(_nextPolicy, _options, headerKey, headerValue) {
-        super(_nextPolicy, _options);
-        this._nextPolicy = _nextPolicy;
-        this._options = _options;
-        this.headerKey = headerKey;
-        this.headerValue = headerValue;
+/**
+ * NdJsonPolicy that formats a JSON array as newline-delimited JSON
+ */
+class NdJsonPolicy extends BaseRequestPolicy {
+    /**
+     * Creates an instance of KeepAlivePolicy.
+     */
+    constructor(nextPolicy, options) {
+        super(nextPolicy, options);
     }
-    sendRequest(request) {
-        this.addUserAgentHeader(request);
+    /**
+     * Sends a request.
+     */
+    async sendRequest(request) {
+        // There currently isn't a good way to bypass the serializer
+        if (typeof request.body === "string" && request.body.startsWith("[")) {
+            const body = JSON.parse(request.body);
+            if (Array.isArray(body)) {
+                request.body = body.map((item) => JSON.stringify(item) + "\n").join("");
+            }
+        }
         return this._nextPolicy.sendRequest(request);
-    }
-    addUserAgentHeader(request) {
-        if (!request.headers) {
-            request.headers = new HttpHeaders();
-        }
-        if (!request.headers.get(this.headerKey) && this.headerValue) {
-            request.headers.set(this.headerKey, this.headerValue);
-        }
     }
 }
 
 // Copyright (c) Microsoft Corporation.
 /**
- * Methods that are allowed to follow redirects 301 and 302
+ * Stores the patterns specified in NO_PROXY environment variable.
+ * @internal
  */
-const allowedRedirect = ["GET", "HEAD"];
-const DefaultRedirectOptions = {
-    handleRedirects: true,
-    maxRetries: 20
-};
-function redirectPolicy(maximumRetries = 20) {
-    return {
-        create: (nextPolicy, options) => {
-            return new RedirectPolicy(nextPolicy, options, maximumRetries);
+const globalNoProxyList = [];
+let noProxyListLoaded = false;
+/** A cache of whether a host should bypass the proxy. */
+const globalBypassedMap = new Map();
+function loadEnvironmentProxyValue() {
+    if (!process) {
+        return undefined;
+    }
+    const httpsProxy = getEnvironmentValue(Constants.HTTPS_PROXY);
+    const allProxy = getEnvironmentValue(Constants.ALL_PROXY);
+    const httpProxy = getEnvironmentValue(Constants.HTTP_PROXY);
+    return httpsProxy || allProxy || httpProxy;
+}
+/**
+ * Check whether the host of a given `uri` matches any pattern in the no proxy list.
+ * If there's a match, any request sent to the same host shouldn't have the proxy settings set.
+ * This implementation is a port of https://github.com/Azure/azure-sdk-for-net/blob/8cca811371159e527159c7eb65602477898683e2/sdk/core/Azure.Core/src/Pipeline/Internal/HttpEnvironmentProxy.cs#L210
+ */
+function isBypassed(uri, noProxyList, bypassedMap) {
+    if (noProxyList.length === 0) {
+        return false;
+    }
+    const host = URLBuilder.parse(uri).getHost();
+    if (bypassedMap === null || bypassedMap === void 0 ? void 0 : bypassedMap.has(host)) {
+        return bypassedMap.get(host);
+    }
+    let isBypassedFlag = false;
+    for (const pattern of noProxyList) {
+        if (pattern[0] === ".") {
+            // This should match either domain it self or any subdomain or host
+            // .foo.com will match foo.com it self or *.foo.com
+            if (host.endsWith(pattern)) {
+                isBypassedFlag = true;
+            }
+            else {
+                if (host.length === pattern.length - 1 && host === pattern.slice(1)) {
+                    isBypassedFlag = true;
+                }
+            }
         }
+        else {
+            if (host === pattern) {
+                isBypassedFlag = true;
+            }
+        }
+    }
+    bypassedMap === null || bypassedMap === void 0 ? void 0 : bypassedMap.set(host, isBypassedFlag);
+    return isBypassedFlag;
+}
+/**
+ * @internal
+ */
+function loadNoProxy() {
+    const noProxy = getEnvironmentValue(Constants.NO_PROXY);
+    noProxyListLoaded = true;
+    if (noProxy) {
+        return noProxy
+            .split(",")
+            .map((item) => item.trim())
+            .filter((item) => item.length);
+    }
+    return [];
+}
+/**
+ * Converts a given URL of a proxy server into `ProxySettings` or attempts to retrieve `ProxySettings` from the current environment if one is not passed.
+ * @param proxyUrl - URL of the proxy
+ * @returns The default proxy settings, or undefined.
+ */
+function getDefaultProxySettings(proxyUrl) {
+    if (!proxyUrl) {
+        proxyUrl = loadEnvironmentProxyValue();
+        if (!proxyUrl) {
+            return undefined;
+        }
+    }
+    const { username, password, urlWithoutAuth } = extractAuthFromUrl(proxyUrl);
+    const parsedUrl = URLBuilder.parse(urlWithoutAuth);
+    const schema = parsedUrl.getScheme() ? parsedUrl.getScheme() + "://" : "";
+    return {
+        host: schema + parsedUrl.getHost(),
+        port: Number.parseInt(parsedUrl.getPort() || "80"),
+        username,
+        password,
     };
 }
-class RedirectPolicy extends BaseRequestPolicy {
-    constructor(nextPolicy, options, maxRetries = 20) {
+/**
+ * A policy that allows one to apply proxy settings to all requests.
+ * If not passed static settings, they will be retrieved from the HTTPS_PROXY
+ * or HTTP_PROXY environment variables.
+ * @param proxySettings - ProxySettings to use on each request.
+ * @param options - additional settings, for example, custom NO_PROXY patterns
+ */
+function proxyPolicy(proxySettings, options) {
+    if (!proxySettings) {
+        proxySettings = getDefaultProxySettings();
+    }
+    if (!noProxyListLoaded) {
+        globalNoProxyList.push(...loadNoProxy());
+    }
+    return {
+        create: (nextPolicy, requestPolicyOptions) => {
+            return new ProxyPolicy(nextPolicy, requestPolicyOptions, proxySettings, options === null || options === void 0 ? void 0 : options.customNoProxyList);
+        },
+    };
+}
+function extractAuthFromUrl(url) {
+    const atIndex = url.indexOf("@");
+    if (atIndex === -1) {
+        return { urlWithoutAuth: url };
+    }
+    const schemeIndex = url.indexOf("://");
+    const authStart = schemeIndex !== -1 ? schemeIndex + 3 : 0;
+    const auth = url.substring(authStart, atIndex);
+    const colonIndex = auth.indexOf(":");
+    const hasPassword = colonIndex !== -1;
+    const username = hasPassword ? auth.substring(0, colonIndex) : auth;
+    const password = hasPassword ? auth.substring(colonIndex + 1) : undefined;
+    const urlWithoutAuth = url.substring(0, authStart) + url.substring(atIndex + 1);
+    return {
+        username,
+        password,
+        urlWithoutAuth,
+    };
+}
+class ProxyPolicy extends BaseRequestPolicy {
+    constructor(nextPolicy, options, proxySettings, customNoProxyList) {
         super(nextPolicy, options);
-        this.maxRetries = maxRetries;
+        this.proxySettings = proxySettings;
+        this.customNoProxyList = customNoProxyList;
     }
     sendRequest(request) {
-        return this._nextPolicy
-            .sendRequest(request)
-            .then((response) => handleRedirect(this, response, 0));
-    }
-}
-function handleRedirect(policy, response, currentRetries) {
-    const { request, status } = response;
-    const locationHeader = response.headers.get("location");
-    if (locationHeader &&
-        (status === 300 ||
-            (status === 301 && allowedRedirect.includes(request.method)) ||
-            (status === 302 && allowedRedirect.includes(request.method)) ||
-            (status === 303 && request.method === "POST") ||
-            status === 307) &&
-        (!policy.maxRetries || currentRetries < policy.maxRetries)) {
-        const builder = URLBuilder.parse(request.url);
-        builder.setPath(locationHeader);
-        request.url = builder.toString();
-        // POST request with Status code 303 should be converted into a
-        // redirected GET request if the redirect url is present in the location header
-        if (status === 303) {
-            request.method = "GET";
-            delete request.body;
+        var _a;
+        if (!request.proxySettings &&
+            !isBypassed(request.url, (_a = this.customNoProxyList) !== null && _a !== void 0 ? _a : globalNoProxyList, this.customNoProxyList ? undefined : globalBypassedMap)) {
+            request.proxySettings = this.proxySettings;
         }
-        return policy._nextPolicy
-            .sendRequest(request)
-            .then((res) => handleRedirect(policy, res, currentRetries + 1));
+        return this._nextPolicy.sendRequest(request);
     }
-    return Promise.resolve(response);
 }
 
 // Copyright (c) Microsoft Corporation.
@@ -56940,7 +59944,7 @@ function rpRegistrationPolicy(retryTimeout = 30) {
     return {
         create: (nextPolicy, options) => {
             return new RPRegistrationPolicy(nextPolicy, options, retryTimeout);
-        }
+        },
     };
 }
 class RPRegistrationPolicy extends BaseRequestPolicy {
@@ -57085,193 +60089,52 @@ async function getRegistrationStatus(policy, url, originalRequest) {
 }
 
 // Copyright (c) Microsoft Corporation.
-// Default options for the cycler if none are provided
-const DEFAULT_CYCLER_OPTIONS = {
-    forcedRefreshWindowInMs: 1000,
-    retryIntervalInMs: 3000,
-    refreshWindowInMs: 1000 * 60 * 2 // Start refreshing 2m before expiry
-};
 /**
- * Converts an an unreliable access token getter (which may resolve with null)
- * into an AccessTokenGetter by retrying the unreliable getter in a regular
- * interval.
- *
- * @param getAccessToken - a function that produces a promise of an access
- * token that may fail by returning null
- * @param retryIntervalInMs - the time (in milliseconds) to wait between retry
- * attempts
- * @param timeoutInMs - the timestamp after which the refresh attempt will fail,
- * throwing an exception
- * @returns - a promise that, if it resolves, will resolve with an access token
+ * Creates a policy that signs outgoing requests by calling to the provided `authenticationProvider`'s `signRequest` method.
+ * @param authenticationProvider - The authentication provider.
+ * @returns An instance of the {@link SigningPolicy}.
  */
-async function beginRefresh(getAccessToken, retryIntervalInMs, timeoutInMs) {
-    // This wrapper handles exceptions gracefully as long as we haven't exceeded
-    // the timeout.
-    async function tryGetAccessToken() {
-        if (Date.now() < timeoutInMs) {
-            try {
-                return await getAccessToken();
-            }
-            catch (_a) {
-                return null;
-            }
-        }
-        else {
-            const finalToken = await getAccessToken();
-            // Timeout is up, so throw if it's still null
-            if (finalToken === null) {
-                throw new Error("Failed to refresh access token.");
-            }
-            return finalToken;
-        }
-    }
-    let token = await tryGetAccessToken();
-    while (token === null) {
-        await delay(retryIntervalInMs);
-        token = await tryGetAccessToken();
-    }
-    return token;
-}
-/**
- * Creates a token cycler from a credential, scopes, and optional settings.
- *
- * A token cycler represents a way to reliably retrieve a valid access token
- * from a TokenCredential. It will handle initializing the token, refreshing it
- * when it nears expiration, and synchronizes refresh attempts to avoid
- * concurrency hazards.
- *
- * @param credential - the underlying TokenCredential that provides the access
- * token
- * @param scopes - the scopes to request authorization for
- * @param tokenCyclerOptions - optionally override default settings for the cycler
- *
- * @returns - a function that reliably produces a valid access token
- */
-function createTokenCycler(credential, scopes, tokenCyclerOptions) {
-    let refreshWorker = null;
-    let token = null;
-    const options = Object.assign(Object.assign({}, DEFAULT_CYCLER_OPTIONS), tokenCyclerOptions);
-    /**
-     * This little holder defines several predicates that we use to construct
-     * the rules of refreshing the token.
-     */
-    const cycler = {
-        /**
-         * Produces true if a refresh job is currently in progress.
-         */
-        get isRefreshing() {
-            return refreshWorker !== null;
-        },
-        /**
-         * Produces true if the cycler SHOULD refresh (we are within the refresh
-         * window and not already refreshing)
-         */
-        get shouldRefresh() {
-            var _a;
-            return (!cycler.isRefreshing &&
-                ((_a = token === null || token === void 0 ? void 0 : token.expiresOnTimestamp) !== null && _a !== void 0 ? _a : 0) - options.refreshWindowInMs < Date.now());
-        },
-        /**
-         * Produces true if the cycler MUST refresh (null or nearly-expired
-         * token).
-         */
-        get mustRefresh() {
-            return (token === null || token.expiresOnTimestamp - options.forcedRefreshWindowInMs < Date.now());
-        }
-    };
-    /**
-     * Starts a refresh job or returns the existing job if one is already
-     * running.
-     */
-    function refresh(getTokenOptions) {
-        var _a;
-        if (!cycler.isRefreshing) {
-            // We bind `scopes` here to avoid passing it around a lot
-            const tryGetAccessToken = () => credential.getToken(scopes, getTokenOptions);
-            // Take advantage of promise chaining to insert an assignment to `token`
-            // before the refresh can be considered done.
-            refreshWorker = beginRefresh(tryGetAccessToken, options.retryIntervalInMs, 
-            // If we don't have a token, then we should timeout immediately
-            (_a = token === null || token === void 0 ? void 0 : token.expiresOnTimestamp) !== null && _a !== void 0 ? _a : Date.now())
-                .then((_token) => {
-                refreshWorker = null;
-                token = _token;
-                return token;
-            })
-                .catch((reason) => {
-                // We also should reset the refresher if we enter a failed state.  All
-                // existing awaiters will throw, but subsequent requests will start a
-                // new retry chain.
-                refreshWorker = null;
-                token = null;
-                throw reason;
-            });
-        }
-        return refreshWorker;
-    }
-    return async (tokenOptions) => {
-        //
-        // Simple rules:
-        // - If we MUST refresh, then return the refresh task, blocking
-        //   the pipeline until a token is available.
-        // - If we SHOULD refresh, then run refresh but don't return it
-        //   (we can still use the cached token).
-        // - Return the token, since it's fine if we didn't return in
-        //   step 1.
-        //
-        if (cycler.mustRefresh)
-            return refresh(tokenOptions);
-        if (cycler.shouldRefresh) {
-            refresh(tokenOptions);
-        }
-        return token;
-    };
-}
-// #endregion
-/**
- * Creates a new factory for a RequestPolicy that applies a bearer token to
- * the requests' `Authorization` headers.
- *
- * @param credential - The TokenCredential implementation that can supply the bearer token.
- * @param scopes - The scopes for which the bearer token applies.
- */
-function bearerTokenAuthenticationPolicy(credential, scopes) {
-    // This simple function encapsulates the entire process of reliably retrieving the token
-    const getToken = createTokenCycler(credential, scopes /* , options */);
-    class BearerTokenAuthenticationPolicy extends BaseRequestPolicy {
-        constructor(nextPolicy, options) {
-            super(nextPolicy, options);
-        }
-        async sendRequest(webResource) {
-            if (!webResource.url.toLowerCase().startsWith("https://")) {
-                throw new Error("Bearer token authentication is not permitted for non-TLS protected (non-https) URLs.");
-            }
-            const { token } = await getToken({
-                abortSignal: webResource.abortSignal,
-                tracingOptions: {
-                    tracingContext: webResource.tracingContext
-                }
-            });
-            webResource.headers.set(Constants.HeaderConstants.AUTHORIZATION, `Bearer ${token}`);
-            return this._nextPolicy.sendRequest(webResource);
-        }
-    }
+function signingPolicy(authenticationProvider) {
     return {
         create: (nextPolicy, options) => {
-            return new BearerTokenAuthenticationPolicy(nextPolicy, options);
-        }
+            return new SigningPolicy(nextPolicy, options, authenticationProvider);
+        },
     };
+}
+/**
+ * A policy that signs outgoing requests by calling to the provided `authenticationProvider`'s `signRequest` method.
+ */
+class SigningPolicy extends BaseRequestPolicy {
+    constructor(nextPolicy, options, authenticationProvider) {
+        super(nextPolicy, options);
+        this.authenticationProvider = authenticationProvider;
+    }
+    signRequest(request) {
+        return this.authenticationProvider.signRequest(request);
+    }
+    sendRequest(request) {
+        return this.signRequest(request).then((nextRequest) => this._nextPolicy.sendRequest(nextRequest));
+    }
 }
 
 // Copyright (c) Microsoft Corporation.
+/**
+ * A policy that retries when there's a system error, identified by the codes "ETIMEDOUT", "ESOCKETTIMEDOUT", "ECONNREFUSED", "ECONNRESET" or "ENOENT".
+ * @param retryCount - Maximum number of retries.
+ * @param retryInterval - The client retry interval, in milliseconds.
+ * @param minRetryInterval - The minimum retry interval, in milliseconds.
+ * @param maxRetryInterval - The maximum retry interval, in milliseconds.
+ * @returns An instance of the {@link SystemErrorRetryPolicy}
+ */
 function systemErrorRetryPolicy(retryCount, retryInterval, minRetryInterval, maxRetryInterval) {
     return {
         create: (nextPolicy, options) => {
             return new SystemErrorRetryPolicy(nextPolicy, options, retryCount, retryInterval, minRetryInterval, maxRetryInterval);
-        }
+        },
     };
 }
 /**
+ * A policy that retries when there's a system error, identified by the codes "ETIMEDOUT", "ESOCKETTIMEDOUT", "ECONNREFUSED", "ECONNRESET" or "ENOENT".
  * @param retryCount - The client retry count.
  * @param retryInterval - The client retry interval, in milliseconds.
  * @param minRetryInterval - The minimum retry interval, in milliseconds.
@@ -57292,10 +60155,10 @@ class SystemErrorRetryPolicy extends BaseRequestPolicy {
     sendRequest(request) {
         return this._nextPolicy
             .sendRequest(request.clone())
-            .catch((error) => retry$1(this, request, error.response, error));
+            .catch((error) => retry(this, request, error.response, error));
     }
 }
-async function retry$1(policy, request, operationResponse, err, retryData) {
+async function retry(policy, request, operationResponse, err, retryData) {
     retryData = updateRetryData(policy, retryData, err);
     function shouldPolicyRetry(_response, error) {
         if (error &&
@@ -57316,7 +60179,7 @@ async function retry$1(policy, request, operationResponse, err, retryData) {
             return policy._nextPolicy.sendRequest(request.clone());
         }
         catch (nestedErr) {
-            return retry$1(policy, request, operationResponse, nestedErr, retryData);
+            return retry(policy, request, operationResponse, nestedErr, retryData);
         }
     }
     else {
@@ -57329,155 +60192,6 @@ async function retry$1(policy, request, operationResponse, err, retryData) {
 }
 
 // Copyright (c) Microsoft Corporation.
-(function (QueryCollectionFormat) {
-    QueryCollectionFormat["Csv"] = ",";
-    QueryCollectionFormat["Ssv"] = " ";
-    QueryCollectionFormat["Tsv"] = "\t";
-    QueryCollectionFormat["Pipes"] = "|";
-    QueryCollectionFormat["Multi"] = "Multi";
-})(exports.QueryCollectionFormat || (exports.QueryCollectionFormat = {}));
-
-// Copyright (c) Microsoft Corporation.
-/**
- * Stores the patterns specified in NO_PROXY environment variable.
- * @internal
- */
-const globalNoProxyList = [];
-let noProxyListLoaded = false;
-/** A cache of whether a host should bypass the proxy. */
-const globalBypassedMap = new Map();
-function loadEnvironmentProxyValue() {
-    if (!process) {
-        return undefined;
-    }
-    const httpsProxy = getEnvironmentValue(Constants.HTTPS_PROXY);
-    const allProxy = getEnvironmentValue(Constants.ALL_PROXY);
-    const httpProxy = getEnvironmentValue(Constants.HTTP_PROXY);
-    return httpsProxy || allProxy || httpProxy;
-}
-/**
- * Check whether the host of a given `uri` matches any pattern in the no proxy list.
- * If there's a match, any request sent to the same host shouldn't have the proxy settings set.
- * This implementation is a port of https://github.com/Azure/azure-sdk-for-net/blob/8cca811371159e527159c7eb65602477898683e2/sdk/core/Azure.Core/src/Pipeline/Internal/HttpEnvironmentProxy.cs#L210
- */
-function isBypassed(uri, noProxyList, bypassedMap) {
-    if (noProxyList.length === 0) {
-        return false;
-    }
-    const host = URLBuilder.parse(uri).getHost();
-    if (bypassedMap === null || bypassedMap === void 0 ? void 0 : bypassedMap.has(host)) {
-        return bypassedMap.get(host);
-    }
-    let isBypassedFlag = false;
-    for (const pattern of noProxyList) {
-        if (pattern[0] === ".") {
-            // This should match either domain it self or any subdomain or host
-            // .foo.com will match foo.com it self or *.foo.com
-            if (host.endsWith(pattern)) {
-                isBypassedFlag = true;
-            }
-            else {
-                if (host.length === pattern.length - 1 && host === pattern.slice(1)) {
-                    isBypassedFlag = true;
-                }
-            }
-        }
-        else {
-            if (host === pattern) {
-                isBypassedFlag = true;
-            }
-        }
-    }
-    bypassedMap === null || bypassedMap === void 0 ? void 0 : bypassedMap.set(host, isBypassedFlag);
-    return isBypassedFlag;
-}
-/**
- * @internal
- */
-function loadNoProxy() {
-    const noProxy = getEnvironmentValue(Constants.NO_PROXY);
-    noProxyListLoaded = true;
-    if (noProxy) {
-        return noProxy
-            .split(",")
-            .map((item) => item.trim())
-            .filter((item) => item.length);
-    }
-    return [];
-}
-function getDefaultProxySettings(proxyUrl) {
-    if (!proxyUrl) {
-        proxyUrl = loadEnvironmentProxyValue();
-        if (!proxyUrl) {
-            return undefined;
-        }
-    }
-    const { username, password, urlWithoutAuth } = extractAuthFromUrl(proxyUrl);
-    const parsedUrl = URLBuilder.parse(urlWithoutAuth);
-    const schema = parsedUrl.getScheme() ? parsedUrl.getScheme() + "://" : "";
-    return {
-        host: schema + parsedUrl.getHost(),
-        port: Number.parseInt(parsedUrl.getPort() || "80"),
-        username,
-        password
-    };
-}
-/**
- * A policy that allows one to apply proxy settings to all requests.
- * If not passed static settings, they will be retrieved from the HTTPS_PROXY
- * or HTTP_PROXY environment variables.
- * @param proxySettings - ProxySettings to use on each request.
- * @param options - additional settings, for example, custom NO_PROXY patterns
- */
-function proxyPolicy(proxySettings, options) {
-    if (!proxySettings) {
-        proxySettings = getDefaultProxySettings();
-    }
-    if (!noProxyListLoaded) {
-        globalNoProxyList.push(...loadNoProxy());
-    }
-    return {
-        create: (nextPolicy, requestPolicyOptions) => {
-            return new ProxyPolicy(nextPolicy, requestPolicyOptions, proxySettings, options === null || options === void 0 ? void 0 : options.customNoProxyList);
-        }
-    };
-}
-function extractAuthFromUrl(url) {
-    const atIndex = url.indexOf("@");
-    if (atIndex === -1) {
-        return { urlWithoutAuth: url };
-    }
-    const schemeIndex = url.indexOf("://");
-    const authStart = schemeIndex !== -1 ? schemeIndex + 3 : 0;
-    const auth = url.substring(authStart, atIndex);
-    const colonIndex = auth.indexOf(":");
-    const hasPassword = colonIndex !== -1;
-    const username = hasPassword ? auth.substring(0, colonIndex) : auth;
-    const password = hasPassword ? auth.substring(colonIndex + 1) : undefined;
-    const urlWithoutAuth = url.substring(0, authStart) + url.substring(atIndex + 1);
-    return {
-        username,
-        password,
-        urlWithoutAuth
-    };
-}
-class ProxyPolicy extends BaseRequestPolicy {
-    constructor(nextPolicy, options, proxySettings, customNoProxyList) {
-        super(nextPolicy, options);
-        this.proxySettings = proxySettings;
-        this.customNoProxyList = customNoProxyList;
-    }
-    sendRequest(request) {
-        var _a;
-        if (!request.proxySettings &&
-            !isBypassed(request.url, (_a = this.customNoProxyList) !== null && _a !== void 0 ? _a : globalNoProxyList, this.customNoProxyList ? undefined : globalBypassedMap)) {
-            request.proxySettings = this.proxySettings;
-        }
-        return this._nextPolicy.sendRequest(request);
-    }
-}
-
-// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 /**
  * Maximum number of retries for the throttling retry policy
@@ -57486,15 +60200,28 @@ const DEFAULT_CLIENT_MAX_RETRY_COUNT = 3;
 
 // Copyright (c) Microsoft Corporation.
 const StatusCodes = Constants.HttpConstants.StatusCodes;
+/**
+ * Creates a policy that re-sends the request if the response indicates the request failed because of throttling reasons.
+ * For example, if the response contains a `Retry-After` header, it will retry sending the request based on the value of that header.
+ *
+ * To learn more, please refer to
+ * https://docs.microsoft.com/en-us/azure/azure-resource-manager/resource-manager-request-limits,
+ * https://docs.microsoft.com/en-us/azure/azure-subscription-service-limits and
+ * https://docs.microsoft.com/en-us/azure/virtual-machines/troubleshooting/troubleshooting-throttling-errors
+ * @returns
+ */
 function throttlingRetryPolicy() {
     return {
         create: (nextPolicy, options) => {
             return new ThrottlingRetryPolicy(nextPolicy, options);
-        }
+        },
     };
 }
-const StandardAbortMessage$1 = "The operation was aborted.";
+const StandardAbortMessage = "The operation was aborted.";
 /**
+ * Creates a policy that re-sends the request if the response indicates the request failed because of throttling reasons.
+ * For example, if the response contains a `Retry-After` header, it will retry sending the request based on the value of that header.
+ *
  * To learn more, please refer to
  * https://docs.microsoft.com/en-us/azure/azure-resource-manager/resource-manager-request-limits,
  * https://docs.microsoft.com/en-us/azure/azure-subscription-service-limits and
@@ -57525,10 +60252,10 @@ class ThrottlingRetryPolicy extends BaseRequestPolicy {
                 this.numberOfRetries += 1;
                 await delay(delayInMs, undefined, {
                     abortSignal: httpRequest.abortSignal,
-                    abortErrorMsg: StandardAbortMessage$1
+                    abortErrorMsg: StandardAbortMessage,
                 });
                 if ((_a = httpRequest.abortSignal) === null || _a === void 0 ? void 0 : _a.aborted) {
-                    throw new abortController.AbortError(StandardAbortMessage$1);
+                    throw new abortController.AbortError(StandardAbortMessage);
                 }
                 if (this.numberOfRetries < DEFAULT_CLIENT_MAX_RETRY_COUNT) {
                     return this.sendRequest(httpRequest);
@@ -57563,76 +60290,25 @@ class ThrottlingRetryPolicy extends BaseRequestPolicy {
 }
 
 // Copyright (c) Microsoft Corporation.
-function signingPolicy(authenticationProvider) {
-    return {
-        create: (nextPolicy, options) => {
-            return new SigningPolicy(nextPolicy, options, authenticationProvider);
-        }
-    };
-}
-class SigningPolicy extends BaseRequestPolicy {
-    constructor(nextPolicy, options, authenticationProvider) {
-        super(nextPolicy, options);
-        this.authenticationProvider = authenticationProvider;
-    }
-    signRequest(request) {
-        return this.authenticationProvider.signRequest(request);
-    }
-    sendRequest(request) {
-        return this.signRequest(request).then((nextRequest) => this._nextPolicy.sendRequest(nextRequest));
-    }
-}
-
-// Copyright (c) Microsoft Corporation.
-const DefaultKeepAliveOptions = {
-    enable: true
-};
-function keepAlivePolicy(keepAliveOptions) {
-    return {
-        create: (nextPolicy, options) => {
-            return new KeepAlivePolicy(nextPolicy, options, keepAliveOptions || DefaultKeepAliveOptions);
-        }
-    };
-}
-/**
- * KeepAlivePolicy is a policy used to control keep alive settings for every request.
- */
-class KeepAlivePolicy extends BaseRequestPolicy {
-    /**
-     * Creates an instance of KeepAlivePolicy.
-     *
-     * @param nextPolicy -
-     * @param options -
-     * @param keepAliveOptions -
-     */
-    constructor(nextPolicy, options, keepAliveOptions) {
-        super(nextPolicy, options);
-        this.keepAliveOptions = keepAliveOptions;
-    }
-    /**
-     * Sends out request.
-     *
-     * @param request -
-     * @returns
-     */
-    async sendRequest(request) {
-        request.keepAlive = this.keepAliveOptions.enable;
-        return this._nextPolicy.sendRequest(request);
-    }
-}
-
-// Copyright (c) Microsoft Corporation.
 const createSpan = coreTracing.createSpanFunction({
     packagePrefix: "",
-    namespace: ""
+    namespace: "",
 });
+/**
+ * Creates a policy that wraps outgoing requests with a tracing span.
+ * @param tracingOptions - Tracing options.
+ * @returns An instance of the {@link TracingPolicy} class.
+ */
 function tracingPolicy(tracingOptions = {}) {
     return {
         create(nextPolicy, options) {
             return new TracingPolicy(nextPolicy, options, tracingOptions);
-        }
+        },
     };
 }
+/**
+ * A policy that wraps outgoing requests with a tracing span.
+ */
 class TracingPolicy extends BaseRequestPolicy {
     constructor(nextPolicy, options, tracingOptions) {
         super(nextPolicy, options);
@@ -57659,14 +60335,13 @@ class TracingPolicy extends BaseRequestPolicy {
     tryCreateSpan(request) {
         var _a;
         try {
-            const path = URLBuilder.parse(request.url).getPath() || "/";
             // Passing spanOptions as part of tracingOptions to maintain compatibility @azure/core-tracing@preview.13 and earlier.
             // We can pass this as a separate parameter once we upgrade to the latest core-tracing.
-            const { span } = createSpan(path, {
+            const { span } = createSpan(`HTTP ${request.method}`, {
                 tracingOptions: {
                     spanOptions: Object.assign(Object.assign({}, request.spanOptions), { kind: coreTracing.SpanKind.CLIENT }),
-                    tracingContext: request.tracingContext
-                }
+                    tracingContext: request.tracingContext,
+                },
             });
             // If the span is not recording, don't do any more work.
             if (!span.isRecording()) {
@@ -57680,7 +60355,7 @@ class TracingPolicy extends BaseRequestPolicy {
             span.setAttributes({
                 "http.method": request.method,
                 "http.url": request.url,
-                requestId: request.requestId
+                requestId: request.requestId,
             });
             if (this.userAgent) {
                 span.setAttribute("http.user_agent", this.userAgent);
@@ -57707,7 +60382,7 @@ class TracingPolicy extends BaseRequestPolicy {
         try {
             span.setStatus({
                 code: coreTracing.SpanStatusCode.ERROR,
-                message: err.message
+                message: err.message,
             });
             if (err.statusCode) {
                 span.setAttribute("http.status_code", err.statusCode);
@@ -57726,7 +60401,7 @@ class TracingPolicy extends BaseRequestPolicy {
                 span.setAttribute("serviceRequestId", serviceRequestId);
             }
             span.setStatus({
-                code: coreTracing.SpanStatusCode.OK
+                code: coreTracing.SpanStatusCode.OK,
             });
             span.end();
         }
@@ -57734,88 +60409,6 @@ class TracingPolicy extends BaseRequestPolicy {
             logger.warning(`Skipping tracing span processing due to an error: ${error.message}`);
         }
     }
-}
-
-// Copyright (c) Microsoft Corporation.
-/**
- * Returns a request policy factory that can be used to create an instance of
- * {@link DisableResponseDecompressionPolicy}.
- */
-function disableResponseDecompressionPolicy() {
-    return {
-        create: (nextPolicy, options) => {
-            return new DisableResponseDecompressionPolicy(nextPolicy, options);
-        }
-    };
-}
-/**
- * A policy to disable response decompression according to Accept-Encoding header
- * https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Accept-Encoding
- */
-class DisableResponseDecompressionPolicy extends BaseRequestPolicy {
-    /**
-     * Creates an instance of DisableResponseDecompressionPolicy.
-     *
-     * @param nextPolicy -
-     * @param options -
-     */
-    // The parent constructor is protected.
-    /* eslint-disable-next-line @typescript-eslint/no-useless-constructor */
-    constructor(nextPolicy, options) {
-        super(nextPolicy, options);
-    }
-    /**
-     * Sends out request.
-     *
-     * @param request -
-     * @returns
-     */
-    async sendRequest(request) {
-        request.decompressResponse = false;
-        return this._nextPolicy.sendRequest(request);
-    }
-}
-
-// Copyright (c) Microsoft Corporation.
-function ndJsonPolicy() {
-    return {
-        create: (nextPolicy, options) => {
-            return new NdJsonPolicy(nextPolicy, options);
-        }
-    };
-}
-/**
- * NdJsonPolicy that formats a JSON array as newline-delimited JSON
- */
-class NdJsonPolicy extends BaseRequestPolicy {
-    /**
-     * Creates an instance of KeepAlivePolicy.
-     */
-    constructor(nextPolicy, options) {
-        super(nextPolicy, options);
-    }
-    /**
-     * Sends a request.
-     */
-    async sendRequest(request) {
-        // There currently isn't a good way to bypass the serializer
-        if (typeof request.body === "string" && request.body.startsWith("[")) {
-            const body = JSON.parse(request.body);
-            if (Array.isArray(body)) {
-                request.body = body.map((item) => JSON.stringify(item) + "\n").join("");
-            }
-        }
-        return this._nextPolicy.sendRequest(request);
-    }
-}
-
-// Copyright (c) Microsoft Corporation.
-let cachedHttpClient;
-function getCachedDefaultHttpClient() {
-    if (!cachedHttpClient) {
-        cachedHttpClient = new NodeFetchHttpClient();
-    }
-    return cachedHttpClient;
 }
 
 // Copyright (c) Microsoft Corporation.
@@ -57867,7 +60460,7 @@ class ServiceClient {
                                 bearerTokenPolicyFactory = bearerTokenAuthenticationPolicy(credentials, credentialScopes);
                             }
                             return bearerTokenPolicyFactory.create(nextPolicy, createOptions);
-                        }
+                        },
                     };
                 };
                 authPolicyFactory = wrappedPolicyFactory();
@@ -58102,7 +60695,7 @@ function serializeRequestBody(serviceClient, httpRequest, operationArguments, op
     const updatedOptions = {
         rootName: (_c = serializerOptions.rootName) !== null && _c !== void 0 ? _c : "",
         includeRoot: (_d = serializerOptions.includeRoot) !== null && _d !== void 0 ? _d : false,
-        xmlCharKey: (_e = serializerOptions.xmlCharKey) !== null && _e !== void 0 ? _e : XML_CHARKEY
+        xmlCharKey: (_e = serializerOptions.xmlCharKey) !== null && _e !== void 0 ? _e : XML_CHARKEY,
     };
     const xmlCharKey = serializerOptions.xmlCharKey;
     if (operationSpec.requestBody && operationSpec.requestBody.mapper) {
@@ -58121,13 +60714,13 @@ function serializeRequestBody(serviceClient, httpRequest, operationArguments, op
                     if (typeName === MapperType.Sequence) {
                         httpRequest.body = stringifyXML(prepareXMLRootList(value, xmlElementName || xmlName || serializedName, xmlnsKey, xmlNamespace), {
                             rootName: xmlName || serializedName,
-                            xmlCharKey
+                            xmlCharKey,
                         });
                     }
                     else if (!isStream) {
                         httpRequest.body = stringifyXML(value, {
                             rootName: xmlName || serializedName,
-                            xmlCharKey
+                            xmlCharKey,
                         });
                     }
                 }
@@ -58211,6 +60804,12 @@ function createDefaultRequestPolicyFactories(authPolicyFactory, options) {
     factories.push(logPolicy({ logger: logger.info }));
     return factories;
 }
+/**
+ * Creates an HTTP pipeline based on the given options.
+ * @param pipelineOptions - Defines options that are used to configure policies in the HTTP pipeline for an SDK client.
+ * @param authPolicyFactory - An optional authentication policy factory to use for signing requests.
+ * @returns A set of options that can be passed to create a new {@link ServiceClient}.
+ */
 function createPipelineFromOptions(pipelineOptions, authPolicyFactory) {
     const requestPolicyFactories = [];
     if (pipelineOptions.sendStreamingJson) {
@@ -58249,7 +60848,7 @@ function createPipelineFromOptions(pipelineOptions, authPolicyFactory) {
     }
     return {
         httpClient: pipelineOptions.httpClient,
-        requestPolicyFactories
+        requestPolicyFactories,
     };
 }
 function getOperationArgumentValueFromParameter(serviceClient, operationArguments, parameter, serializer) {
@@ -58325,12 +60924,18 @@ function getPropertyFromParameterPath(parent, parameterPath) {
     }
     return result;
 }
+/**
+ * Parses an {@link HttpOperationResponse} into a normalized HTTP response object ({@link RestResponse}).
+ * @param _response - Wrapper object for http response.
+ * @param responseSpec - Mappers for how to parse the response properties.
+ * @returns - A normalized response object.
+ */
 function flattenResponse(_response, responseSpec) {
     const parsedHeaders = _response.parsedHeaders;
     const bodyMapper = responseSpec && responseSpec.bodyMapper;
     const addOperationResponse = (obj) => {
         return Object.defineProperty(obj, "_response", {
-            value: _response
+            value: _response,
         });
     };
     if (bodyMapper) {
@@ -58416,9 +61021,16 @@ class ExpiringAccessTokenCache {
         this.cachedToken = undefined;
         this.tokenRefreshBufferMs = tokenRefreshBufferMs;
     }
+    /**
+     * Saves an access token into the internal in-memory cache.
+     * @param accessToken - Access token or undefined to clear the cache.
+     */
     setCachedToken(accessToken) {
         this.cachedToken = accessToken;
     }
+    /**
+     * Returns the cached access token, or `undefined` if one is not cached or the cached one is expiring soon.
+     */
     getCachedToken() {
         if (this.cachedToken &&
             Date.now() + this.tokenRefreshBufferMs >= this.cachedToken.expiresOnTimestamp) {
@@ -58477,6 +61089,9 @@ class AccessTokenRefresher {
 // Copyright (c) Microsoft Corporation.
 const HeaderConstants = Constants.HeaderConstants;
 const DEFAULT_AUTHORIZATION_SCHEME = "Basic";
+/**
+ * A simple {@link ServiceClientCredential} that authenticates with a username and a password.
+ */
 class BasicAuthenticationCredentials {
     /**
      * Creates a new BasicAuthenticationCredentials object.
@@ -58486,6 +61101,10 @@ class BasicAuthenticationCredentials {
      * @param authorizationScheme - The authorization scheme.
      */
     constructor(userName, password, authorizationScheme = DEFAULT_AUTHORIZATION_SCHEME) {
+        /**
+         * Authorization scheme. Defaults to "Basic".
+         * More information about authorization schemes is available here: https://developer.mozilla.org/docs/Web/HTTP/Authentication#authentication_schemes
+         */
         this.authorizationScheme = DEFAULT_AUTHORIZATION_SCHEME;
         if (userName === null || userName === undefined || typeof userName.valueOf() !== "string") {
             throw new Error("userName cannot be null or undefined and must be of type string.");
@@ -58565,6 +61184,9 @@ class ApiKeyCredentials {
 }
 
 // Copyright (c) Microsoft Corporation.
+/**
+ * A {@link TopicCredentials} object used for Azure Event Grid.
+ */
 class TopicCredentials extends ApiKeyCredentials {
     /**
      * Creates a new EventGrid TopicCredentials object.
@@ -58577,8 +61199,8 @@ class TopicCredentials extends ApiKeyCredentials {
         }
         const options = {
             inHeader: {
-                "aeg-sas-key": topicKey
-            }
+                "aeg-sas-key": topicKey,
+            },
         };
         super(options);
     }
@@ -58586,9 +61208,7 @@ class TopicCredentials extends ApiKeyCredentials {
 
 Object.defineProperty(exports, 'isTokenCredential', {
     enumerable: true,
-    get: function () {
-        return coreAuth.isTokenCredential;
-    }
+    get: function () { return coreAuth.isTokenCredential; }
 });
 exports.AccessTokenRefresher = AccessTokenRefresher;
 exports.ApiKeyCredentials = ApiKeyCredentials;
